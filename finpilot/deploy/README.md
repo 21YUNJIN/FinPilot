@@ -134,6 +134,14 @@ docker compose -f deploy/compose.yaml --env-file deploy/compose.env run --rm mig
 * **安全选项**：FinPilot 进程容器统一 `read_only: true` + `tmpfs /tmp` +
   `security_opt: [no-new-privileges:true]` + `cap_drop: [ALL]` + 非 root（uid 10001）。
   宿主机端口全部绑定 `127.0.0.1`，只在需要联调时开放。
+* **资源上限**：所有进程容器都有 `pids_limit`、`mem_limit`、`cpus`（默认 256 / 512m / 1.0，
+  可用 `APP_MEM_LIMIT`、`APP_CPUS` 等覆盖）；PostgreSQL 为 512 / 1g / 2.0，两个静态站点为
+  128 / 128m / 0.5。没有上限的容器会被视为隔离缺陷。
+* **网络分区**：`edge` 只挂 `api`、`web`、`im`；`backbone` 是 `internal: true` 的内部网络，
+  挂 `postgres`、两个 worker 与两个提供方沙箱——这些容器没有外网出口。数据库和沙箱的端口
+  虽仍映射到宿主 `127.0.0.1` 便于排查，但它们不在客户端网络上。
+* **静态校验**：`python deploy/verify_isolation.py` 把上述声明变成可执行断言（104 项），
+  CI 与 `tests/contracts/test_compose_isolation.py` 都会跑。**它只证明配置写了，不证明运行时生效。**
 * **沙箱策略对照**：容器内代码执行沙箱的目标策略在 `deploy/sandbox-policy.yaml`
   （别人已交付，本工作包只读引用）；其 `verification` 段的 V1–V11 必须逐条留证据，
   不能只凭"用了 Docker"声称隔离生效。
@@ -142,7 +150,8 @@ docker compose -f deploy/compose.yaml --env-file deploy/compose.env run --rm mig
 
 在 Linux + Docker 主机上按顺序执行并留证据；任一条失败都不得宣称容器路径可用：
 
-1. `docker compose config -q` 通过（语法/插值校验，不需要启动）。
+1. `docker compose config -q` 通过（语法/插值校验，不需要启动）；再跑
+   `python deploy/verify_isolation.py`，104 项必须全过。
 2. `docker compose build` 成功，镜像内 `python -c "import finpilot, alembic; print(alembic.__version__)"` 正常。
 3. `migrate` 一次性服务退出码 0，且 `psql -c "\dt"` 看到 47 张业务表 + `alembic_version`。
 4. `api` 的 `/healthz` 返回 `{"status":"ok"}` 且 `database.ok = true`。
@@ -150,8 +159,12 @@ docker compose -f deploy/compose.yaml --env-file deploy/compose.env run --rm mig
 6. 两个沙箱的 `/bank/health`、`/merchant/health` 返回 200；回调走 `http://api:58000` 成功。
 7. 非 root 运行：`docker compose exec api id -u` 输出 `10001`。
 8. 只读根：`docker compose exec api touch /etc/x` 必须失败。
-9. 客户端 profile：`web`/`im` 页面可打开且 `/v1/*` 反代 200。
-10. 备份链路：`backup_restore.py` 用容器内的 `pg_dump` 走通 §4 的演练。
+9. **cgroup 限额真的生效**：`docker inspect finpilot-api --format '{{.HostConfig.Memory}} {{.HostConfig.PidsLimit}} {{.HostConfig.NanoCpus}}'`
+   应为非零值；`docker compose exec api python -c "import os;print(len(os.sched_getaffinity(0)))"` 不超过配额。
+10. **内部网络无外网**：`docker compose exec api python -c "import socket;socket.create_connection(('1.1.1.1',443),3)"`
+    必须超时/拒绝；`docker compose exec postgres ...` 同样验证。
+11. 客户端 profile：`web`/`im` 页面可打开且 `/v1/*` 反代 200。
+12. 备份链路：`backup_restore.py` 用容器内的 `pg_dump` 走通 §4 的演练。
 
 ---
 

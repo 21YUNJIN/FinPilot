@@ -62,6 +62,14 @@ x-hardening: &hardening
     - no-new-privileges:true
   cap_drop:
     - ALL
+  # Non-root is set by the image (uid 10001); stating it here makes the intent
+  # machine-checkable by deploy/verify_isolation.py.
+  user: "10001:10001"
+  # Resource ceilings are part of the isolation claim, not tuning knobs: a runaway
+  # process must not be able to starve the host or fork-bomb the demo.
+  pids_limit: 256
+  mem_limit: ${APP_MEM_LIMIT:-512m}
+  cpus: ${APP_CPUS:-1.0}
   restart: unless-stopped
 
 services:
@@ -88,6 +96,12 @@ services:
       start_period: 10s
     security_opt:
       - no-new-privileges:true
+    pids_limit: 512
+    mem_limit: ${POSTGRES_MEM_LIMIT:-1g}
+    cpus: ${POSTGRES_CPUS:-2.0}
+    shm_size: 256m
+    networks:
+      - backbone
     restart: unless-stopped
 
   # --- One-shot: Alembic migration chain (DATA-04) ----------------------------
@@ -101,6 +115,8 @@ services:
     environment:
       <<: [*db-env, *runtime-env]
     command: ["python", "-m", "alembic", "upgrade", "head"]
+    networks:
+      - backbone
     # migrations/env.py resolves the URL from -x db_url=... first, then from
     # DATABASE_URL (already injected by *db-env), so no URL/credentials appear here.
     depends_on:
@@ -117,6 +133,8 @@ services:
     environment:
       <<: [*db-env, *runtime-env]
     command: ["python", "-m", "finpilot.seed", "--json", "data/synthetic/seed_app.json"]
+    networks:
+      - backbone
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -131,6 +149,9 @@ services:
     command: ["python", "-m", "uvicorn", "finpilot.app:app", "--host", "0.0.0.0", "--port", "58000", "--workers", "${API_WORKERS:-1}"]
     ports:
       - "127.0.0.1:58000:58000"
+    networks:
+      - edge
+      - backbone
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:58000/healthz',timeout=3).read()"]
       interval: 10s
@@ -157,6 +178,8 @@ services:
     # same code path as the Windows-native dev stack (scripts/worker_outbox.py):
     # process_pending + requeue_stuck in a loop, graceful SIGTERM exit
     command: ["python", "scripts/worker_outbox.py", "--interval", "5", "--limit", "50"]
+    networks:
+      - backbone
     depends_on:
       postgres:
         condition: service_healthy
@@ -171,6 +194,8 @@ services:
     environment:
       <<: [*db-env, *runtime-env]
     command: ["python", "scripts/worker_scheduler.py", "--interval", "5"]
+    networks:
+      - backbone
     depends_on:
       postgres:
         condition: service_healthy
@@ -193,6 +218,8 @@ services:
       - "127.0.0.1:58101:58101"
     volumes:
       - bank_state:/state
+    networks:
+      - backbone
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:58101/bank/health',timeout=3).read()"]
       interval: 10s
@@ -215,6 +242,8 @@ services:
       - "127.0.0.1:58102:58102"
     volumes:
       - merchant_state:/state
+    networks:
+      - backbone
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:58102/merchant/health',timeout=3).read()"]
       interval: 10s
@@ -246,9 +275,16 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # nginx-unprivileged runs as uid 101; pin it so the static host is auditable too.
+    user: "101:101"
+    pids_limit: 128
+    mem_limit: ${CLIENT_MEM_LIMIT:-128m}
+    cpus: ${CLIENT_CPUS:-0.5}
     depends_on:
       api:
         condition: service_healthy
+    networks:
+      - edge
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/ >/dev/null || exit 1"]
       interval: 15s
@@ -274,15 +310,30 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # nginx-unprivileged runs as uid 101; pin it so the static host is auditable too.
+    user: "101:101"
+    pids_limit: 128
+    mem_limit: ${CLIENT_MEM_LIMIT:-128m}
+    cpus: ${CLIENT_CPUS:-0.5}
     depends_on:
       api:
         condition: service_healthy
+    networks:
+      - edge
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/ >/dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 6
     restart: unless-stopped
+
+networks:
+  # Client-facing network: only the API and the two static hosts attach to it.
+  edge:
+  # Internal data plane: database, workers and provider sandboxes. `internal: true`
+  # means containers on it get no route to the outside world.
+  backbone:
+    internal: true
 
 volumes:
   pgdata:
