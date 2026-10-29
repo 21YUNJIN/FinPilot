@@ -1,0 +1,26 @@
+Scope: 3 of 4 workspace projects
+apps/shared-ui build$ tsc -p tsconfig.build.json && node ./scripts/copy-assets.mjs
+apps/shared-ui build: [shared-ui] copied D:\GPT\2026-10-22\new-chat\integrated\FinPilot_Competition_20261028\finpilot\apps\shared-ui\src\styles.css -> D:\GPT\2026-10-22\new-chat\integrated\FinPilot_Competition_20261028\finpilot\apps\shared-ui\dist\styles.css
+apps/shared-ui build: Done
+apps/im build$ tsc -p tsconfig.json --noEmit && vite build
+apps/web build$ tsc -p tsconfig.json --noEmit && vite build
+apps/im build: vite v5.4.21 building for production...
+apps/web build: vite v5.4.21 building for production...
+apps/im build: transforming...
+apps/web build: transforming...
+apps/im build: ✓ 70 modules transformed.
+apps/web build: ✓ 74 modules transformed.
+apps/im build: rendering chunks...
+apps/im build: computing gzip size...
+apps/im build: dist/index.html                   0.48 kB │ gzip:  0.35 kB
+apps/im build: dist/assets/index-BUHEGP9v.css   10.14 kB │ gzip:  2.57 kB
+apps/im build: dist/assets/index-gr6Aj6UX.js   206.18 kB │ gzip: 69.20 kB
+apps/im build: ✓ built in 706ms
+apps/im build: Done
+apps/web build: rendering chunks...
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                   0.48 kB │ gzip:  0.34 kB
+apps/web build: dist/assets/index-JG0chknX.css    9.58 kB │ gzip:  2.47 kB
+apps/web build: dist/assets/index-BW6YiIQO.js   259.26 kB │ gzip: 85.70 kB
+apps/web build: ✓ built in 750ms
+apps/web build: Done

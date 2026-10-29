@@ -6,10 +6,10 @@
 .venv-*/
 venv/
 
-# 运行时产物（run_demo.py、沙箱状态库、日志）
+# 运行时产物（run_demo.py、沙箱状态库）
+# 注意：不要忽略 *.log —— evidence/ 下的历史测试日志是交付证据，必须入库。
 .runtime/
 .state/
-*.log
 
 # Python 缓存
 __pycache__/

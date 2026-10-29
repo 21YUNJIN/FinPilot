@@ -1,0 +1,50 @@
+Scope: 3 of 4 workspace projects
+apps/shared-ui test$ vitest run
+apps/shared-ui test:  RUN  v3.2.7 D:/GPT/2026-10-22/new-chat/integrated/FinPilot_Competition_20261028/finpilot/apps/shared-ui
+apps/shared-ui test:  ✓ tests/client.test.ts (13 tests) 35ms
+apps/shared-ui test:  ✓ tests/operation-receipt.test.tsx (13 tests) 83ms
+apps/shared-ui test:  ✓ tests/plan-steps.test.tsx (7 tests) 146ms
+apps/shared-ui test:  ✓ tests/error-mirror.parity.test.ts (2 tests) 8ms
+apps/shared-ui test:  ✓ tests/task-panel.test.tsx (9 tests) 467ms
+apps/shared-ui test:  ✓ tests/subscription-list.test.tsx (7 tests) 181ms
+apps/shared-ui test:  ✓ tests/use-task.test.tsx (4 tests) 478ms
+apps/shared-ui test:  ✓ tests/error-banner-version-conflict.test.tsx (6 tests) 139ms
+apps/shared-ui test:  ✓ tests/authorization-card.test.tsx (6 tests) 166ms
+apps/shared-ui test:  ✓ tests/bill-report.test.tsx (7 tests) 115ms
+apps/shared-ui test:  ✓ tests/card-panel.test.tsx (4 tests) 117ms
+apps/shared-ui test:  ✓ tests/session-cache.test.ts (6 tests) 5ms
+apps/shared-ui test:  ✓ tests/goal-summary-card.test.tsx (6 tests) 152ms
+apps/shared-ui test:  ✓ tests/handoff-panel.test.tsx (4 tests) 121ms
+apps/shared-ui test:  ✓ tests/wealth-compare.test.tsx (5 tests) 75ms
+apps/shared-ui test:  ✓ tests/datetime.test.ts (4 tests) 18ms
+apps/shared-ui test:  ✓ tests/mode-status.test.tsx (5 tests) 36ms
+apps/shared-ui test:  ✓ tests/challenge-dialog.test.tsx (6 tests) 554ms
+apps/shared-ui test:  ✓ tests/errorMessages.test.ts (6 tests) 5ms
+apps/shared-ui test:  ✓ tests/money.test.ts (6 tests) 5ms
+apps/shared-ui test:  ✓ tests/wealth-risk-cell.test.tsx (2 tests) 23ms
+apps/shared-ui test:  ✓ tests/privacy-panel.test.tsx (4 tests) 269ms
+apps/shared-ui test:  ✓ tests/session-gate.test.tsx (3 tests) 874ms
+apps/shared-ui test:    ✓ SessionGate 登录闸门 > 未认证时显示登录表单，提交后回传账号密码  548ms
+apps/shared-ui test:    ✓ SessionGate 登录闸门 > 登录失败展示后端安全文案（不显示泛泛的'登录失败'）  322ms
+apps/shared-ui test:  Test Files  23 passed (23)
+apps/shared-ui test:       Tests  135 passed (135)
+apps/shared-ui test:    Start at  23:18:43
+apps/shared-ui test:    Duration  11.53s (transform 921ms, setup 27.37s, collect 3.30s, tests 4.07s, environment 150.57s, prepare 14.09s)
+apps/shared-ui test: Done
+apps/web test$ vitest run
+apps/im test$ vitest run
+apps/im test:  RUN  v3.2.7 D:/GPT/2026-10-22/new-chat/integrated/FinPilot_Competition_20261028/finpilot/apps/im
+apps/web test:  RUN  v3.2.7 D:/GPT/2026-10-22/new-chat/integrated/FinPilot_Competition_20261028/finpilot/apps/web
+apps/im test:  ✓ tests/app.test.tsx (5 tests) 298ms
+apps/im test:  Test Files  1 passed (1)
+apps/im test:       Tests  5 passed (5)
+apps/im test:    Start at  23:18:55
+apps/im test:    Duration  7.33s (transform 675ms, setup 2.41s, collect 293ms, tests 298ms, environment 2.85s, prepare 1.15s)
+apps/im test: Done
+apps/web test:  ✓ tests/app.test.tsx (4 tests) 645ms
+apps/web test:    ✓ APP 式 Web 客户端 > 登录后出现底部七个标签与当前用户，模式来自服务端任务视图  560ms
+apps/web test:  Test Files  1 passed (1)
+apps/web test:       Tests  4 passed (4)
+apps/web test:    Start at  23:18:55
+apps/web test:    Duration  7.82s (transform 707ms, setup 2.20s, collect 426ms, tests 645ms, environment 2.83s, prepare 896ms)
+apps/web test: Done

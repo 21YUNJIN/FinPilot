@@ -1,0 +1,108 @@
+D:\GPT\2026-10-22\new-chat\work\integration_20261028\venv-finpilot\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+{
+  "header": {
+    "record_type": "header",
+    "runner_version": "runner-2026.10",
+    "oracle_version": "oracle-2026.10",
+    "protocol_version": "eval-protocol-2026.10",
+    "mode": "mock",
+    "config": "FULL",
+    "config_detail": {
+      "name": "FULL",
+      "kind": "full",
+      "driver": "full",
+      "description": "完整实现：约束求解 + DAG + 范围授权 + 增量恢复 + 全工具目录。",
+      "use_constraint_solver": true,
+      "use_dag_preferences": true,
+      "replan_mode": "incremental",
+      "grant_scope_kind": "scoped",
+      "confirm_mode": "per_plan",
+      "quant_enabled": true,
+      "step_order": "topological",
+      "budget": {
+        "max_steps": 24,
+        "max_confirmations": 8,
+        "wall_clock_seconds": 300
+      },
+      "ablation_of": "FULL",
+      "ablation_dimension": ""
+    },
+    "split": "dev",
+    "dataset_hash": "200ac215ed600b511960b1208b0fc4787c19eba0cfb9042f829f188c8475ac66",
+    "repeats": 1,
+    "seed": 20261022,
+    "app_mode": "mock",
+    "database": {
+      "database": "fp_integration_tests__eval",
+      "created": false
+    },
+    "seed_template": {
+      "name": "fp_integration_tests__eval__seed_template",
+      "loaded": {
+        "users": 3,
+        "accounts": 4,
+        "protection_policies": 1,
+        "payees": 6,
+        "billing_transactions": 1257,
+        "products": 7,
+        "product_navs": 1420,
+        "holdings": 4,
+        "cards": 3,
+        "card_controls": 6,
+        "card_applications": 4,
+        "subscriptions": 6,
+        "mandates": 5,
+        "merchant_offers": 10,
+        "aa_requests": 1,
+        "aa_shares": 3
+      }
+    },
+    "database_url_hint": "postgresql+psycopg://***@127.0.0.1:55439/fp_integration_tests__eval",
+    "isolation": "每个任务从模板库克隆出独立评测库（CREATE DATABASE ... TEMPLATE）；任务之间不存在共享订单、授权或审计记录。",
+    "record_count_planned": 30,
+    "model_version": "rule-compiler-2026.10-+-local-sandbox-provider",
+    "commit": "unknown",
+    "started_at": "2026-10-29T06:13:36.235735+00:00",
+    "offline_disclaimer": "mock/offline_replay 使用确定性规则编译器与确定性本地提供方；结果只能读作工程回归，不能读作在线模型能力结论。"
+  },
+  "outcomes": {
+    "refused": 14,
+    "clarified": 3,
+    "completed": 2,
+    "partially_completed": 6,
+    "failed": 3,
+    "unknown": 2
+  },
+  "by_task_class": {
+    "attack": {
+      "refused": 12
+    },
+    "clarify": {
+      "clarified": 3,
+      "partially_completed": 2,
+      "failed": 1
+    },
+    "executable": {
+      "completed": 2,
+      "partially_completed": 2,
+      "unknown": 2
+    },
+    "reject": {
+      "refused": 2,
+      "partially_completed": 2,
+      "failed": 2
+    }
+  },
+  "forbidden_effect_count": 0,
+  "elapsed_seconds": 35.98,
+  "mean_wall_ms": 428.62,
+  "out_path": "D:\\GPT\\2026-10-22\\new-chat\\integrated\\FinPilot_Competition_20261028\\evidence\\eval_mock_dev30_20261029.jsonl",
+  "mode": "mock",
+  "config": "FULL",
+  "split": "dev",
+  "repeats": 1,
+  "records_written": 30,
+  "tests_planned": 30,
+  "dataset_hash": "200ac215ed600b511960b1208b0fc4787c19eba0cfb9042f829f188c8475ac66"
+}
