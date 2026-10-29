@@ -370,7 +370,9 @@ def resolve_product(session: Session, text: str) -> dict:
         }
     return {"status": "not_found"}
 
-def resolve_card(session: Session, user_id: str, text: str, *, require_explicit: bool = False) -> dict:
+def resolve_card(
+    session: Session, user_id: str, text: str, *, require_explicit: bool = False, prefer_lost: bool = False
+) -> dict:
     """把"那张卡"解析成具体卡片：只有尾号/卡种等显式线索才定位，否则要求澄清。
 
     ``require_explicit`` 用于锁卡/挂失/调额这类高影响操作：带"那张/这张/我的"这类指代时，
@@ -393,6 +395,12 @@ def resolve_card(session: Session, user_id: str, text: str, *, require_explicit:
             return {"status": "resolved", "card": virtual[0], "candidates": []}
         if virtual:
             return {"status": "ambiguous", "card": None, "candidates": [_card_option(card) for card in virtual]}
+
+    if prefer_lost:
+        # 补卡的对象是已挂失的那张卡：唯一挂失卡可直接定位，不必再问
+        lost = [card for card in cards if card.lifecycle_status == "lost"]
+        if len(lost) == 1:
+            return {"status": "resolved", "card": lost[0], "candidates": []}
 
     if require_explicit:
         # 锁卡/挂失/调额是高影响操作：没有尾号或卡种等显式线索时一律澄清，
@@ -435,9 +443,16 @@ def _subscription_option(row: Subscription) -> dict:
 
 
 def _clarify_card(
-    session: Session, user_id: str, text: str, facts: dict, unresolved: list[dict], *, require_explicit: bool = True
+    session: Session,
+    user_id: str,
+    text: str,
+    facts: dict,
+    unresolved: list[dict],
+    *,
+    require_explicit: bool = True,
+    prefer_lost: bool = False,
 ) -> None:
-    resolved = resolve_card(session, user_id, text, require_explicit=require_explicit)
+    resolved = resolve_card(session, user_id, text, require_explicit=require_explicit, prefer_lost=prefer_lost)
     if resolved["status"] == "resolved":
         facts["card_id"] = resolved["card"].card_id
     elif resolved["status"] == "ambiguous":
@@ -751,11 +766,12 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
         limit_verbs = any(word in text for word in ("提高", "提升", "调高", "降低", "调低", "调整", "修改", "增加", "减少"))
         # "申请…卡，额度 2000" 里的额度是申请参数，不是对已有卡调额；只有出现明确的调额动词才按调额处理。
         applying_with_limit = apply_words and "额度" in text and not limit_verbs
-        if hint_action == "card_lost_report" or (not hint_action and ("挂失" in text or "丢了" in text or "解挂" in text)):
-            goals.append("card_lost_report")
-            _clarify_card(session, auth.user_id, text, facts, unresolved)
-        elif hint_action == "card_replace" or (not hint_action and "补卡" in text):
+        replace_words = any(word in text for word in ("补卡", "补办", "补一张", "换一张新卡", "换张新卡"))
+        if hint_action == "card_replace" or (not hint_action and replace_words):
             goals.append("card_replace")
+            _clarify_card(session, auth.user_id, text, facts, unresolved, prefer_lost=True)
+        elif hint_action == "card_lost_report" or (not hint_action and ("挂失" in text or "丢" in text or "解挂" in text)):
+            goals.append("card_lost_report")
             _clarify_card(session, auth.user_id, text, facts, unresolved)
         elif hint_action == "card_apply" or (not hint_action and apply_words and (applying_with_limit or "额度" not in text)):
             goals.append("card_apply")

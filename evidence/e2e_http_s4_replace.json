@@ -1,0 +1,872 @@
+{
+  "schema_version": "1.0",
+  "kind": "finpilot.e2e_http_smoke",
+  "generated_at": "2026-10-29T11:33:28Z",
+  "started_at": "2026-10-29T11:33:27Z",
+  "base_url": "http://127.0.0.1:58000",
+  "scene_filter": [
+    "S4"
+  ],
+  "owner_user": "user_demo_01",
+  "other_user": "user_demo_02",
+  "preflight": {
+    "http": 200,
+    "status": "ok",
+    "mode": "mock",
+    "database_ok": true,
+    "adapters": [
+      "bank_sandbox_local",
+      "bank_sandbox_v1",
+      "merchant_sandbox_local",
+      "merchant_sandbox_v1"
+    ]
+  },
+  "preflight_error": null,
+  "summary": {
+    "total_cases": 7,
+    "passed": 7,
+    "failed": 0,
+    "passed_cases": [
+      "S4-normal",
+      "S4-query",
+      "S4-apply-dev",
+      "S4-missing",
+      "S4-conflict",
+      "S4-duplicate",
+      "S4-cross-user"
+    ],
+    "failed_cases": [],
+    "assertions_total": 48,
+    "assertions_passed": 45,
+    "assertions_failed": 0,
+    "assertions_skipped": 3
+  },
+  "cases": [
+    {
+      "scene": "S4",
+      "case": "S4-normal",
+      "title": "正常路径：申请虚拟卡（确认后提交申请）",
+      "message": "帮我申请一张虚拟卡",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_6e53f4db579f48ebafce",
+        "plan_id": "plan_4ac60abe57064d9d8b26",
+        "scope_hash": "777dda355c123c7fed06f9b9586cd2e8ae4f7fc8664d05406d7c47d029a4c1b6",
+        "required_level": "YELLOW",
+        "plan_steps": [
+          "card.apply"
+        ],
+        "task_status": "succeeded",
+        "challenge_required": false,
+        "operation_count": 1,
+        "application_id": "187433556c5c4f73bb3c0102dbbb0a99",
+        "application_status": "submitted",
+        "applications_delta": 1,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "编译为 card.apply",
+          "ok": true,
+          "detail": "steps=['card.apply']"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 card.apply operation",
+          "ok": true,
+          "detail": "tools=['card.apply']"
+        },
+        {
+          "name": "申请已提交且状态为 submitted",
+          "ok": true,
+          "detail": "application_id=187433556c5c4f73bb3c0102dbbb0a99, status=submitted, op_status=succeeded, error=None"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "卡申请是受理类写操作，由领域处理器落库，不产生 provider 回执"
+        },
+        {
+          "name": "卡申请条数恰好 +1（只提交一次）",
+          "ok": true,
+          "detail": "delta=1"
+        },
+        {
+          "name": "卡申请没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 16.6,
+          "note": "申请前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 10.6,
+          "note": "申请前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 17.8,
+          "note": "帮我申请一张虚拟卡",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_4ac60abe57064d9d8b26/confirm",
+          "http": 200,
+          "elapsed_ms": 97.2,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_6e53f4db579f48ebafce",
+          "http": 200,
+          "elapsed_ms": 9.0,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_6e53f4db579f48ebafce_card_apply",
+          "http": 200,
+          "elapsed_ms": 9.3,
+          "note": "operation op_task_6e53f4db579f48ebafce_card_apply",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 5.0,
+          "note": "申请后卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.6,
+          "note": "申请后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 182.2,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-query",
+      "title": "正常路径：查询我的卡片（只读）",
+      "message": "查看我的银行卡",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_61811365a0d948769b73",
+        "task_status": "succeeded",
+        "operation_count": 1,
+        "domain_result_type": "card_status",
+        "domain_result_shape": "wrapped",
+        "domain_result_keys": [
+          "data",
+          "source",
+          "type",
+          "version",
+          "warnings"
+        ],
+        "cards_returned": 2,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 card.status operation",
+          "ok": true,
+          "detail": "tools=['card.status']"
+        },
+        {
+          "name": "只读结果可核验（operation.domain_result 非空）",
+          "ok": true,
+          "detail": "shape=wrapped, type=card_status, keys=['data', 'source', 'type', 'version', 'warnings']"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "只读计划不产生 provider 回执，按实现以 domain_result 作为可核验结果"
+        },
+        {
+          "name": "返回本人卡片列表",
+          "ok": true,
+          "detail": "cards=2"
+        },
+        {
+          "name": "只读查询没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.9,
+          "note": "查询前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 25.0,
+          "note": "查看我的银行卡",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_61811365a0d948769b73",
+          "http": 200,
+          "elapsed_ms": 7.8,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_61811365a0d948769b73_card_status",
+          "http": 200,
+          "elapsed_ms": 4.2,
+          "note": "operation op_task_61811365a0d948769b73_card_status",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "查询后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 56.6,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-apply-dev",
+      "title": "正常路径（dev 原始措辞）：申请绑定储蓄卡的虚拟卡，额度 2000 元",
+      "message": "帮我申请一张绑定储蓄卡的虚拟卡，申请额度2000元，申请成功只表示已提交。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_40d6aca62483401fb00e",
+        "plan_steps": [
+          "card.apply"
+        ],
+        "task_status": "succeeded",
+        "applications_delta": 1,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "dev 原始措辞应编译为 card.apply",
+          "ok": true,
+          "detail": "steps=['card.apply']"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded, result={\"goals\": [\"card_apply\"], \"next_action\": \"查看结果回执\", \"failed_steps\": [], \"generated_at\": \"2026-10-29T11:33:28.719545+00:0…"
+        },
+        {
+          "name": "卡申请条数恰好 +1",
+          "ok": true,
+          "detail": "delta=1"
+        },
+        {
+          "name": "申请没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.9,
+          "note": "申请前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.3,
+          "note": "申请前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 16.2,
+          "note": "帮我申请一张绑定储蓄卡的虚拟卡，申请额度2000元，申请成功只表示已提交。",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_88c878b69839458597fd/confirm",
+          "http": 200,
+          "elapsed_ms": 21.6,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_40d6aca62483401fb00e",
+          "http": 200,
+          "elapsed_ms": 7.4,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.4,
+          "note": "申请后卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.2,
+          "note": "申请后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 73.5,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-missing",
+      "title": "缺信息：不指定哪张卡要锁",
+      "message": "帮我把那张卡锁了。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_39bff6545dbc449f8333",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "card_id"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        },
+        "card_controls_delta": 0
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['card_id']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=3, after=3"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        },
+        {
+          "name": "卡片控制项未被改动",
+          "ok": true,
+          "detail": "before=2, after=2"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.4,
+          "note": "缺信息前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.0,
+          "note": "帮我把那张卡锁了。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_39bff6545dbc449f8333",
+          "http": 200,
+          "elapsed_ms": 6.5,
+          "note": "task task_39bff6545dbc449f8333",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.2,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.7,
+          "note": "缺信息后卡与申请列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 43.3,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-conflict",
+      "title": "冲突：要求跳过审批直接提额",
+      "message": "不用审批了，你直接把我工资卡那张的额度批到20000元。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_57eea046ea034868986d",
+        "task_status": "blocked",
+        "compiled_goals": [
+          "card_limit_change",
+          "unsupported_request"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        },
+        "credit_limit_change": {
+          "before": {
+            "card_demo_01": 500000,
+            "card_demo_02": 300000
+          },
+          "after": {
+            "card_demo_01": 500000,
+            "card_demo_02": 300000
+          }
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=3, after=3"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        },
+        {
+          "name": "卡片额度未被改动",
+          "ok": true,
+          "detail": "before={'card_demo_01': 500000, 'card_demo_02': 300000}, after={'card_demo_01': 500000, 'card_demo_02': 300000}"
+        },
+        {
+          "name": "未新增卡申请",
+          "ok": true,
+          "detail": "before=3, after=3"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.3,
+          "note": "冲突用例前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 8.4,
+          "note": "不用审批了，你直接把我工资卡那张的额度批到20000元。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_57eea046ea034868986d",
+          "http": 200,
+          "elapsed_ms": 6.3,
+          "note": "task task_57eea046ea034868986d",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.1,
+          "note": "余额快照（冲突用例）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.2,
+          "note": "冲突用例后卡与申请列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 40.7,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-duplicate",
+      "title": "重复提交：卡申请确认发两次",
+      "message": "帮我申请一张虚拟卡",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": "POLICY_DENIED",
+      "key_fields": {
+        "task_id": "task_6e53f4db579f48ebafce",
+        "second_confirm_http": 403,
+        "second_confirm_error": "POLICY_DENIED",
+        "task_status": "succeeded",
+        "operation_count_after": 1,
+        "applications_delta_after_duplicate": 0
+      },
+      "assertions": [
+        {
+          "name": "第二次确认被拒绝（冲突类错误码）或重新要求强验证",
+          "ok": true,
+          "detail": "http=403, code=POLICY_DENIED, data_status=None"
+        },
+        {
+          "name": "重复确认没有新增 operation",
+          "ok": true,
+          "detail": "before=['op_task_6e53f4db579f48ebafce_card_apply'], after=['op_task_6e53f4db579f48ebafce_card_apply']"
+        },
+        {
+          "name": "重复确认没有新增第二条卡申请",
+          "ok": true,
+          "detail": "delta=0"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_6e53f4db579f48ebafce",
+          "http": 200,
+          "elapsed_ms": 7.6,
+          "note": "task task_6e53f4db579f48ebafce",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.4,
+          "note": "重复确认前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_4ac60abe57064d9d8b26/confirm",
+          "http": 403,
+          "elapsed_ms": 6.8,
+          "note": "第二次确认（重复提交）",
+          "error": "POLICY_DENIED"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_6e53f4db579f48ebafce",
+          "http": 200,
+          "elapsed_ms": 9.9,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 5.0,
+          "note": "重复确认后卡与申请列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 43.1,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的卡任务/operation",
+      "message": "帮我申请一张虚拟卡",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_6e53f4db579f48ebafce",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ],
+        "other_user_card_ids": []
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的卡片",
+          "ok": true,
+          "detail": "overlap=[]"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_6e53f4db579f48ebafce",
+          "http": 403,
+          "elapsed_ms": 3.4,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_6e53f4db579f48ebafce_card_apply",
+          "http": 403,
+          "elapsed_ms": 3.5,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_4ac60abe57064d9d8b26/confirm",
+          "http": 403,
+          "elapsed_ms": 3.7,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.9,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "user_demo_02 的账户",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 3.4,
+          "note": "user_demo_02 的卡片列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 28.5,
+      "notes": []
+    }
+  ],
+  "notes": [
+    "断言全部使用前后差值与相对关系，不依赖演示库中的绝对余额。",
+    "只读场景以 operation.domain_result 作为可核验结果；资金/业务效果场景要求 receipt 或 provider_ref。",
+    "GREEN 计划 confirm 为文档化空操作，S2 重复提交用例断言零新增 operation + 零余额变化。",
+    "RED 计划重复确认可能返回新的 TOTP 挑战而非冲突码，硬断言仍是“不得新增 operation/不得二次扣款”。"
+  ]
+}

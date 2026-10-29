@@ -208,3 +208,16 @@ dev 300 同步复跑（`FULL_dev300_20261029_round5.jsonl`）：拒绝正确率 
 | `s2_exec_report_drilldown` | 2 |
 
 下一轮应针对这些**能力缺口**（适当性过滤、账单异常解释、补卡对象解析、YELLOW 边界）设计修复，而不是继续放宽澄清条件；修完需要在 dev + 新增合成样本上验证，hidden 已经接触两次，后续只能作为"回归观察"，不能再当调参依据。
+### 9.3 补卡（card.replace）能力补齐
+
+§9.2 里 `s4_exec_replace_card` 6 条全部停在澄清，根因有两层：
+
+1. **规划器根本没有 `card.replace` 候选**：领域处理器 `domains/cards/service.py::replace_card` 与 `policy.card.replace` 都已存在，但 `build_plan` 只生成 apply / set_limit / report_lost / set_control / status，补卡目标会得到"空计划"并 `blocked`。
+2. **意图识别把"补一张上周丢的卡"判成挂失/无动作**："补卡"要求连续匹配，且"丢"没有 `了` 就不命中。
+
+修复：
+- 规划器补 `card_replace` 候选（`card.replace`，RED，读取目标卡、写申请）；
+- 编译器先判补卡（补卡/补办/补一张/换一张新卡），再判挂失（挂失/丢/解挂）；
+- 补卡时优先定位**已挂失**的卡：名下只有一张丢失卡就直接用它，不再问"哪张卡"。
+
+实测（真实 HTTP，种子库）：`帮我补一张上周丢的卡`、`帮我补卡` 都得到 `card_replace` 目标、计划可行、`card.replace` 步骤，状态 `awaiting_authorization`（RED）；S4 七条 e2e 仍全过。

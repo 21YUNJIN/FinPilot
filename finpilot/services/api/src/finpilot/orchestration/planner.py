@@ -361,6 +361,20 @@ def generate_candidates(session: Session, ctx: AuthContext, task: Task, goal_spe
                 goal="card_lost_report",
             )
         )
+    if "card_replace" in goals:
+        add(
+            Candidate(
+                node_id="card_replace",
+                tool="card.replace",
+                typed_args={"card_id": facts.get("card_id")},
+                read_set=[f"card:{facts.get('card_id')}"],
+                write_set=["card:application"],
+                expected_effects={"replacement_requested": True},
+                cost_minor=0,
+                required_level="RED",
+                goal="card_replace",
+            )
+        )
     if "card_control" in goals:
         add(
             Candidate(
