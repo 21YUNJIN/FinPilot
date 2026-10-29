@@ -391,7 +391,9 @@ def resolve_card(session: Session, user_id: str, text: str, *, require_explicit:
         if virtual:
             return {"status": "ambiguous", "card": None, "candidates": [_card_option(card) for card in virtual]}
 
-    if require_explicit and any(token in text for token in ("那", "这", "我的")):
+    if require_explicit:
+        # 锁卡/挂失/调额是高影响操作：没有尾号或卡种等显式线索时一律澄清，
+        # 即使名下只有一张有效卡，也不替用户默认选卡。
         pool = [card for card in cards if card.lifecycle_status == "active"] or cards
         return {"status": "ambiguous", "card": None, "candidates": [_card_option(card) for card in pool]}
 
@@ -407,7 +409,7 @@ def _card_option(card: Card) -> dict:
     return {"value": card.card_id, "label": f"尾号 {tail}（{card.lifecycle_status}，{card.brand}）"}
 
 
-def resolve_subscription(session: Session, user_id: str, text: str) -> dict:
+def resolve_subscription(session: Session, user_id: str, text: str, *, require_name: bool = False) -> dict:
     """把"那个订阅"解析成具体订阅：按商户名匹配；只剩一个有效订阅时可直接定位。"""
     rows = session.execute(
         select(Subscription).where(Subscription.owner_user_id == user_id, Subscription.status == "active")
@@ -420,7 +422,7 @@ def resolve_subscription(session: Session, user_id: str, text: str) -> dict:
         return {"status": "resolved", "subscription": by_name[0], "candidates": []}
     if len(by_name) > 1:
         return {"status": "ambiguous", "subscription": None, "candidates": [_subscription_option(row) for row in by_name]}
-    if len(rows) == 1:
+    if len(rows) == 1 and not require_name:
         return {"status": "resolved", "subscription": rows[0], "candidates": []}
     return {"status": "ambiguous", "subscription": None, "candidates": [_subscription_option(row) for row in rows]}
 
@@ -439,8 +441,10 @@ def _clarify_card(
         unresolved.append(_clarification("card_id", "要操作哪一张卡？", resolved["candidates"]))
 
 
-def _clarify_subscription(session: Session, user_id: str, text: str, facts: dict, unresolved: list[dict]) -> None:
-    resolved = resolve_subscription(session, user_id, text)
+def _clarify_subscription(
+    session: Session, user_id: str, text: str, facts: dict, unresolved: list[dict], *, require_name: bool = False
+) -> None:
+    resolved = resolve_subscription(session, user_id, text, require_name=require_name)
     if resolved["status"] == "resolved":
         subscription = resolved["subscription"]
         facts["subscription_id"] = subscription.subscription_id
@@ -614,6 +618,8 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
                 )
             else:
                 unresolved.append(_clarification("amount_minor", "请给出转账金额（元，最多两位小数）。"))
+                if "备注" not in text:
+                    unresolved.append(_clarification("memo", "这笔转账的备注/用途是什么？（例如房租、还款；可写“无”）"))
         else:
             hard_constraints["amount_minor"] = amount
             evidence.append({"field": "hard_constraints.amount_minor", "value": amount, "span": amount_span, "source": "user_message"})
@@ -675,12 +681,15 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
                 }
         facts["period"] = period
         facts["basis"] = "both" if ("现金流" in text or "两种" in text) else "consumption"
-        # "看看最近"没有给出区间：默认当月会掩盖歧义，先问清账期
-        if "最近" in text and not re.search(r"(个月|月|年|季度|周|天)", text):
+        # 没有账期线索也没有显式日期时，默认当月会掩盖歧义：先问清账期
+        has_period_word = re.search(r"(本月|这个月|上个月|上月|去年|今年|季度|周|月|年|最近)", text)
+        has_explicit_date = re.search(r"\d{4}-\d{2}-\d{2}", text)
+        vague_request = re.search(r"(最近|看看|了解一下|整理|消费情况|花了多少)", text)
+        if vague_request and not has_period_word and not has_explicit_date:
             unresolved.append(
                 _clarification(
                     "period",
-                    "“最近”指哪个区间？请给出账期，例如本月、上月、最近 3 个月，或具体起止月份。",
+                    "要看哪个账期的账单？请给出账期，例如本月、上月、去年，或具体起止日期。",
                 )
             )
 
@@ -717,6 +726,20 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
                 unresolved.append(_clarification("amount_minor", "请给出申购金额。"))
             else:
                 hard_constraints["amount_minor"] = amount_minor or budget_minor
+            # 申购前必须有有效测评：没有就先问，而不是让计划到执行期才被拒
+            try:
+                from ..domains.wealth_rules.assessment import current_profile
+
+                profile_view = current_profile(session, auth)
+            except Exception:  # pragma: no cover - 领域未装配
+                profile_view = {"usable": False}
+            if not profile_view.get("usable"):
+                unresolved.append(
+                    _clarification(
+                        "risk_questionnaire",
+                        "申购前需要有效的风险测评。请先在理财页完成问卷，再继续这笔申购。",
+                    )
+                )
         if "波动" in text or "回撤" in text or "风险分析" in text:
             goals.append("quant_risk_report")
 
@@ -757,10 +780,29 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
             unresolved.append(_clarification("card_action", "请明确卡片操作：申请、额度调整、交易限制、挂失或补卡。"))
 
     elif scene == "S5_subscription":
-        if hint_action == "cancel_subscription" or (not hint_action and any(k in text for k in ("取消", "退订", "别再扣"))):
+        cancel_words = any(k in text for k in ("取消", "退订", "别再扣"))
+        # 只有"怎么退订 / 什么时候扣 / 还能用吗"这类询问才算查询；带"取消…合同"的陈述句仍按取消处理
+        question_words = bool(re.match(r"^(怎么|如何|怎样)", text)) or any(
+            k in text for k in ("什么时候", "多久", "还能用吗", "是否会自动续费")
+        )
+        if hint_action == "cancel_subscription" or (not hint_action and cancel_words and not question_words):
             goals.append("cancel_subscription")
             goals.append("revoke_mandate")
-            _clarify_subscription(session, auth.user_id, text, facts, unresolved)
+            # 取消是高影响动作：按商户名才定位，指代不清时先问是哪一个
+            _clarify_subscription(session, auth.user_id, text, facts, unresolved, require_name=True)
+            scope_declared = any(k in text for k in ("合同", "代扣", "授权", "两者", "都取消", "一起取消"))
+            if not scope_declared:
+                unresolved.append(
+                    _clarification(
+                        "cancel_scope",
+                        "要取消哪一端？商户合同、银行代扣授权，还是两者都取消？",
+                        options=[
+                            {"value": "contract", "label": "只取消商户合同"},
+                            {"value": "mandate", "label": "只解除银行代扣授权"},
+                            {"value": "both", "label": "两者都取消"},
+                        ],
+                    )
+                )
             facts["note"] = "取消商户合同与解除银行代扣是两个独立动作，需分别核验结果"
         else:
             goals.append("list_subscriptions")
