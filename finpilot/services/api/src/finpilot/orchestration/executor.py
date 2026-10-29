@@ -487,6 +487,53 @@ def _next_action(status: str, pending: list[PlanStep], failed: list[PlanStep]) -
     return "无"
 
 
+def reconcile_task(session: Session, task_id: str) -> dict:
+    """提供方回调落地后，把仍在 ``reconciling`` 的任务带到一致终态。
+
+    只在该任务**没有任何在途/未知 operation** 时收敛；只要还有一个 dispatching/pending/unknown，
+    就继续保持 reconciling，等待后续回调或人工核验。
+    """
+    task = session.get(Task, task_id)
+    if task is None:
+        return {"reconciled": False, "status": None, "reason": "task_not_found"}
+    if task.status != "reconciling":
+        return {"reconciled": False, "status": task.status, "reason": "not_reconciling"}
+
+    operations = session.execute(select(Operation).where(Operation.task_id == task_id)).scalars().all()
+    if not operations:
+        return {"reconciled": False, "status": task.status, "reason": "no_operations"}
+    if any(op.status not in ("succeeded", "failed", "cancelled") for op in operations):
+        return {"reconciled": False, "status": task.status, "reason": "operations_in_flight"}
+
+    effects = [op for op in operations if op.tool not in READ_ONLY_TOOLS]
+    succeeded = [op for op in effects if op.status == "succeeded"]
+    failed = [op for op in effects if op.status == "failed"]
+    if effects and not failed and len(succeeded) == len(effects):
+        status = "succeeded"
+    elif succeeded and failed:
+        status = "partially_succeeded"
+    elif effects:
+        status = "failed"
+    else:
+        status = "succeeded"
+
+    task.result_summary = {
+        **(task.result_summary or {}),
+        "reconciled_by": "provider_event",
+        "operations": [op.operation_id for op in operations],
+        "generated_at": utcnow().isoformat(),
+    }
+    repo.transition_task(
+        session,
+        task,
+        status,
+        reason="provider_event_reconciled",
+        payload={"operations": [op.operation_id for op in operations]},
+    )
+    session.flush()
+    return {"reconciled": True, "status": status}
+
+
 def resume_task(session: Session, ctx: AuthContext, task_id: str) -> dict:
     task = repo.get_task(session, ctx, task_id)
     if task.status in ("succeeded", "cancelled", "failed"):

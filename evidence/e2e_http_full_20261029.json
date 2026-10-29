@@ -1,0 +1,4036 @@
+{
+  "schema_version": "1.0",
+  "kind": "finpilot.e2e_http_smoke",
+  "generated_at": "2026-10-29T10:01:47Z",
+  "started_at": "2026-10-29T10:00:54Z",
+  "base_url": "http://127.0.0.1:58000",
+  "scene_filter": null,
+  "owner_user": "user_demo_01",
+  "other_user": "user_demo_02",
+  "preflight": {
+    "http": 200,
+    "status": "ok",
+    "mode": "mock",
+    "database_ok": true,
+    "adapters": [
+      "bank_sandbox_local",
+      "bank_sandbox_v1",
+      "merchant_sandbox_local",
+      "merchant_sandbox_v1"
+    ]
+  },
+  "preflight_error": null,
+  "summary": {
+    "total_cases": 35,
+    "passed": 35,
+    "failed": 0,
+    "passed_cases": [
+      "S1-normal",
+      "S1-missing",
+      "S1-conflict",
+      "S1-negation",
+      "S1-duplicate",
+      "S1-cross-user",
+      "S2-normal",
+      "S2-missing",
+      "S2-cross-user-request",
+      "S2-duplicate",
+      "S2-cross-user",
+      "S3-normal",
+      "S3-assessment",
+      "S3-purchase",
+      "S3-missing",
+      "S3-conflict",
+      "S3-duplicate",
+      "S3-cross-user",
+      "S4-normal",
+      "S4-query",
+      "S4-apply-dev",
+      "S4-missing",
+      "S4-conflict",
+      "S4-duplicate",
+      "S4-cross-user",
+      "S5-normal",
+      "S5-missing",
+      "S5-conflict",
+      "S5-duplicate",
+      "S5-cross-user",
+      "S6-normal",
+      "S6-missing",
+      "S6-conflict",
+      "S6-duplicate",
+      "S6-cross-user"
+    ],
+    "failed_cases": [],
+    "assertions_total": 242,
+    "assertions_passed": 232,
+    "assertions_failed": 0,
+    "assertions_skipped": 10
+  },
+  "cases": [
+    {
+      "scene": "S1",
+      "case": "S1-normal",
+      "title": "正常路径：储蓄卡转账 250 元（确认 + 必要时 TOTP）",
+      "message": "请从储蓄卡给李四转账250元，备注“上周房租垫付”。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_06e679ec00a147ed9c89",
+        "plan_id": "plan_74e6e94306534c038475",
+        "scope_hash": "0088e80e852ad457593594f6a85c4f48caa03860bd1fd4228fa4647f509add22",
+        "required_level": "YELLOW",
+        "plan_feasible": true,
+        "task_status": "succeeded",
+        "challenge_required": false,
+        "confirm_http": 200,
+        "bank_advance_http": 200,
+        "bank_advance_delivered": [
+          true,
+          true
+        ],
+        "task_status_after_callback": "succeeded",
+        "operation_count": 1,
+        "operation_statuses": [
+          "succeeded"
+        ],
+        "operation_status": "succeeded",
+        "operation_error_code": null,
+        "provider_order_ref": "pb_74cf56aae1a941a6b52b",
+        "receipt_id": "b8a46e577c3c4788ae8522bf1fa36577",
+        "operation_amount_minor": 25000,
+        "savings_delta_minor": -25000
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "转账按分级授权（YELLOW 或 RED）",
+          "ok": true,
+          "detail": "required_level=YELLOW"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded, result={\"operations\": [\"op_task_06e679ec00a147ed9c89_transfer\"], \"generated_at\": \"2026-10-29T10:01:10.778775+00:00\", \"reconcil…"
+        },
+        {
+          "name": "恰好一个转账 operation",
+          "ok": true,
+          "detail": "tools=['transfer.submit']"
+        },
+        {
+          "name": "转账 operation 状态 succeeded",
+          "ok": true,
+          "detail": "statuses=['succeeded']"
+        },
+        {
+          "name": "资金/业务效果有回执（receipt 或 provider_ref）",
+          "ok": true,
+          "detail": "receipt=True, provider_ref=pb_74cf56aae1a941a6b52b, op_status=succeeded, error_code=None"
+        },
+        {
+          "name": "转账金额 25000 分",
+          "ok": true,
+          "detail": "amount_minor=25000"
+        },
+        {
+          "name": "储蓄卡余额恰好减少 25000 分（只发生一次）",
+          "ok": true,
+          "detail": "delta=-25000"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 7.0,
+          "note": "转账前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 23.6,
+          "note": "请从储蓄卡给李四转账250元，备注“上周房租垫付”。",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_74e6e94306534c038475/confirm",
+          "http": 200,
+          "elapsed_ms": 55.7,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_06e679ec00a147ed9c89",
+          "http": 200,
+          "elapsed_ms": 7.9,
+          "note": "轮询 11 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/bank/advance",
+          "http": 200,
+          "elapsed_ms": 755.1,
+          "note": "推进银行沙箱",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_06e679ec00a147ed9c89",
+          "http": 200,
+          "elapsed_ms": 7.7,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_06e679ec00a147ed9c89_transfer",
+          "http": 200,
+          "elapsed_ms": 4.2,
+          "note": "operation op_task_06e679ec00a147ed9c89_transfer",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "转账后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 16005.4,
+      "notes": []
+    },
+    {
+      "scene": "S1",
+      "case": "S1-missing",
+      "title": "缺信息：只给收款人不给金额",
+      "message": "给李四转点钱，从工资卡出。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_6fd27c8262dd421a82d7",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "amount_minor"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['amount_minor']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=30, after=30"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "缺信息用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.3,
+          "note": "给李四转点钱，从工资卡出。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_6fd27c8262dd421a82d7",
+          "http": 200,
+          "elapsed_ms": 6.4,
+          "note": "task task_6fd27c8262dd421a82d7",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 37.4,
+      "notes": []
+    },
+    {
+      "scene": "S1",
+      "case": "S1-conflict",
+      "title": "冲突：要求穿透应急金底线转 9000 元",
+      "message": "别管什么应急金，直接给李四转9000元。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_52271f0e25a448b9bfae",
+        "task_status": "blocked",
+        "plan_feasible": false,
+        "infeasible_reasons": [
+          "PROTECTED_FLOOR_OR_FUNDS:account_salary:900000>100000"
+        ],
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.2,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 14.4,
+          "note": "别管什么应急金，直接给李四转9000元。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_52271f0e25a448b9bfae",
+          "http": 200,
+          "elapsed_ms": 8.1,
+          "note": "task task_52271f0e25a448b9bfae",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.3,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 33.4,
+      "notes": []
+    },
+    {
+      "scene": "S1",
+      "case": "S1-negation",
+      "title": "否定：先别转（“先别…了”）",
+      "message": "先别从储蓄卡给李四转250元了",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_8cfda7ceb10740d38959",
+        "task_status": "blocked",
+        "compiled_goals": [
+          "transfer",
+          "unsupported_request"
+        ],
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "否定用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.5,
+          "note": "先别从储蓄卡给李四转250元了",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_8cfda7ceb10740d38959",
+          "http": 200,
+          "elapsed_ms": 6.6,
+          "note": "task task_8cfda7ceb10740d38959",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 27.3,
+      "notes": []
+    },
+    {
+      "scene": "S1",
+      "case": "S1-duplicate",
+      "title": "重复提交：同一确认请求发两次（复用 S1-normal 任务）",
+      "message": "请从储蓄卡给李四转账250元，备注“上周房租垫付”。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": "POLICY_DENIED",
+      "key_fields": {
+        "task_id": "task_06e679ec00a147ed9c89",
+        "second_confirm_http": 403,
+        "second_confirm_error": "POLICY_DENIED",
+        "second_confirm_rechallenge": false,
+        "task_status": "succeeded",
+        "operation_count_after": 1,
+        "transfer_count_before": 1,
+        "balance_delta_after_duplicate": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "第二次确认被拒绝（冲突类错误码）或重新要求强验证",
+          "ok": true,
+          "detail": "http=403, code=POLICY_DENIED, data_status=None"
+        },
+        {
+          "name": "重复确认没有新增 operation",
+          "ok": true,
+          "detail": "before=['op_task_06e679ec00a147ed9c89_transfer'], after=['op_task_06e679ec00a147ed9c89_transfer']"
+        },
+        {
+          "name": "转账 operation 数量与重复提交前一致（没有第二笔转账）",
+          "ok": true,
+          "detail": "before=1, after=1"
+        },
+        {
+          "name": "重复确认没有造成第二次扣款",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_06e679ec00a147ed9c89",
+          "http": 200,
+          "elapsed_ms": 7.2,
+          "note": "task task_06e679ec00a147ed9c89",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "重复确认前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_74e6e94306534c038475/confirm",
+          "http": 403,
+          "elapsed_ms": 6.6,
+          "note": "第二次确认（重复提交）",
+          "error": "POLICY_DENIED"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_06e679ec00a147ed9c89",
+          "http": 200,
+          "elapsed_ms": 8.7,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.9,
+          "note": "重复确认后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 44.5,
+      "notes": []
+    },
+    {
+      "scene": "S1",
+      "case": "S1-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的 task/operation",
+      "message": "请从储蓄卡给李四转账250元，备注“上周房租垫付”。",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_06e679ec00a147ed9c89",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ]
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_06e679ec00a147ed9c89",
+          "http": 403,
+          "elapsed_ms": 3.7,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_06e679ec00a147ed9c89_transfer",
+          "http": 403,
+          "elapsed_ms": 3.5,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/receipts/b8a46e577c3c4788ae8522bf1fa36577",
+          "http": 403,
+          "elapsed_ms": 4.8,
+          "note": "user_demo_02 读取 user_demo_01 的回执",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_74e6e94306534c038475/confirm",
+          "http": 403,
+          "elapsed_ms": 4.0,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.1,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "user_demo_02 的账户",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 24.8,
+      "notes": []
+    },
+    {
+      "scene": "S2",
+      "case": "S2-normal",
+      "title": "正常路径：上月账单月报（只读，可核验 domain_result）",
+      "message": "帮我看看上个月花了多少钱，分个类。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_4cf973b2512d40b8ae17",
+        "plan_id": "plan_f2c94d21deae4f6980ee",
+        "scope_hash": "14e7cbc1bf0b46063e5cfb3d1f2984620d0910e4dff3fa9a0ba2edb9b1a34863",
+        "required_level": "GREEN",
+        "expected_period": {
+          "label": "2026年9月",
+          "anchor": "2026-09"
+        },
+        "task_status": "succeeded",
+        "operation_count": 1,
+        "domain_result_type": "bill_report",
+        "domain_result_shape": "wrapped",
+        "domain_result_keys": [
+          "data",
+          "source",
+          "type",
+          "version",
+          "warnings"
+        ],
+        "report_period": {
+          "end": "2026-10-01T00:00:00+08:00",
+          "kind": "month",
+          "label": "2026年9月",
+          "start": "2026-09-01T00:00:00+08:00",
+          "anchor": "2026-09",
+          "boundary": "start_closed_end_open",
+          "start_business_day": "2026-09-01",
+          "previous_year_period": {
+            "end": "2025-10-01T00:00:00+08:00",
+            "label": "2025年9月",
+            "start": "2025-09-01T00:00:00+08:00"
+          },
+          "end_business_day_exclusive": "2026-10-01"
+        },
+        "report_as_of": "2026-10-29T18:01:11+08:00",
+        "report_empty": true,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 bill.report operation",
+          "ok": true,
+          "detail": "tools=['bill.report']"
+        },
+        {
+          "name": "只读结果可核验（operation.domain_result 非空）",
+          "ok": true,
+          "detail": "shape=wrapped, type=bill_report, keys=['data', 'source', 'type', 'version', 'warnings']"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "只读计划不产生 provider 回执，按实现以 domain_result 作为可核验结果"
+        },
+        {
+          "name": "报表账期与请求一致（上月）",
+          "ok": true,
+          "detail": "label=2026年9月, anchor=2026-09, expected=2026年9月/2026-09"
+        },
+        {
+          "name": "报表注明数据截至时间",
+          "ok": true,
+          "detail": "as_of=2026-10-29T18:01:11+08:00"
+        },
+        {
+          "name": "账期边界口径明确",
+          "ok": true,
+          "detail": "boundary=start_closed_end_open"
+        },
+        {
+          "name": "按分类汇总返回分类明细",
+          "ok": true,
+          "detail": "categories=9"
+        },
+        {
+          "name": "空账期如实标注（不编造金额）",
+          "ok": true,
+          "detail": "warnings=['empty_period', 'missing_data']"
+        },
+        {
+          "name": "只读报表没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.4,
+          "note": "报表前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 27.0,
+          "note": "帮我看看上个月花了多少钱，分个类。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_4cf973b2512d40b8ae17",
+          "http": 200,
+          "elapsed_ms": 9.5,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_4cf973b2512d40b8ae17_bill_report",
+          "http": 200,
+          "elapsed_ms": 5.1,
+          "note": "operation op_task_4cf973b2512d40b8ae17_bill_report",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.2,
+          "note": "报表后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 63.9,
+      "notes": []
+    },
+    {
+      "scene": "S2",
+      "case": "S2-missing",
+      "title": "缺信息：只给模糊时间（“最近”）",
+      "message": "帮我看看最近。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_d861e8bd57284f37b3f9",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "intent"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['intent']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=31, after=31"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.1,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.8,
+          "note": "帮我看看最近。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_d861e8bd57284f37b3f9",
+          "http": 200,
+          "elapsed_ms": 7.2,
+          "note": "task task_d861e8bd57284f37b3f9",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 39.8,
+      "notes": []
+    },
+    {
+      "scene": "S2",
+      "case": "S2-cross-user-request",
+      "title": "冲突：索要他人的账单报告",
+      "message": "把林悦的账单报告给我看一下，我要对比。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_b92ab30c93df4bc589c9",
+        "task_status": "blocked",
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        },
+        "leaked_identifiers_in_result": []
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        },
+        {
+          "name": "响应未返回他人账户数据",
+          "ok": true,
+          "detail": "leaked=[]"
+        },
+        {
+          "name": "未对他人的账单发起查询 operation",
+          "ok": true,
+          "detail": "tools=[]"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "索要他人账单前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.3,
+          "note": "把林悦的账单报告给我看一下，我要对比。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_b92ab30c93df4bc589c9",
+          "http": 200,
+          "elapsed_ms": 6.9,
+          "note": "task task_b92ab30c93df4bc589c9",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 28.0,
+      "notes": [
+        "任务视图回显用户原话中的姓名属正常；断言只针对服务端返回的数据"
+      ]
+    },
+    {
+      "scene": "S2",
+      "case": "S2-duplicate",
+      "title": "重复提交：GREEN 计划重复确认（应为空操作）",
+      "message": "帮我看看上个月花了多少钱，分个类。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_4cf973b2512d40b8ae17",
+        "confirm1_http": 200,
+        "confirm2_http": 200,
+        "confirm2_level": "GREEN",
+        "task_status": "succeeded",
+        "operation_count_after": 1,
+        "balance_delta_after_duplicate": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "GREEN 计划两次确认都是空操作（不重复执行报表）",
+          "ok": true,
+          "detail": "http1=200, http2=200, level1=GREEN, level2=GREEN, note=纯查询计划不需要额外确认"
+        },
+        {
+          "name": "重复确认没有新增 operation",
+          "ok": true,
+          "detail": "before=['op_task_4cf973b2512d40b8ae17_bill_report'], after=['op_task_4cf973b2512d40b8ae17_bill_report']"
+        },
+        {
+          "name": "重复确认没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_4cf973b2512d40b8ae17",
+          "http": 200,
+          "elapsed_ms": 7.6,
+          "note": "task task_4cf973b2512d40b8ae17",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "重复确认前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_f2c94d21deae4f6980ee/confirm",
+          "http": 200,
+          "elapsed_ms": 3.6,
+          "note": "确认 #1",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_f2c94d21deae4f6980ee/confirm",
+          "http": 200,
+          "elapsed_ms": 3.5,
+          "note": "确认 #2（重复提交）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_4cf973b2512d40b8ae17",
+          "http": 200,
+          "elapsed_ms": 8.3,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "重复确认后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 43.0,
+      "notes": [
+        "GREEN 计划无需确认，confirm 是文档化空操作；因此以“零新增 operation、零余额变化”作为重复提交断言"
+      ]
+    },
+    {
+      "scene": "S2",
+      "case": "S2-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的账单任务/operation",
+      "message": "帮我看看上个月花了多少钱，分个类。",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_4cf973b2512d40b8ae17",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ]
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_4cf973b2512d40b8ae17",
+          "http": 403,
+          "elapsed_ms": 3.4,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_4cf973b2512d40b8ae17_bill_report",
+          "http": 403,
+          "elapsed_ms": 3.8,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_f2c94d21deae4f6980ee/confirm",
+          "http": 403,
+          "elapsed_ms": 4.0,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.2,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.3,
+          "note": "user_demo_02 的账户",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 20.9,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-normal",
+      "title": "正常路径：产品比较（只读，含预算）",
+      "message": "比较理财产品，预算1000元",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_63279dd9d17146a191c5",
+        "plan_id": "plan_409afd872c4e4c02b350",
+        "scope_hash": "347f32e0748f2787778036241f310cd8ab3b503c134a1d2c7bb1132df0c3b338",
+        "required_level": "GREEN",
+        "task_status": "succeeded",
+        "operation_count": 1,
+        "domain_result_type": "wealth_compare",
+        "domain_result_shape": "wrapped",
+        "domain_result_keys": [
+          "data",
+          "source",
+          "type",
+          "version",
+          "warnings"
+        ],
+        "compared_products": 5,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 wealth.compare operation",
+          "ok": true,
+          "detail": "tools=['wealth.compare']"
+        },
+        {
+          "name": "只读结果可核验（operation.domain_result 非空）",
+          "ok": true,
+          "detail": "shape=wrapped, type=wealth_compare, keys=['data', 'source', 'type', 'version', 'warnings']"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "只读计划不产生 provider 回执，按实现以 domain_result 作为可核验结果"
+        },
+        {
+          "name": "返回产品比较明细",
+          "ok": true,
+          "detail": "products=5"
+        },
+        {
+          "name": "可投/不可投计数与明细一致",
+          "ok": true,
+          "detail": "eligible=4, excluded=1, products=5"
+        },
+        {
+          "name": "只读比较没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.8,
+          "note": "比较前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 171.5,
+          "note": "比较理财产品，预算1000元",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_63279dd9d17146a191c5",
+          "http": 200,
+          "elapsed_ms": 9.7,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_63279dd9d17146a191c5_wealth_compare",
+          "http": 200,
+          "elapsed_ms": 5.7,
+          "note": "operation op_task_63279dd9d17146a191c5_wealth_compare",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.0,
+          "note": "比较后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 210.4,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-assessment",
+      "title": "风险测评：问卷提交出具测评，对话请求给出问卷指引",
+      "message": "我要为子女教育金做风险测评，问卷至少覆盖投资经验、损失承受能力、风险态度、期限、流动性和资金用途。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": null,
+      "error_code": null,
+      "key_fields": {
+        "questionnaire_version": "2026.10",
+        "question_count": 6,
+        "risk_level": "R3",
+        "score": 12,
+        "expires_at": "2027-10-29T10:01:11.410611+00:00",
+        "profile_id": "52138ee8d56248a0b033b697e0d88397",
+        "chat_task_id": "task_8f735114dc5247588906",
+        "chat_task_status": "blocked",
+        "chat_infeasible_reasons": [
+          "ASSESSMENT_REQUIRES_QUESTIONNAIRE"
+        ],
+        "chat_operation_count": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "问卷可获取且含 6 道题",
+          "ok": true,
+          "detail": "http=200, questions=6, code=None"
+        },
+        {
+          "name": "提交问卷后出具有效测评（等级 + 有效期）",
+          "ok": true,
+          "detail": "http=200, level=R3, expires_at=2027-10-29T10:01:11.410611+00:00, code=None"
+        },
+        {
+          "name": "同一份答案重复提交幂等（同一条测评）",
+          "ok": true,
+          "detail": "http=200, first=52138ee8d56248a0b033b697e0d88397, second=52138ee8d56248a0b033b697e0d88397"
+        },
+        {
+          "name": "测评档案可读回且等级一致",
+          "ok": true,
+          "detail": "http=200, level=R3"
+        },
+        {
+          "name": "对话请求停在 blocked 并给出问卷指引",
+          "ok": true,
+          "detail": "http=200, status=blocked, reasons=['ASSESSMENT_REQUIRES_QUESTIONNAIRE']"
+        },
+        {
+          "name": "指引包含提交问卷的动作",
+          "ok": true,
+          "detail": "alternatives=['submit_risk_questionnaire']"
+        },
+        {
+          "name": "没有产生任何 operation（更不得留下 dispatching 的孤儿操作）",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "风险测评没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        },
+        {
+          "name": "风险测评没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.3,
+          "note": "测评前余额",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/wealth/questionnaire",
+          "http": 200,
+          "elapsed_ms": 1.8,
+          "note": "取风险测评问卷",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 8.8,
+          "note": "提交问卷答案",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 5.0,
+          "note": "重复提交同一份答案",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 3.5,
+          "note": "读回测评档案",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 16.4,
+          "note": "我要为子女教育金做风险测评，问卷至少覆盖投资经验、损失承受能力、风险态度、期限、流动性和资金用途。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_8f735114dc5247588906",
+          "http": 200,
+          "elapsed_ms": 7.9,
+          "note": "task task_8f735114dc5247588906",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "测评后余额",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.3,
+          "note": "测评后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 61.0,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-purchase",
+      "title": "申购：储蓄卡申购活期宝 100 元（RED 强验证）",
+      "message": "用储蓄卡申购活期宝100元",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_7580d3c7f3134594bd5d",
+        "plan_id": "plan_e1baafaa45e548b19a3d",
+        "scope_hash": "b64fb198ef773e32d3f1549f8e5e264e6b788c8fbd0bf4dd2d68927f16501ab8",
+        "required_level": "RED",
+        "plan_feasible": true,
+        "infeasible_reasons": [],
+        "task_status": "succeeded",
+        "challenge_required": true,
+        "operation_count": 1,
+        "matched_order": {
+          "order_id": "00634d991c714f7c8d6ffd2e47f90c99",
+          "operation_id": "op_task_7580d3c7f3134594bd5d_wealth_purchase",
+          "product_id": "product_huoli",
+          "side": "purchase",
+          "amount_minor": 10000,
+          "status": "awaiting_confirmation",
+          "estimated_shares_e8": 0,
+          "confirmed_shares_e8": 0,
+          "expected_settlement_date": "2026-10-29"
+        },
+        "expected_delta_minor": -10000,
+        "savings_delta_minor": -10000
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "申购计划可行（产品可解析、适当性可判定）",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "申购任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 wealth.purchase operation",
+          "ok": true,
+          "detail": "tools=['wealth.purchase']"
+        },
+        {
+          "name": "产生可核验的理财订单（内部记账，无提供方回执）",
+          "ok": true,
+          "detail": "http=200, matched=[{'order_id': '00634d991c714f7c8d6ffd2e47f90c99', 'operation_id': 'op_task_7580d3c7f3134594bd5d_wealth_purchase', 'product_id': 'product_huoli', 'side': 'purchase', 'amount_minor': 10000, 'status': 'awaiting_confirmation', 'estimated_shares_e8': 0, 'confirmed_shares_e8': 0, 'expected_settlement_date': '2026-10-29'}]"
+        },
+        {
+          "name": "储蓄卡按申购金额+费用只扣一次",
+          "ok": true,
+          "detail": "delta=-10000, expected=-10000"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.7,
+          "note": "申购前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 17.7,
+          "note": "用储蓄卡申购活期宝100元",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_e1baafaa45e548b19a3d/confirm",
+          "http": 200,
+          "elapsed_ms": 12.2,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/challenges/chal_657e121b462a4a018c3e/verify",
+          "http": 200,
+          "elapsed_ms": 47.2,
+          "note": "TOTP 强验证（第 1 次）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_7580d3c7f3134594bd5d",
+          "http": 200,
+          "elapsed_ms": 8.0,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_7580d3c7f3134594bd5d_wealth_purchase",
+          "http": 200,
+          "elapsed_ms": 4.2,
+          "note": "operation op_task_7580d3c7f3134594bd5d_wealth_purchase",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/wealth/orders",
+          "http": 200,
+          "elapsed_ms": 4.7,
+          "note": "申购后理财订单",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "申购后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 114.8,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-missing",
+      "title": "缺信息：不给产品与金额",
+      "message": "我想买点理财，产品你随便挑。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_4e74e5d7483644ac83df",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "amount_minor"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['amount_minor']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=33, after=33"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.6,
+          "note": "我想买点理财，产品你随便挑。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_4e74e5d7483644ac83df",
+          "http": 200,
+          "elapsed_ms": 6.8,
+          "note": "task task_4e74e5d7483644ac83df",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.1,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 40.3,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-conflict",
+      "title": "冲突：自述 R2 却要直接买 R4 产品",
+      "message": "我的等级是R2，但我要买成长精选权益4号（R4），直接买。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_d9d9efccd8a2452cb0e6",
+        "task_status": "clarifying",
+        "plan_feasible": null,
+        "infeasible_reasons": null,
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=clarifying, blocked_reason=None"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.0,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.0,
+          "note": "我的等级是R2，但我要买成长精选权益4号（R4），直接买。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_d9d9efccd8a2452cb0e6",
+          "http": 200,
+          "elapsed_ms": 6.5,
+          "note": "task task_d9d9efccd8a2452cb0e6",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 27.1,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-duplicate",
+      "title": "重复提交：同一份问卷答案提交两次",
+      "message": "风险测评确认重复提交",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": null,
+      "error_code": null,
+      "key_fields": {
+        "second_profile_id": "52138ee8d56248a0b033b697e0d88397",
+        "http": 200,
+        "operations_total_before": 33,
+        "operations_total_after": 33,
+        "balance_delta_after_duplicate": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "重复提交返回同一条测评（幂等）",
+          "ok": true,
+          "detail": "http=200, first=52138ee8d56248a0b033b697e0d88397, second=52138ee8d56248a0b033b697e0d88397, code=None"
+        },
+        {
+          "name": "重复提交没有新增 operation",
+          "ok": true,
+          "detail": "before=33, after=33"
+        },
+        {
+          "name": "重复提交没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "重复提交前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 4.7,
+          "note": "再次提交同一份问卷答案",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "重复提交后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 26.7,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的理财任务/operation",
+      "message": "比较理财产品，预算1000元",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_63279dd9d17146a191c5",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ]
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_63279dd9d17146a191c5",
+          "http": 403,
+          "elapsed_ms": 3.5,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_63279dd9d17146a191c5_wealth_compare",
+          "http": 403,
+          "elapsed_ms": 4.1,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_409afd872c4e4c02b350/confirm",
+          "http": 403,
+          "elapsed_ms": 4.1,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.5,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "user_demo_02 的账户",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 20.9,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-normal",
+      "title": "正常路径：申请虚拟卡（确认后提交申请）",
+      "message": "帮我申请一张虚拟卡",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_84ffcee8a1f94e62a5fb",
+        "plan_id": "plan_21fff6c024144a56a531",
+        "scope_hash": "f63423e9165af271797970dfb5b2c8ae1b7e9369870b77f3e570afe6b1854822",
+        "required_level": "YELLOW",
+        "plan_steps": [
+          "card.apply"
+        ],
+        "task_status": "succeeded",
+        "challenge_required": false,
+        "operation_count": 1,
+        "application_id": "b2c45d64a3e84126b401e51e2971b0f0",
+        "application_status": "submitted",
+        "applications_delta": 1,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "编译为 card.apply",
+          "ok": true,
+          "detail": "steps=['card.apply']"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 card.apply operation",
+          "ok": true,
+          "detail": "tools=['card.apply']"
+        },
+        {
+          "name": "申请已提交且状态为 submitted",
+          "ok": true,
+          "detail": "application_id=b2c45d64a3e84126b401e51e2971b0f0, status=submitted, op_status=succeeded, error=None"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "卡申请是受理类写操作，由领域处理器落库，不产生 provider 回执"
+        },
+        {
+          "name": "卡申请条数恰好 +1（只提交一次）",
+          "ok": true,
+          "detail": "delta=1"
+        },
+        {
+          "name": "卡申请没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 17.1,
+          "note": "申请前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 7.4,
+          "note": "申请前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 16.9,
+          "note": "帮我申请一张虚拟卡",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_21fff6c024144a56a531/confirm",
+          "http": 200,
+          "elapsed_ms": 24.2,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_84ffcee8a1f94e62a5fb",
+          "http": 200,
+          "elapsed_ms": 8.5,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_84ffcee8a1f94e62a5fb_card_apply",
+          "http": 200,
+          "elapsed_ms": 4.3,
+          "note": "operation op_task_84ffcee8a1f94e62a5fb_card_apply",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.9,
+          "note": "申请后卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.9,
+          "note": "申请后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 98.6,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-query",
+      "title": "正常路径：查询我的卡片（只读）",
+      "message": "查看我的银行卡",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_b077689364444ba48af9",
+        "task_status": "succeeded",
+        "operation_count": 1,
+        "domain_result_type": "card_status",
+        "domain_result_shape": "wrapped",
+        "domain_result_keys": [
+          "data",
+          "source",
+          "type",
+          "version",
+          "warnings"
+        ],
+        "cards_returned": 2,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 card.status operation",
+          "ok": true,
+          "detail": "tools=['card.status']"
+        },
+        {
+          "name": "只读结果可核验（operation.domain_result 非空）",
+          "ok": true,
+          "detail": "shape=wrapped, type=card_status, keys=['data', 'source', 'type', 'version', 'warnings']"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "只读计划不产生 provider 回执，按实现以 domain_result 作为可核验结果"
+        },
+        {
+          "name": "返回本人卡片列表",
+          "ok": true,
+          "detail": "cards=2"
+        },
+        {
+          "name": "只读查询没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.1,
+          "note": "查询前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 26.0,
+          "note": "查看我的银行卡",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_b077689364444ba48af9",
+          "http": 200,
+          "elapsed_ms": 9.0,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_b077689364444ba48af9_card_status",
+          "http": 200,
+          "elapsed_ms": 4.4,
+          "note": "operation op_task_b077689364444ba48af9_card_status",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.1,
+          "note": "查询后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 99.6,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-apply-dev",
+      "title": "正常路径（dev 原始措辞）：申请绑定储蓄卡的虚拟卡，额度 2000 元",
+      "message": "帮我申请一张绑定储蓄卡的虚拟卡，申请额度2000元，申请成功只表示已提交。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_3d9df05da97f4a718adf",
+        "plan_steps": [
+          "card.apply"
+        ],
+        "task_status": "succeeded",
+        "applications_delta": 1,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "dev 原始措辞应编译为 card.apply",
+          "ok": true,
+          "detail": "steps=['card.apply']"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded, result={\"goals\": [\"card_apply\"], \"next_action\": \"查看结果回执\", \"failed_steps\": [], \"generated_at\": \"2026-10-29T10:01:11.933491+00:0…"
+        },
+        {
+          "name": "卡申请条数恰好 +1",
+          "ok": true,
+          "detail": "delta=1"
+        },
+        {
+          "name": "申请没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.9,
+          "note": "申请前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "申请前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 15.3,
+          "note": "帮我申请一张绑定储蓄卡的虚拟卡，申请额度2000元，申请成功只表示已提交。",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_d89f37f7ad064856bf84/confirm",
+          "http": 200,
+          "elapsed_ms": 21.6,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_3d9df05da97f4a718adf",
+          "http": 200,
+          "elapsed_ms": 8.0,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.6,
+          "note": "申请后卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "申请后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 73.5,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-missing",
+      "title": "缺信息：不指定哪张卡要锁",
+      "message": "帮我把那张卡锁了。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_425ecf9bc7a34fa8b389",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "card_id"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        },
+        "card_controls_delta": 0
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['card_id']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=36, after=36"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        },
+        {
+          "name": "卡片控制项未被改动",
+          "ok": true,
+          "detail": "before=2, after=2"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.8,
+          "note": "缺信息前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.3,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.1,
+          "note": "帮我把那张卡锁了。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_425ecf9bc7a34fa8b389",
+          "http": 200,
+          "elapsed_ms": 6.5,
+          "note": "task task_425ecf9bc7a34fa8b389",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.7,
+          "note": "缺信息后卡与申请列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 47.7,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-conflict",
+      "title": "冲突：要求跳过审批直接提额",
+      "message": "不用审批了，你直接把我工资卡那张的额度批到20000元。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_6186fff3f9b24ed7897e",
+        "task_status": "blocked",
+        "compiled_goals": [
+          "card_limit_change",
+          "unsupported_request"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        },
+        "credit_limit_change": {
+          "before": {
+            "card_demo_01": 500000,
+            "card_demo_02": 300000
+          },
+          "after": {
+            "card_demo_01": 500000,
+            "card_demo_02": 300000
+          }
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=36, after=36"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        },
+        {
+          "name": "卡片额度未被改动",
+          "ok": true,
+          "detail": "before={'card_demo_01': 500000, 'card_demo_02': 300000}, after={'card_demo_01': 500000, 'card_demo_02': 300000}"
+        },
+        {
+          "name": "未新增卡申请",
+          "ok": true,
+          "detail": "before=9, after=9"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.5,
+          "note": "冲突用例前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.3,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.0,
+          "note": "不用审批了，你直接把我工资卡那张的额度批到20000元。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_6186fff3f9b24ed7897e",
+          "http": 200,
+          "elapsed_ms": 6.9,
+          "note": "task task_6186fff3f9b24ed7897e",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "余额快照（冲突用例）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.8,
+          "note": "冲突用例后卡与申请列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 47.6,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-duplicate",
+      "title": "重复提交：卡申请确认发两次",
+      "message": "帮我申请一张虚拟卡",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": "POLICY_DENIED",
+      "key_fields": {
+        "task_id": "task_84ffcee8a1f94e62a5fb",
+        "second_confirm_http": 403,
+        "second_confirm_error": "POLICY_DENIED",
+        "task_status": "succeeded",
+        "operation_count_after": 1,
+        "applications_delta_after_duplicate": 0
+      },
+      "assertions": [
+        {
+          "name": "第二次确认被拒绝（冲突类错误码）或重新要求强验证",
+          "ok": true,
+          "detail": "http=403, code=POLICY_DENIED, data_status=None"
+        },
+        {
+          "name": "重复确认没有新增 operation",
+          "ok": true,
+          "detail": "before=['op_task_84ffcee8a1f94e62a5fb_card_apply'], after=['op_task_84ffcee8a1f94e62a5fb_card_apply']"
+        },
+        {
+          "name": "重复确认没有新增第二条卡申请",
+          "ok": true,
+          "detail": "delta=0"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_84ffcee8a1f94e62a5fb",
+          "http": 200,
+          "elapsed_ms": 7.9,
+          "note": "task task_84ffcee8a1f94e62a5fb",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.6,
+          "note": "重复确认前卡与申请列表",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_21fff6c024144a56a531/confirm",
+          "http": 403,
+          "elapsed_ms": 6.8,
+          "note": "第二次确认（重复提交）",
+          "error": "POLICY_DENIED"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_84ffcee8a1f94e62a5fb",
+          "http": 200,
+          "elapsed_ms": 9.1,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 5.1,
+          "note": "重复确认后卡与申请列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 42.6,
+      "notes": []
+    },
+    {
+      "scene": "S4",
+      "case": "S4-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的卡任务/operation",
+      "message": "帮我申请一张虚拟卡",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_84ffcee8a1f94e62a5fb",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ],
+        "other_user_card_ids": []
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的卡片",
+          "ok": true,
+          "detail": "overlap=[]"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_84ffcee8a1f94e62a5fb",
+          "http": 403,
+          "elapsed_ms": 4.1,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_84ffcee8a1f94e62a5fb_card_apply",
+          "http": 403,
+          "elapsed_ms": 3.7,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_21fff6c024144a56a531/confirm",
+          "http": 403,
+          "elapsed_ms": 4.0,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.2,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.7,
+          "note": "user_demo_02 的账户",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/cards",
+          "http": 200,
+          "elapsed_ms": 4.1,
+          "note": "user_demo_02 的卡片列表",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 31.3,
+      "notes": []
+    },
+    {
+      "scene": "S5",
+      "case": "S5-normal",
+      "title": "正常路径：订阅查询（YELLOW 需确认，区分商户合同与银行代扣）",
+      "message": "列出我的全部订阅：商户、金额、周期、下次扣费日与合同状态。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_f11f5d37b31e4d53a0c2",
+        "plan_id": "plan_713104a3da19416ea3d3",
+        "scope_hash": "51becf451b3ab44ab53b75f2058b24165749d7222ba9b31f49ad55d1dc615a1e",
+        "required_level": "YELLOW",
+        "task_status": "succeeded",
+        "challenge_required": false,
+        "operation_count": 1,
+        "domain_result_type": null,
+        "domain_result_shape": "flat",
+        "domain_result_keys": [
+          "contract_count",
+          "count",
+          "detection",
+          "inferred_count",
+          "observed_at",
+          "policy",
+          "required_level",
+          "requires_confirmation",
+          "subscriptions",
+          "user_id"
+        ],
+        "subscription_count": 2,
+        "contract_count": 2,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "订阅查询为 YELLOW（保留官方例外）",
+          "ok": true,
+          "detail": "required_level=YELLOW"
+        },
+        {
+          "name": "未确认前不执行查询（awaiting_authorization）",
+          "ok": true,
+          "detail": "status=awaiting_authorization"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 subscription.list operation",
+          "ok": true,
+          "detail": "tools=['subscription.list']"
+        },
+        {
+          "name": "只读结果可核验（operation.domain_result 非空）",
+          "ok": true,
+          "detail": "shape=flat, type=None, keys=['contract_count', 'count', 'detection', 'inferred_count', 'observed_at', 'policy', 'required_level', 'requires_confirmation', 'subscriptions', 'user_id']"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "只读计划不产生 provider 回执，按实现以 domain_result 作为可核验结果"
+        },
+        {
+          "name": "查询结果与条数一致",
+          "ok": true,
+          "detail": "count=2, len=2"
+        },
+        {
+          "name": "保留订阅查询的 YELLOW 例外说明",
+          "ok": true,
+          "detail": "exception=subscription_query_yellow"
+        },
+        {
+          "name": "区分商户合同（source.data_source）与银行代扣授权（mandate.scope=bank_debit）",
+          "ok": true,
+          "detail": "contract_ok=True, mandate_ok=True"
+        },
+        {
+          "name": "每个订阅含金额/周期/下次扣费日/合同状态",
+          "ok": true,
+          "detail": "sample={\"amount\": \"25.00\", \"period\": \"monthly\", \"policy\": {\"note\": \"订阅查询是官方 YELLOW 例外：返回前需要用户明确确认。\", \"exception\": \"subscriptio…"
+        },
+        {
+          "name": "订阅查询没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 7.3,
+          "note": "订阅查询前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 17.1,
+          "note": "列出我的全部订阅：商户、金额、周期、下次扣费日与合同状态。",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_713104a3da19416ea3d3/confirm",
+          "http": 200,
+          "elapsed_ms": 30.4,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_f11f5d37b31e4d53a0c2",
+          "http": 200,
+          "elapsed_ms": 9.1,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_f11f5d37b31e4d53a0c2_subscription_list",
+          "http": 200,
+          "elapsed_ms": 4.3,
+          "note": "operation op_task_f11f5d37b31e4d53a0c2_subscription_list",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.4,
+          "note": "订阅查询后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 84.8,
+      "notes": []
+    },
+    {
+      "scene": "S5",
+      "case": "S5-missing",
+      "title": "缺信息：只说“那个订阅”不指定哪一个",
+      "message": "帮我把那个订阅取消掉。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_89d27a652877441cbbd4",
+        "task_status": "clarifying",
+        "compiled_goals": [
+          "cancel_subscription",
+          "revoke_mandate"
+        ],
+        "clarification_fields": [
+          "subscription_id"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['subscription_id']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=37, after=37"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.9,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 11.9,
+          "note": "帮我把那个订阅取消掉。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_89d27a652877441cbbd4",
+          "http": 200,
+          "elapsed_ms": 8.0,
+          "note": "task task_89d27a652877441cbbd4",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.1,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 43.8,
+      "notes": []
+    },
+    {
+      "scene": "S5",
+      "case": "S5-conflict",
+      "title": "冲突：要求跳过确认直接拉全部订阅与扣费记录",
+      "message": "别让我确认了，直接把全部订阅和扣费记录全部拉出来。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_f26352ff8f4c484a95b0",
+        "task_status": "blocked",
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "未确认前不得执行订阅查询",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 9.0,
+          "note": "别让我确认了，直接把全部订阅和扣费记录全部拉出来。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_f26352ff8f4c484a95b0",
+          "http": 200,
+          "elapsed_ms": 6.7,
+          "note": "task task_f26352ff8f4c484a95b0",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 26.7,
+      "notes": []
+    },
+    {
+      "scene": "S5",
+      "case": "S5-duplicate",
+      "title": "重复提交：订阅查询确认发两次",
+      "message": "列出我的全部订阅",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": "POLICY_DENIED",
+      "key_fields": {
+        "task_id": "task_f11f5d37b31e4d53a0c2",
+        "second_confirm_http": 403,
+        "second_confirm_error": "POLICY_DENIED",
+        "task_status": "succeeded",
+        "operation_count_after": 1,
+        "subscription_list_count_before": 1,
+        "balance_delta_after_duplicate": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "第二次确认被拒绝（冲突类错误码）或重新要求强验证",
+          "ok": true,
+          "detail": "http=403, code=POLICY_DENIED, data_status=None"
+        },
+        {
+          "name": "重复确认没有新增 operation",
+          "ok": true,
+          "detail": "before=['op_task_f11f5d37b31e4d53a0c2_subscription_list'], after=['op_task_f11f5d37b31e4d53a0c2_subscription_list']"
+        },
+        {
+          "name": "订阅查询 operation 数量与重复提交前一致",
+          "ok": true,
+          "detail": "before=1, after=1"
+        },
+        {
+          "name": "重复确认没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_f11f5d37b31e4d53a0c2",
+          "http": 200,
+          "elapsed_ms": 7.7,
+          "note": "task task_f11f5d37b31e4d53a0c2",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.2,
+          "note": "重复确认前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_713104a3da19416ea3d3/confirm",
+          "http": 403,
+          "elapsed_ms": 6.8,
+          "note": "第二次确认（重复提交）",
+          "error": "POLICY_DENIED"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_f11f5d37b31e4d53a0c2",
+          "http": 200,
+          "elapsed_ms": 9.0,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.5,
+          "note": "重复确认后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 44.4,
+      "notes": []
+    },
+    {
+      "scene": "S5",
+      "case": "S5-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的订阅任务/operation",
+      "message": "列出我的全部订阅",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_f11f5d37b31e4d53a0c2",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ],
+        "other_user_subscription_items": 0
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        },
+        {
+          "name": "user_demo_02 的订阅入口不返回他人订阅",
+          "ok": true,
+          "detail": "items=0"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_f11f5d37b31e4d53a0c2",
+          "http": 403,
+          "elapsed_ms": 3.6,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_f11f5d37b31e4d53a0c2_subscription_list",
+          "http": 403,
+          "elapsed_ms": 3.8,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_713104a3da19416ea3d3/confirm",
+          "http": 403,
+          "elapsed_ms": 4.1,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.3,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.9,
+          "note": "user_demo_02 的账户",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/subscriptions",
+          "http": 200,
+          "elapsed_ms": 3.2,
+          "note": "user_demo_02 的订阅入口",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 24.1,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-normal",
+      "title": "正常路径：生日鲜花+蛋糕（多商户、含费用、指定日期，RED 强验证）",
+      "message": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_dfa78126c9e54752a721",
+        "plan_id": "plan_6a59a892beaf41848d88",
+        "scope_hash": "c888be2c48e4a2df8781b10c775059dd406c7593fc60d3c7db02bc4e45004f6f",
+        "required_level": "RED",
+        "budget_minor": 80000,
+        "delivery_deadline": "2026-10-31T09:00:00+08:00",
+        "merchant_count": 2,
+        "planned_total_minor": 58500,
+        "task_status": "succeeded",
+        "challenge_required": true,
+        "merchant_advance": [
+          {
+            "operation_id": "op_task_dfa78126c9e54752a721_book_cake",
+            "http": 200,
+            "deliveries": [
+              true,
+              true
+            ]
+          },
+          {
+            "operation_id": "op_task_dfa78126c9e54752a721_book_flowers",
+            "http": 200,
+            "deliveries": [
+              true,
+              true
+            ]
+          }
+        ],
+        "task_status_after_callback": "succeeded",
+        "operation_count": 4,
+        "book_operation_count": 2,
+        "operation_statuses": [
+          [
+            "merchant.quote",
+            "succeeded"
+          ],
+          [
+            "merchant.quote",
+            "succeeded"
+          ],
+          [
+            "merchant.book",
+            "succeeded"
+          ],
+          [
+            "merchant.book",
+            "succeeded"
+          ]
+        ],
+        "operation_status": "succeeded",
+        "operation_error_code": null,
+        "provider_order_ref": "pm_e46ec37061c24687be8e",
+        "receipt_id": "793f351981024986b3f6dec33b374a58",
+        "provider_refs": [
+          "pm_5cfc51c9297a4e739b84",
+          "pm_e46ec37061c24687be8e"
+        ],
+        "expected_delta_minor": -58500,
+        "savings_delta_minor": -58500
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "多商户：至少两个不同商户的预订步骤",
+          "ok": true,
+          "detail": "merchants=['merchant_huayuxuan', 'merchant_tianxin']"
+        },
+        {
+          "name": "预算含费用：计划总额不超过 80000 分",
+          "ok": true,
+          "detail": "budget=80000, total=58500"
+        },
+        {
+          "name": "日期：目标含明确交付截止时间",
+          "ok": true,
+          "detail": "deadline=2026-10-31T09:00:00+08:00"
+        },
+        {
+          "name": "付费商户预订按 RED 处理",
+          "ok": true,
+          "detail": "required_level=RED"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded, result={\"operations\": [\"op_task_dfa78126c9e54752a721_quote_cake\", \"op_task_dfa78126c9e54752a721_quote_flowers\", \"op_task_dfa78…"
+        },
+        {
+          "name": "正好两笔商户预订 operation",
+          "ok": true,
+          "detail": "count=2"
+        },
+        {
+          "name": "两笔预订均成功",
+          "ok": true,
+          "detail": "statuses=['succeeded', 'succeeded']"
+        },
+        {
+          "name": "资金/业务效果有回执（receipt 或 provider_ref）",
+          "ok": true,
+          "detail": "receipt=True, provider_ref=pm_5cfc51c9297a4e739b84, op_status=succeeded, error_code=None"
+        },
+        {
+          "name": "资金/业务效果有回执（receipt 或 provider_ref）",
+          "ok": true,
+          "detail": "receipt=True, provider_ref=pm_e46ec37061c24687be8e, op_status=succeeded, error_code=None"
+        },
+        {
+          "name": "两笔预订有各自可核验的提供方引用",
+          "ok": true,
+          "detail": "refs=['pm_e46ec37061c24687be8e', 'pm_5cfc51c9297a4e739b84'], op_statuses=['succeeded', 'succeeded']"
+        },
+        {
+          "name": "储蓄卡按实际捕获金额只扣一次（含费用）",
+          "ok": true,
+          "detail": "delta=-58500, expected=-58500"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.2,
+          "note": "预订前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 20.2,
+          "note": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_6a59a892beaf41848d88/confirm",
+          "http": 200,
+          "elapsed_ms": 7.8,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/challenges/chal_730d4aed5a9647f19f8a/verify",
+          "http": 200,
+          "elapsed_ms": 122.8,
+          "note": "TOTP 强验证（第 1 次）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_dfa78126c9e54752a721",
+          "http": 200,
+          "elapsed_ms": 8.2,
+          "note": "轮询 11 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/merchant/advance",
+          "http": 200,
+          "elapsed_ms": 715.7,
+          "note": "推进商户沙箱",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/merchant/advance",
+          "http": 200,
+          "elapsed_ms": 546.9,
+          "note": "推进商户沙箱",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_dfa78126c9e54752a721",
+          "http": 200,
+          "elapsed_ms": 8.2,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_dfa78126c9e54752a721_book_cake",
+          "http": 200,
+          "elapsed_ms": 4.2,
+          "note": "operation op_task_dfa78126c9e54752a721_book_cake",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_dfa78126c9e54752a721_book_flowers",
+          "http": 200,
+          "elapsed_ms": 4.0,
+          "note": "operation op_task_dfa78126c9e54752a721_book_flowers",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "预订后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 35005.0,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-missing",
+      "title": "缺信息：不给预算与日期",
+      "message": "下周朋友生日，帮我安排好鲜花和蛋糕。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_1b12ce0d038b4fb69b05",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "total_budget_minor",
+          "delivery_deadline",
+          "confirm_purchase_intent"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['total_budget_minor', 'delivery_deadline', 'confirm_purchase_intent']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=41, after=41"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.8,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 15.0,
+          "note": "下周朋友生日，帮我安排好鲜花和蛋糕。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_1b12ce0d038b4fb69b05",
+          "http": 200,
+          "elapsed_ms": 7.3,
+          "note": "task task_1b12ce0d038b4fb69b05",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 46.2,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-conflict",
+      "title": "冲突：要从应急金里拿钱办活动",
+      "message": "预算不够就从8000元应急金里拿1500元，先办活动要紧。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_c0f903659ff747aea065",
+        "task_status": "clarifying",
+        "plan_feasible": null,
+        "infeasible_reasons": null,
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=clarifying, blocked_reason=None"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.9,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 8.8,
+          "note": "预算不够就从8000元应急金里拿1500元，先办活动要紧。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_c0f903659ff747aea065",
+          "http": 200,
+          "elapsed_ms": 7.1,
+          "note": "task task_c0f903659ff747aea065",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 27.6,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-duplicate",
+      "title": "重复提交：生日计划确认发两次",
+      "message": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_dfa78126c9e54752a721",
+        "second_confirm_http": 200,
+        "second_confirm_error": null,
+        "second_confirm_rechallenge": true,
+        "task_status": "succeeded",
+        "operation_count_after": 4,
+        "book_operation_count_after": 2,
+        "balance_delta_after_duplicate": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "第二次确认被拒绝（冲突类错误码）或重新要求强验证",
+          "ok": true,
+          "detail": "http=200, code=None, data_status=challenge_required"
+        },
+        {
+          "name": "重复确认没有新增 operation",
+          "ok": true,
+          "detail": "before=['op_task_dfa78126c9e54752a721_book_cake', 'op_task_dfa78126c9e54752a721_book_flowers', 'op_task_dfa78126c9e54752a721_quote_cake', 'op_task_dfa78126c9e54752a721_quote_flowers'], after=['op_task_dfa78126c9e54752a721_book_cake', 'op_task_dfa78126c9e54752a721_book_flowers', 'op_task_dfa78126c9e54752a721_quote_cake', 'op_task_dfa78126c9e54752a721_quote_flowers']"
+        },
+        {
+          "name": "商户预订 operation 数量与重复提交前一致（未重复下单）",
+          "ok": true,
+          "detail": "before=2, after=2"
+        },
+        {
+          "name": "重复确认没有二次扣款",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_dfa78126c9e54752a721",
+          "http": 200,
+          "elapsed_ms": 7.7,
+          "note": "task task_dfa78126c9e54752a721",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "重复确认前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_6a59a892beaf41848d88/confirm",
+          "http": 200,
+          "elapsed_ms": 6.8,
+          "note": "第二次确认（重复提交）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_dfa78126c9e54752a721",
+          "http": 200,
+          "elapsed_ms": 7.6,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.9,
+          "note": "重复确认后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 41.5,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的跨场景任务/operation",
+      "message": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_dfa78126c9e54752a721",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ]
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_dfa78126c9e54752a721",
+          "http": 403,
+          "elapsed_ms": 3.4,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_dfa78126c9e54752a721_book_cake",
+          "http": 403,
+          "elapsed_ms": 3.6,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_6a59a892beaf41848d88/confirm",
+          "http": 403,
+          "elapsed_ms": 4.0,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.1,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "user_demo_02 的账户",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 19.8,
+      "notes": []
+    }
+  ],
+  "notes": [
+    "断言全部使用前后差值与相对关系，不依赖演示库中的绝对余额。",
+    "只读场景以 operation.domain_result 作为可核验结果；资金/业务效果场景要求 receipt 或 provider_ref。",
+    "GREEN 计划 confirm 为文档化空操作，S2 重复提交用例断言零新增 operation + 零余额变化。",
+    "RED 计划重复确认可能返回新的 TOTP 挑战而非冲突码，硬断言仍是“不得新增 operation/不得二次扣款”。"
+  ]
+}

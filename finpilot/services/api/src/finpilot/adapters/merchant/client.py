@@ -250,7 +250,7 @@ class LocalMerchantAdapter:
             merchant_id=args.get("merchant_id") or payload.get("merchant_id"),
             quote_id=args.get("quote_id") or payload.get("quote_id"),
             expected_amount_minor=args.get("amount_minor") or args.get("expected_amount_minor"),
-            customer_ref=str(args.get("customer_ref") or ""),
+            customer_ref=str(args.get("customer_ref") or payload.get("owner_user_id") or ""),
             expected_terms_version=args.get("terms_version") or args.get("expected_terms_version"),
         )
 
@@ -697,8 +697,10 @@ class HttpMerchantAdapter:
             "stable_operation_ref": stable_operation_ref,
             "quote_id": resolved_quote_id,
             "quantity": int(quantity or 1),
-            "customer_ref": customer_ref,
         }
+        # 沙箱拒绝空字符串 customer_ref：没有客户引用时直接省略该字段，而不是发一个空串。
+        if customer_ref:
+            payload["customer_ref"] = str(customer_ref)
         if expected_amount_minor is not None:
             payload["expected_amount_minor"] = int(expected_amount_minor)
         if expected_terms_version:
@@ -767,7 +769,7 @@ class HttpMerchantAdapter:
             merchant_id=args.get("merchant_id") or payload.get("merchant_id"),
             quote_id=args.get("quote_id") or payload.get("quote_id"),
             expected_amount_minor=args.get("amount_minor") or args.get("expected_amount_minor"),
-            customer_ref=str(args.get("customer_ref") or ""),
+            customer_ref=str(args.get("customer_ref") or payload.get("owner_user_id") or ""),
             expected_terms_version=args.get("terms_version") or args.get("expected_terms_version"),
         )
 

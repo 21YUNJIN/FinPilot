@@ -9,7 +9,9 @@
 from __future__ import annotations
 
 import hmac
-from datetime import timedelta
+import json
+import re
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -28,6 +30,28 @@ def sign_payload(secret: str, timestamp: str, nonce: str, body: bytes) -> str:
     return hmac_hex(secret, f"{timestamp}{nonce}".encode("utf-8") + body)
 
 
+def _canonical_body(body: bytes) -> bytes | None:
+    """把请求体重新序列化为规范 JSON（键排序、紧凑分隔符、UTF-8）。
+
+    提供方 SDK 用「规范 JSON」计算签名，而 HTTP 客户端发送的是它自己序列化的字节，
+    两者不保证逐字节相同；验签时对同一载荷两种形式都接受。
+    """
+    try:
+        payload = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
+
+
+def parse_callback_timestamp(value: str) -> datetime:
+    """接受 Unix 秒（提供方沙箱文档格式）与 ISO-8601（本服务旧格式）两种时间戳。"""
+    text = (value or "").strip()
+    if re.fullmatch(r"\d{10,13}", text):
+        seconds = int(text[:10])
+        return datetime.fromtimestamp(seconds, tz=timezone.utc)
+    return parse_iso(text)
+
+
 def verify_callback_signature(
     *,
     headers: dict,
@@ -35,18 +59,28 @@ def verify_callback_signature(
     secret: str | None = None,
     now=None,
 ) -> tuple[bool, str]:
-    """校验 HMAC 签名与时间窗；返回 (是否通过, 原因)。"""
+    """校验 HMAC 签名与时间窗；返回 (是否通过, 原因)。
+
+    签名串为 ``timestamp + nonce + body``；body 既可以是发送方原始字节，也可以是
+    其载荷的规范 JSON 形式（提供方沙箱按后者签名）。
+    """
     secret = secret or get_settings().provider_callback_secret
     signature = headers.get("x-finpilot-signature") or headers.get("X-FinPilot-Signature")
     timestamp = headers.get("x-finpilot-timestamp") or headers.get("X-FinPilot-Timestamp")
     nonce = headers.get("x-finpilot-nonce") or headers.get("X-FinPilot-Nonce")
     if not signature or not timestamp or not nonce:
         return False, "missing_signature_headers"
-    expected = sign_payload(secret, timestamp, nonce, body)
-    if not hmac.compare_digest(expected, signature):
+
+    signature_ok = hmac.compare_digest(sign_payload(secret, timestamp, nonce, body), signature)
+    if not signature_ok:
+        canonical = _canonical_body(body)
+        if canonical is not None:
+            signature_ok = hmac.compare_digest(sign_payload(secret, timestamp, nonce, canonical), signature)
+    if not signature_ok:
         return False, "signature_mismatch"
+
     try:
-        moment = parse_iso(timestamp)
+        moment = parse_callback_timestamp(timestamp)
     except ValueError:
         return False, "bad_timestamp"
     reference = now or utcnow()
@@ -82,7 +116,8 @@ def handle_provider_event(
                 details={"reason_codes": ["signature_invalid"]},
             )
 
-    event_id = str(payload.get("provider_event_id") or "")
+    # 提供方沙箱用 event_id，本服务旧格式用 provider_event_id；两者等价，接收方兼容。
+    event_id = str(payload.get("provider_event_id") or payload.get("event_id") or "")
     operation_id = str(payload.get("operation_id") or "")
     provider_ref = str(payload.get("provider_ref") or "")
     event_type = str(payload.get("event_type") or "unknown")
@@ -210,4 +245,18 @@ def handle_provider_event(
         source=source,
     )
     session.flush()
-    return {"handled": True, "reason": "applied", "operation_id": operation_id, "status": operation.status}
+
+    # 回调只改 operation；任务若停在 reconciling，需要在这里收敛，否则用户永远看到"在途"。
+    reconciled: dict = {}
+    if operation.task_id:
+        from ..orchestration.executor import reconcile_task
+
+        reconciled = reconcile_task(session, operation.task_id)
+
+    return {
+        "handled": True,
+        "reason": "applied",
+        "operation_id": operation_id,
+        "status": operation.status,
+        "task": reconciled,
+    }

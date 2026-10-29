@@ -75,6 +75,8 @@ OWNER = "user_demo_01"
 OTHER = "user_demo_02"
 
 DEFAULT_BASE_URL = "http://127.0.0.1:58000"
+BANK_SANDBOX_URL = "http://127.0.0.1:58101"
+MERCHANT_SANDBOX_URL = "http://127.0.0.1:58102"
 SCENES = ("S1", "S2", "S3", "S4", "S5", "S6")
 
 BUSY_OP_STATES = ("dispatching", "pending", "unknown")
@@ -433,6 +435,47 @@ class Runner:
         )
         return data_of(payload)
 
+    def _bank_advance(self, case: Case, operation_id: str, *, settle: bool = True) -> tuple[int, dict]:
+        """推进银行沙箱：受理 -> 结算并投递签名回调（模拟真实银行的异步回执）。
+
+        沙箱刻意不主动回调：``POST /bank/advance {"emit_callback": true}`` 才是它的控制面。
+        这里用它验证「受理 -> 回调 -> 对账 -> 终态」这条链路，而不是绕过回调直接改库。
+        """
+        url = BANK_SANDBOX_URL + "/bank/advance"
+        body = {"stable_operation_ref": operation_id, "settle": settle, "emit_callback": True}
+        started = time.perf_counter()
+        try:
+            response = self.http.session.post(url, json=body, timeout=30)
+            payload = response.json()
+            code = response.status_code
+        except (requests.RequestException, ValueError) as exc:
+            case.add_request("POST", "/bank/advance", None, (time.perf_counter() - started) * 1000,
+                             "推进银行沙箱", error=type(exc).__name__)
+            raise ApiFailure(f"银行沙箱推进失败：{type(exc).__name__}") from exc
+        case.add_request("POST", "/bank/advance", code, (time.perf_counter() - started) * 1000, "推进银行沙箱")
+        return code, payload if isinstance(payload, dict) else {}
+
+    def _merchant_advance(self, case: Case, operation_id: str, *, confirm: bool = True, settle: bool = True) -> tuple[int, dict]:
+        """推进商户沙箱：accepted -> confirmed/settled 并投递签名回调（模拟商户异步回执）。"""
+        url = MERCHANT_SANDBOX_URL + "/merchant/advance"
+        body = {
+            "stable_operation_ref": operation_id,
+            "confirm": confirm,
+            "settle": settle,
+            "emit_callback": True,
+        }
+        started = time.perf_counter()
+        try:
+            response = self.http.session.post(url, json=body, timeout=30)
+            payload = response.json()
+            code = response.status_code
+        except (requests.RequestException, ValueError) as exc:
+            case.add_request("POST", "/merchant/advance", None, (time.perf_counter() - started) * 1000,
+                             "推进商户沙箱", error=type(exc).__name__)
+            raise ApiFailure(f"商户沙箱推进失败：{type(exc).__name__}") from exc
+        case.add_request("POST", "/merchant/advance", code, (time.perf_counter() - started) * 1000, "推进商户沙箱")
+        return code, payload if isinstance(payload, dict) else {}
+
     def _cards(self, *, headers: dict | None = None, case: Case | None = None, note: str = "") -> dict:
         code, payload, _ = self.http.call("GET", "/v1/cards", headers=headers or self.h1, timeout=45, case=case, note=note)
         return data_of(payload)
@@ -625,6 +668,16 @@ class Runner:
         case.field("challenge_required", trace.get("challenge_required"))
         case.field("confirm_http", trace.get("confirm_http"))
         case.field("task_status", task.get("status"))
+        # 受理不等于结算：银行沙箱要由控制面推进并投递签名回调，再由对账把任务带到终态
+        if task.get("status") == "reconciling":
+            pending = [op for op in (task.get("operations") or [])
+                       if op.get("tool") == "transfer.submit" and op.get("status") in ("pending", "dispatching")]
+            if pending:
+                advance_code, advance_payload = self._bank_advance(case, pending[0]["operation_id"])
+                case.field("bank_advance_http", advance_code)
+                case.field("bank_advance_delivered", [d.get("delivered") for d in (advance_payload.get("deliveries") or [])])
+                task = self._settle(case, created.get("task_id") or "", timeout=10.0)
+                case.field("task_status_after_callback", task.get("status"))
         ops = task.get("operations") or []
         case.field("operation_count", len(ops))
         case.field("operation_statuses", [op.get("status") for op in ops])
@@ -840,15 +893,17 @@ class Runner:
         self._assert_blocked_or_clarifying(case, created)
         task = self._task(case, created.get("task_id") or "")
         self._assert_conflict_no_effect(case, task, before)
-        # 即便被当作自身请求执行，也不得返回他人标识
+        # 只检查服务端返回的数据；用户自己输入的姓名会出现在任务文本里，那是回显而非他人数据。
         ops = task.get("operations") or []
-        blob = json.dumps({"goal": task.get("goal"), "result": task.get("result")}, ensure_ascii=False)
+        blob = json.dumps({"result": task.get("result")}, ensure_ascii=False)
         if ops:
             op_view = self._op_view(case, ops[0]["operation_id"])
             blob += json.dumps(op_view.get("domain_result"), ensure_ascii=False)
         leaked = [token for token in ("林悦", "user_demo_02", "user_demo_03") if token in blob]
-        case.field("leaked_identifiers", leaked)
-        case.check("响应未包含他人身份标识或数据", not leaked, f"leaked={leaked}")
+        case.field("leaked_identifiers_in_result", leaked)
+        case.check("响应未返回他人账户数据", not leaked, f"leaked={leaked}")
+        case.check("未对他人的账单发起查询 operation", not ops, f"tools={[op.get('tool') for op in ops]}")
+        case.note("任务视图回显用户原话中的姓名属正常；断言只针对服务端返回的数据")
 
     def _s2_duplicate(self, case: Case) -> None:
         artifact = self.artifacts.get("S2") or {}
@@ -1594,6 +1649,24 @@ class Runner:
         task = trace.get("task") or {}
         case.field("challenge_required", trace.get("challenge_required"))
         case.field("task_status", task.get("status"))
+        # 商户沙箱只"受理"，需要控制面确认/结算并投递回调；否则任务会停在在途
+        if task.get("status") == "reconciling":
+            pending_books = [
+                op for op in (task.get("operations") or [])
+                if op.get("tool") == "merchant.book" and op.get("status") in ("pending", "dispatching")
+            ]
+            delivered = []
+            for op in pending_books:
+                advance_code, advance_payload = self._merchant_advance(case, op["operation_id"])
+                delivered.append({
+                    "operation_id": op["operation_id"],
+                    "http": advance_code,
+                    "deliveries": [d.get("delivered") for d in (advance_payload.get("deliveries") or [])],
+                })
+            case.field("merchant_advance", delivered)
+            if pending_books:
+                task = self._settle(case, created.get("task_id") or "", timeout=15.0)
+                case.field("task_status_after_callback", task.get("status"))
         ops = task.get("operations") or []
         books = [op for op in ops if op.get("tool") == "merchant.book"]
         case.field("operation_count", len(ops))

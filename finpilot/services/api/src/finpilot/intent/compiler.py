@@ -19,8 +19,8 @@ from sqlalchemy.orm import Session
 
 from ..errors import FinPilotError
 from ..ids import new_id
-from ..models import Payee, WealthProduct
-from ..money import parse_amount_minor
+from ..models import Card, Mandate, Payee, Subscription, WealthProduct
+from ..money import format_minor, parse_amount_minor
 from ..timeutil import SHANGHAI, business_day, format_iso, utcnow
 from ..kernel.identity import AuthContext
 from ..kernel.snapshots import get_snapshot
@@ -44,7 +44,9 @@ UNSUPPORTED_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"贷款|借钱给我|授信|提额到|套现|分期套现", "credit_or_loan"),
     (r"保证收益|稳赚|包赚|保本高息", "guaranteed_return"),
     (r"帮我查别人|其他人的账户|他的余额|查一下我老婆|查一下我老公的卡", "other_user_data"),
+    (r"[\u4e00-\u9fa5]{2,4}的(账单|报表|报告|消费记录|流水)", "other_user_data"),
     (r"改一下(政策|规则|权限)|把(额度|限额)调高到|sudo|管理员权限", "policy_change"),
+    (r"跳过(审批|确认|授权|核验)|不用(确认|审批|授权)|不需要(确认|审批)|别让我确认|无需确认|免确认", "approval_bypass"),
 )
 
 VAGUE_PATTERNS = ("你看着办", "都可以", "随便", "你决定", "都行", "看着来", "怎么都行")
@@ -363,6 +365,95 @@ def resolve_product(session: Session, text: str) -> dict:
         }
     return {"status": "not_found"}
 
+def resolve_card(session: Session, user_id: str, text: str, *, require_explicit: bool = False) -> dict:
+    """把"那张卡"解析成具体卡片：只有尾号/卡种等显式线索才定位，否则要求澄清。
+
+    ``require_explicit`` 用于锁卡/挂失/调额这类高影响操作：带"那张/这张/我的"这类指代时，
+    即使名下只有一张有效卡也要求用户明确，避免默认落到某一张卡上。
+    """
+    cards = session.execute(select(Card).where(Card.owner_user_id == user_id)).scalars().all()
+    if not cards:
+        return {"status": "none", "card": None, "candidates": []}
+
+    compact = text.replace(" ", "")
+    by_tail = [card for card in cards if card.masked_pan and card.masked_pan.replace(" ", "")[-4:] in compact]
+    if len(by_tail) == 1:
+        return {"status": "resolved", "card": by_tail[0], "candidates": []}
+    if len(by_tail) > 1:
+        return {"status": "ambiguous", "card": None, "candidates": [_card_option(card) for card in by_tail]}
+
+    if "虚拟" in text:
+        virtual = [card for card in cards if (card.brand or "").upper() == "VIRTUAL"]
+        if len(virtual) == 1:
+            return {"status": "resolved", "card": virtual[0], "candidates": []}
+        if virtual:
+            return {"status": "ambiguous", "card": None, "candidates": [_card_option(card) for card in virtual]}
+
+    if require_explicit and any(token in text for token in ("那", "这", "我的")):
+        pool = [card for card in cards if card.lifecycle_status == "active"] or cards
+        return {"status": "ambiguous", "card": None, "candidates": [_card_option(card) for card in pool]}
+
+    active = [card for card in cards if card.lifecycle_status == "active"]
+    if len(active) == 1:
+        return {"status": "resolved", "card": active[0], "candidates": []}
+    pool = active or cards
+    return {"status": "ambiguous", "card": None, "candidates": [_card_option(card) for card in pool]}
+
+
+def _card_option(card: Card) -> dict:
+    tail = (card.masked_pan or "").replace(" ", "")[-4:]
+    return {"value": card.card_id, "label": f"尾号 {tail}（{card.lifecycle_status}，{card.brand}）"}
+
+
+def resolve_subscription(session: Session, user_id: str, text: str) -> dict:
+    """把"那个订阅"解析成具体订阅：按商户名匹配；只剩一个有效订阅时可直接定位。"""
+    rows = session.execute(
+        select(Subscription).where(Subscription.owner_user_id == user_id, Subscription.status == "active")
+    ).scalars().all()
+    if not rows:
+        return {"status": "none", "subscription": None, "candidates": []}
+
+    by_name = [row for row in rows if row.merchant_name and row.merchant_name in text]
+    if len(by_name) == 1:
+        return {"status": "resolved", "subscription": by_name[0], "candidates": []}
+    if len(by_name) > 1:
+        return {"status": "ambiguous", "subscription": None, "candidates": [_subscription_option(row) for row in by_name]}
+    if len(rows) == 1:
+        return {"status": "resolved", "subscription": rows[0], "candidates": []}
+    return {"status": "ambiguous", "subscription": None, "candidates": [_subscription_option(row) for row in rows]}
+
+
+def _subscription_option(row: Subscription) -> dict:
+    return {"value": row.subscription_id, "label": f"{row.merchant_name}（{format_minor(row.amount_minor)} 元/{row.period}）"}
+
+
+def _clarify_card(
+    session: Session, user_id: str, text: str, facts: dict, unresolved: list[dict], *, require_explicit: bool = True
+) -> None:
+    resolved = resolve_card(session, user_id, text, require_explicit=require_explicit)
+    if resolved["status"] == "resolved":
+        facts["card_id"] = resolved["card"].card_id
+    elif resolved["status"] == "ambiguous":
+        unresolved.append(_clarification("card_id", "要操作哪一张卡？", resolved["candidates"]))
+
+
+def _clarify_subscription(session: Session, user_id: str, text: str, facts: dict, unresolved: list[dict]) -> None:
+    resolved = resolve_subscription(session, user_id, text)
+    if resolved["status"] == "resolved":
+        subscription = resolved["subscription"]
+        facts["subscription_id"] = subscription.subscription_id
+        mandate = session.execute(
+            select(Mandate).where(
+                Mandate.owner_user_id == user_id,
+                Mandate.subscription_id == subscription.subscription_id,
+                Mandate.status == "active",
+            )
+        ).scalars().first()
+        if mandate is not None:
+            facts["mandate_id"] = mandate.mandate_id
+    elif resolved["status"] == "ambiguous":
+        unresolved.append(_clarification("subscription_id", "要取消哪一个订阅？", resolved["candidates"]))
+
 def _clarification(field_name: str, question: str, options: list[dict] | None = None, *, blocking: bool = True) -> dict:
     return {
         "clarification_id": new_id("clar"),
@@ -385,6 +476,15 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
 
     scene, matched_keywords = detect_scene(text)
     unsupported_reason, unsupported_span = detect_unsupported(text)
+    # mock 模式（无模型提示）此前不检查否定表达，导致"先别…转账"仍会规划出一笔转账。
+    # live 模式由下面的模型提示分支单独处理（冲突时进入澄清），这里不重复拦截。
+    if model_hint is None:
+        negation_hit = re.search(
+            r"(?:不要|别|不想|不需要|禁止|先别)[^,，。.!！?？]{0,20}(?:转|汇款|打钱|申购|购买|买入|赎回|申请|挂失|解挂|取消|退订|锁)",
+            text,
+        )
+        if negation_hit and not unsupported_reason:
+            unsupported_reason, unsupported_span = "negated_request", negation_hit.group(0)
     hint_action = None
     model_clarification = False
     if model_hint is not None and not unsupported_reason:
@@ -446,13 +546,13 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
 
     if unsupported_reason:
         goals.append("unsupported_request")
-        unresolved.append(
-            _clarification(
-                "unsupported",
-                "这个需求不在本版本支持范围内（不含证券下单、授信、跨币种与保证收益）。我可以帮你在已支持的能力内换一种做法。",
-                blocking=False,
-            )
-        )
+        if unsupported_reason == "negated_request":
+            question = "检测到否定/取消表达，我不会执行这笔操作；如果确实要办理，请去掉否定词后重新说明。"
+        elif unsupported_reason == "approval_bypass":
+            question = "不能跳过确认或授权：资金、卡片与代扣操作都必须由你本人在服务端确认后执行。"
+        else:
+            question = "这个需求不在本版本支持范围内（不含证券下单、授信、跨币种与保证收益）。我可以帮你在已支持的能力内换一种做法。"
+        unresolved.append(_clarification("unsupported", question, blocking=False))
         facts["unsupported_reason"] = unsupported_reason
         facts["unsupported_span"] = unsupported_span
 
@@ -562,6 +662,14 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
                 }
         facts["period"] = period
         facts["basis"] = "both" if ("现金流" in text or "两种" in text) else "consumption"
+        # "看看最近"没有给出区间：默认当月会掩盖歧义，先问清账期
+        if "最近" in text and not re.search(r"(个月|月|年|季度|周|天)", text):
+            unresolved.append(
+                _clarification(
+                    "period",
+                    "“最近”指哪个区间？请给出账期，例如本月、上月、最近 3 个月，或具体起止月份。",
+                )
+            )
 
     elif scene == "S3_wealth":
         if hint_action == "risk_assess" or (not hint_action and ("测评" in text or "问卷" in text)):
@@ -600,12 +708,24 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
             goals.append("quant_risk_report")
 
     elif scene == "S4_card":
+        apply_words = any(word in text for word in ("申请", "办卡", "开卡", "办一张"))
+        limit_verbs = any(word in text for word in ("提高", "提升", "调高", "降低", "调低", "调整", "修改", "增加", "减少"))
+        # "申请…卡，额度 2000" 里的额度是申请参数，不是对已有卡调额；只有出现明确的调额动词才按调额处理。
+        applying_with_limit = apply_words and "额度" in text and not limit_verbs
         if hint_action == "card_lost_report" or (not hint_action and ("挂失" in text or "丢了" in text or "解挂" in text)):
             goals.append("card_lost_report")
+            _clarify_card(session, auth.user_id, text, facts, unresolved)
         elif hint_action == "card_replace" or (not hint_action and "补卡" in text):
             goals.append("card_replace")
-        elif hint_action == "card_limit_change" or (not hint_action and "额度" in text):
+            _clarify_card(session, auth.user_id, text, facts, unresolved)
+        elif hint_action == "card_apply" or (not hint_action and apply_words and (applying_with_limit or "额度" not in text)):
+            goals.append("card_apply")
+            if amount_minor is not None:
+                hard_constraints["requested_limit_minor"] = amount_minor
+            facts["kind"] = "virtual" if "虚拟" in text else "physical"
+        elif hint_action == "card_limit_change" or (not hint_action and "额度" in text and not applying_with_limit):
             goals.append("card_limit_change")
+            _clarify_card(session, auth.user_id, text, facts, unresolved)
             if amount_minor is None:
                 unresolved.append(_clarification("requested_limit_minor", "请给出希望调整到的额度（元）。"))
             else:
@@ -613,6 +733,7 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
             facts["direction"] = "increase" if any(k in text for k in ("提高", "提升", "调高", "增加")) else "decrease"
         elif hint_action == "card_control" or (not hint_action and ("限制" in text or "锁" in text)):
             goals.append("card_control")
+            _clarify_card(session, auth.user_id, text, facts, unresolved)
         elif hint_action == "card_apply" or (not hint_action and any(word in text for word in ("申请", "办卡", "开卡"))):
             goals.append("card_apply")
         elif hint_action == "card_status" or (not hint_action and any(word in text for word in ("查询", "查看", "看看", "看下", "看一下"))):
@@ -626,6 +747,7 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
         if hint_action == "cancel_subscription" or (not hint_action and any(k in text for k in ("取消", "退订", "别再扣"))):
             goals.append("cancel_subscription")
             goals.append("revoke_mandate")
+            _clarify_subscription(session, auth.user_id, text, facts, unresolved)
             facts["note"] = "取消商户合同与解除银行代扣是两个独立动作，需分别核验结果"
         else:
             goals.append("list_subscriptions")
@@ -677,11 +799,12 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
             preferences.append({"higher": order_match.group(1), "source": "user_priority"})
 
     else:
+        # 没听懂时必须先问清楚：此前的非阻断澄清会让任务以"空计划"直接 blocked。
         unresolved.append(
             _clarification(
                 "intent",
                 "抱歉，我没理解你的需求。可以试试：转账、账单分析、理财、卡片、订阅或生日采购。",
-                blocking=False,
+                blocking=True,
             )
         )
 

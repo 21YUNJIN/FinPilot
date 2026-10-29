@@ -1,0 +1,669 @@
+{
+  "schema_version": "1.0",
+  "kind": "finpilot.e2e_http_smoke",
+  "generated_at": "2026-10-29T09:58:27Z",
+  "started_at": "2026-10-29T09:58:10Z",
+  "base_url": "http://127.0.0.1:58000",
+  "scene_filter": [
+    "S6"
+  ],
+  "owner_user": "user_demo_01",
+  "other_user": "user_demo_02",
+  "preflight": {
+    "http": 200,
+    "status": "ok",
+    "mode": "mock",
+    "database_ok": true,
+    "adapters": [
+      "bank_sandbox_local",
+      "bank_sandbox_v1",
+      "merchant_sandbox_local",
+      "merchant_sandbox_v1"
+    ]
+  },
+  "preflight_error": null,
+  "summary": {
+    "total_cases": 5,
+    "passed": 5,
+    "failed": 0,
+    "passed_cases": [
+      "S6-normal",
+      "S6-missing",
+      "S6-conflict",
+      "S6-duplicate",
+      "S6-cross-user"
+    ],
+    "failed_cases": [],
+    "assertions_total": 37,
+    "assertions_passed": 36,
+    "assertions_failed": 0,
+    "assertions_skipped": 1
+  },
+  "cases": [
+    {
+      "scene": "S6",
+      "case": "S6-normal",
+      "title": "正常路径：生日鲜花+蛋糕（多商户、含费用、指定日期，RED 强验证）",
+      "message": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_7552b44e77354f2c9e9c",
+        "plan_id": "plan_1f21547620824d5fae5e",
+        "scope_hash": "60e360b0380a5e52c37bdd63505eb70f0243edd1182e2494dc1d5008e49b0f20",
+        "required_level": "RED",
+        "budget_minor": 80000,
+        "delivery_deadline": "2026-10-31T09:00:00+08:00",
+        "merchant_count": 2,
+        "planned_total_minor": 58500,
+        "task_status": "succeeded",
+        "challenge_required": true,
+        "merchant_advance": [
+          {
+            "operation_id": "op_task_7552b44e77354f2c9e9c_book_cake",
+            "http": 200,
+            "deliveries": [
+              true,
+              true
+            ]
+          },
+          {
+            "operation_id": "op_task_7552b44e77354f2c9e9c_book_flowers",
+            "http": 200,
+            "deliveries": [
+              true,
+              true
+            ]
+          }
+        ],
+        "task_status_after_callback": "succeeded",
+        "operation_count": 4,
+        "book_operation_count": 2,
+        "operation_statuses": [
+          [
+            "merchant.book",
+            "succeeded"
+          ],
+          [
+            "merchant.quote",
+            "succeeded"
+          ],
+          [
+            "merchant.quote",
+            "succeeded"
+          ],
+          [
+            "merchant.book",
+            "succeeded"
+          ]
+        ],
+        "operation_status": "succeeded",
+        "operation_error_code": null,
+        "provider_order_ref": "pm_8d5fc41420c041eebaf2",
+        "receipt_id": "86036c4ee89b449ab898ab727f6fa4a7",
+        "provider_refs": [
+          "pm_3dc3f299751e4fc9af7c",
+          "pm_8d5fc41420c041eebaf2"
+        ],
+        "expected_delta_minor": -58500,
+        "savings_delta_minor": -58500
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "多商户：至少两个不同商户的预订步骤",
+          "ok": true,
+          "detail": "merchants=['merchant_huayuxuan', 'merchant_tianxin']"
+        },
+        {
+          "name": "预算含费用：计划总额不超过 80000 分",
+          "ok": true,
+          "detail": "budget=80000, total=58500"
+        },
+        {
+          "name": "日期：目标含明确交付截止时间",
+          "ok": true,
+          "detail": "deadline=2026-10-31T09:00:00+08:00"
+        },
+        {
+          "name": "付费商户预订按 RED 处理",
+          "ok": true,
+          "detail": "required_level=RED"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded, result={\"operations\": [\"op_task_7552b44e77354f2c9e9c_book_cake\", \"op_task_7552b44e77354f2c9e9c_quote_cake\", \"op_task_7552b44e7…"
+        },
+        {
+          "name": "正好两笔商户预订 operation",
+          "ok": true,
+          "detail": "count=2"
+        },
+        {
+          "name": "两笔预订均成功",
+          "ok": true,
+          "detail": "statuses=['succeeded', 'succeeded']"
+        },
+        {
+          "name": "资金/业务效果有回执（receipt 或 provider_ref）",
+          "ok": true,
+          "detail": "receipt=True, provider_ref=pm_3dc3f299751e4fc9af7c, op_status=succeeded, error_code=None"
+        },
+        {
+          "name": "资金/业务效果有回执（receipt 或 provider_ref）",
+          "ok": true,
+          "detail": "receipt=True, provider_ref=pm_8d5fc41420c041eebaf2, op_status=succeeded, error_code=None"
+        },
+        {
+          "name": "两笔预订有各自可核验的提供方引用",
+          "ok": true,
+          "detail": "refs=['pm_8d5fc41420c041eebaf2', 'pm_3dc3f299751e4fc9af7c'], op_statuses=['succeeded', 'succeeded']"
+        },
+        {
+          "name": "储蓄卡按实际捕获金额只扣一次（含费用）",
+          "ok": true,
+          "detail": "delta=-58500, expected=-58500"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 26.0,
+          "note": "预订前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 31.8,
+          "note": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_1f21547620824d5fae5e/confirm",
+          "http": 200,
+          "elapsed_ms": 15.3,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/challenges/chal_2e616d5c2d384aad86ce/verify",
+          "http": 200,
+          "elapsed_ms": 98.2,
+          "note": "TOTP 强验证（第 1 次）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_7552b44e77354f2c9e9c",
+          "http": 200,
+          "elapsed_ms": 8.3,
+          "note": "轮询 11 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/merchant/advance",
+          "http": 200,
+          "elapsed_ms": 591.9,
+          "note": "推进商户沙箱",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/merchant/advance",
+          "http": 200,
+          "elapsed_ms": 573.0,
+          "note": "推进商户沙箱",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_7552b44e77354f2c9e9c",
+          "http": 200,
+          "elapsed_ms": 7.8,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_7552b44e77354f2c9e9c_book_cake",
+          "http": 200,
+          "elapsed_ms": 4.3,
+          "note": "operation op_task_7552b44e77354f2c9e9c_book_cake",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_7552b44e77354f2c9e9c_book_flowers",
+          "http": 200,
+          "elapsed_ms": 4.1,
+          "note": "operation op_task_7552b44e77354f2c9e9c_book_flowers",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "预订后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 16518.3,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-missing",
+      "title": "缺信息：不给预算与日期",
+      "message": "下周朋友生日，帮我安排好鲜花和蛋糕。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_49618dd23cf34ca28b91",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "total_budget_minor",
+          "delivery_deadline",
+          "confirm_purchase_intent"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['total_budget_minor', 'delivery_deadline', 'confirm_purchase_intent']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=27, after=27"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.2,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 10.8,
+          "note": "下周朋友生日，帮我安排好鲜花和蛋糕。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_49618dd23cf34ca28b91",
+          "http": 200,
+          "elapsed_ms": 6.7,
+          "note": "task task_49618dd23cf34ca28b91",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.3,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 37.5,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-conflict",
+      "title": "冲突：要从应急金里拿钱办活动",
+      "message": "预算不够就从8000元应急金里拿1500元，先办活动要紧。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_3f744c06471f47c7b837",
+        "task_status": "blocked",
+        "plan_feasible": true,
+        "infeasible_reasons": [],
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 13.9,
+          "note": "预算不够就从8000元应急金里拿1500元，先办活动要紧。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_3f744c06471f47c7b837",
+          "http": 200,
+          "elapsed_ms": 7.2,
+          "note": "task task_3f744c06471f47c7b837",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 32.6,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-duplicate",
+      "title": "重复提交：生日计划确认发两次",
+      "message": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_7552b44e77354f2c9e9c",
+        "second_confirm_http": 200,
+        "second_confirm_error": null,
+        "second_confirm_rechallenge": true,
+        "task_status": "succeeded",
+        "operation_count_after": 4,
+        "book_operation_count_after": 2,
+        "balance_delta_after_duplicate": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "第二次确认被拒绝（冲突类错误码）或重新要求强验证",
+          "ok": true,
+          "detail": "http=200, code=None, data_status=challenge_required"
+        },
+        {
+          "name": "重复确认没有新增 operation",
+          "ok": true,
+          "detail": "before=['op_task_7552b44e77354f2c9e9c_book_cake', 'op_task_7552b44e77354f2c9e9c_book_flowers', 'op_task_7552b44e77354f2c9e9c_quote_cake', 'op_task_7552b44e77354f2c9e9c_quote_flowers'], after=['op_task_7552b44e77354f2c9e9c_book_cake', 'op_task_7552b44e77354f2c9e9c_book_flowers', 'op_task_7552b44e77354f2c9e9c_quote_cake', 'op_task_7552b44e77354f2c9e9c_quote_flowers']"
+        },
+        {
+          "name": "商户预订 operation 数量与重复提交前一致（未重复下单）",
+          "ok": true,
+          "detail": "before=2, after=2"
+        },
+        {
+          "name": "重复确认没有二次扣款",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_7552b44e77354f2c9e9c",
+          "http": 200,
+          "elapsed_ms": 7.8,
+          "note": "task task_7552b44e77354f2c9e9c",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "重复确认前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_1f21547620824d5fae5e/confirm",
+          "http": 200,
+          "elapsed_ms": 6.8,
+          "note": "第二次确认（重复提交）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_7552b44e77354f2c9e9c",
+          "http": 200,
+          "elapsed_ms": 7.5,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.7,
+          "note": "重复确认后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 41.1,
+      "notes": []
+    },
+    {
+      "scene": "S6",
+      "case": "S6-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的跨场景任务/operation",
+      "message": "帮我订生日鲜花和蛋糕，预算800元，这周六送到，用储蓄卡付款。",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_7552b44e77354f2c9e9c",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ]
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_7552b44e77354f2c9e9c",
+          "http": 403,
+          "elapsed_ms": 3.4,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_7552b44e77354f2c9e9c_book_cake",
+          "http": 403,
+          "elapsed_ms": 3.8,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_1f21547620824d5fae5e/confirm",
+          "http": 403,
+          "elapsed_ms": 4.0,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.2,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "user_demo_02 的账户",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 20.2,
+      "notes": []
+    }
+  ],
+  "notes": [
+    "断言全部使用前后差值与相对关系，不依赖演示库中的绝对余额。",
+    "只读场景以 operation.domain_result 作为可核验结果；资金/业务效果场景要求 receipt 或 provider_ref。",
+    "GREEN 计划 confirm 为文档化空操作，S2 重复提交用例断言零新增 operation + 零余额变化。",
+    "RED 计划重复确认可能返回新的 TOTP 挑战而非冲突码，硬断言仍是“不得新增 operation/不得二次扣款”。"
+  ]
+}
