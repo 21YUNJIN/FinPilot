@@ -40,6 +40,15 @@ Pop-Location
 
 演示环境的独立银行沙箱默认先受理，未收到或核验终态前应显示在途/未知；不得把受理当作已结算。用户授权、强验证和账本约束仍由 FinPilot 服务端决定。启动器依赖可用的 58000、58101、58102、8770 端口；端口占用时拒绝启动，不停止已有程序。
 
+受理之后需要"机构侧处理完成"：真实银行会异步回调，本机沙箱则由控制面显式推进。演示时另开一个窗口执行：
+
+```powershell
+& .\.venv-finpilot\Scripts\python.exe .\scripts\settle_pending.py --dry-run   # 先看还有哪些在途
+& .\.venv-finpilot\Scripts\python.exe .\scripts\settle_pending.py            # 推进并投递签名回调
+```
+
+脚本只处理 `bank_sandbox_v1` / `merchant_sandbox_v1` 的本机沙箱业务，且要求 `ENVIRONMENT=local`；它不直接改账本，资金效果仍由回调对账产生。任务终态需重新查询任务或客户端刷新后显示。
+
 ## 可选千问在线模型
 
 此前粘贴到聊天中的密钥已暴露，请在模型服务控制台撤销并重新生成。新密钥不要发送到聊天、提交代码、保存到交付包或写入终端历史。先按上节准备独立模拟数据库，在启动器所在的同一个 PowerShell 窗口设置：
