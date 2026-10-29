@@ -59,6 +59,7 @@ cd .\finpilot
 |---|---|---|---|
 | 第 1 次 | 直接继承演示 `.env`（`QUANT_BACKEND=remote`） | **665 passed / 3 failed / 4 skipped** | `evidence/finpilot_pytest_20261029_161500_firstrun_ambient_env.log` |
 | 第 2 次 | 显式 `QUANT_BACKEND=local_reference`、`FINPILOT_PG_BIN` 指向便携 PostgreSQL | **672 passed / 0 failed / 0 skipped**，375.74s | `evidence/finpilot_pytest_20261029_162940_envrepro.log` |
+| 第 3 次 | 修复 Worker 适配器注册 + 新增 2 个回归用例后 | **674 passed / 0 failed / 0 skipped**，257.98s | `evidence/finpilot_pytest_20261029_170900_workerfix.log` |
 
 第 1 次的 3 个失败全部在 `tests/unit/domains/test_quant.py`、`test_suitability.py`：单元测试继承了演示配置的 `QUANT_BACKEND=remote`，`compare_products` 尝试请求未启动的量化服务，历史指标回退成 `QuantUnavailable`，而不是 `insufficient_history`。**这不是代码回归，而是测试基线受本机配置污染。**
 
@@ -94,15 +95,15 @@ cd .\finpilot
 
 | 交接书 | 本次实测 |
 |---|---|
-| 历史一轮全量 671 项通过，但之后又改过代码 | 当前代码 672 项通过（含 4 项备份恢复），无跳过、无失败 |
+| 历史一轮全量 671 项通过，但之后又改过代码 | 当前代码 674 项通过（含 4 项备份恢复 + 2 项 Worker 适配器回归），无跳过、无失败 |
 | 备份恢复演练未执行 | 已在便携 PostgreSQL 上真实执行并通过 |
 | 原 wheelhouse 只适配 Python 3.12 | 属实：3.12.10 离线安装成功，`requests`/`numpy`/`flask` 需联网 |
-| 真实模型、六场景闭环、隔离、评测未完成 | 仍未完成，本次未改变 |
+| 真实模型、六场景闭环、隔离、评测未完成 | 仍未完成，本次未改变；六场景真实 HTTP 首轮 23/35，已定位 8 类缺陷，见 `docs/E2E_HTTP_2026-10-29.md` |
 
 ## 5. 仍未完成（不得计入已通过）
 
 1. **真实模型联调**：本机没有新密钥，`live` 模式只跑过 HTTP 模拟模型服务；真实供应商的端到端、超时/429/非法输出和费用记录未做。
-2. **六场景完整用户旅程**：尚未按“正常 / 缺信息 / 否定冲突 / 权限不足 / 重复提交 / 外部失败 / 结果未知”逐场景跑通真实 HTTP + 后台 worker + 回调对账，并留存逐条证据。
+2. **六场景完整用户旅程**：已建立真实 HTTP 验收脚本并完成首轮（23/35 通过），但 S3 测评/申购、S6 商户预订、S1 异步受理到账等仍未闭环，逐条缺口与证据见 `docs/E2E_HTTP_2026-10-29.md`。
 3. **隔离**：Windows 侧仍只有 AST/子进程/审计钩子；Linux/容器无特权、资源与系统调用限制未验证。
 4. **评测**：`eval/runner.py` 仍只接受 mock；真实模型任务集、留出集、消融与人工复核未做。
 5. **赛事材料与官方要求**：27 项 / 92 项状态表仍未逐条举证；报名状态、截止时间、模拟渠道认可度需团队向组委会核实。
