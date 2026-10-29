@@ -27,37 +27,14 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def register_adapters() -> dict:
-    """注册可用的提供方适配器；记录结果供 /healthz 展示。"""
-    from .adapters import bank_local
-    from .kernel.provider_adapter import register_adapter, registered_adapters
+    """注册可用的提供方适配器；记录结果供 /healthz 展示。
 
-    status: dict = {}
-    local = bank_local.build_adapter()
-    register_adapter(local)
-    status["bank_local"] = "registered"
-    try:
-        from .adapters.bank_http import HttpBankAdapter
+    实现移到 ``adapters.registry``，以便 Outbox / 定时任务等**独立进程**复用同一份
+    注册逻辑（只在这里注册会导致 Worker 进程找不到适配器）。
+    """
+    from .adapters.registry import register_adapters as _register
 
-        register_adapter(HttpBankAdapter())
-        status["bank_http"] = "registered"
-    except Exception as exc:  # pragma: no cover - 依赖可选
-        status["bank_http"] = f"unavailable: {type(exc).__name__}"
-    try:
-        from .adapters.merchant.client import LocalMerchantAdapter
-
-        register_adapter(LocalMerchantAdapter())
-        status["merchant_local"] = "registered"
-    except Exception as exc:  # pragma: no cover - 依赖可选
-        status["merchant_local"] = f"unavailable: {type(exc).__name__}"
-    try:
-        from .adapters.merchant.client import HttpMerchantAdapter
-
-        register_adapter(HttpMerchantAdapter())
-        status["merchant_http"] = "registered"
-    except Exception as exc:  # pragma: no cover - 依赖可选
-        status["merchant_http"] = f"unavailable: {type(exc).__name__}"
-    status["registered"] = registered_adapters()
-    return status
+    return _register()
 
 
 def create_app() -> FastAPI:

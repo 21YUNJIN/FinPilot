@@ -1,0 +1,51 @@
+{
+  "probe": "s3_risk_assessment_gap",
+  "timestamp": "2026-10-29T16:53:10+08:00",
+  "environment": {
+    "base_url": "http://127.0.0.1:58000",
+    "app_mode": "mock",
+    "database": "finpilot_demo (PostgreSQL 17.9, 127.0.0.1:5433)",
+    "user": "user_demo_01",
+    "synthetic_data": true
+  },
+  "reproduction": {
+    "utterance": "我要为子女教育金做风险测评，问卷至少覆盖投资经验、损失承受能力、风险态度、期限、流动性和资金用途。",
+    "steps": [
+      "POST /v1/auth/sessions 登录",
+      "POST /v1/tasks 创建任务",
+      "POST /v1/plans/{plan_id}/confirm 确认 YELLOW 计划",
+      "GET /v1/tasks/{task_id} 读取终态",
+      "GET /v1/wealth/assessment 读取测评结果"
+    ]
+  },
+  "observed": {
+    "task_id": "task_fae6f2af83624a6887d0",
+    "plan_required_level": "YELLOW",
+    "confirm_http_status": 200,
+    "final_task_status": "failed",
+    "failed_step": {"node_id": "risk_assess", "reason": "PARAM_INVALID"},
+    "operations": [{"tool": "risk.assess", "status": "dispatching", "effect_confirmed": false}],
+    "risk_profile": null,
+    "task_result_summary": {
+      "goals": ["risk_assess"],
+      "next_action": "查看失败原因，选择重试、替代方案或人工接管",
+      "failed_steps": [{"reason": "PARAM_INVALID", "node_id": "risk_assess"}],
+      "waiting_reason": "存在失败步骤：risk_assess",
+      "completed_goals": [],
+      "completed_steps": []
+    }
+  },
+  "root_cause": [
+    "intent/compiler.py 只把“测评/问卷”映射成 risk_assess 目标，不提取 answers（全文只有 2 处相关行，580-539 行）。",
+    "orchestration/planner.py:239-251 用 facts.get('answers', {}) 构造 risk.assess 的 typed_args，实际始终是空字典。",
+    "domains/wealth_rules/assessment_ops.py:24-25 在 answers 为空时抛 PARAM_INVALID，执行器把任务置为 failed。",
+    "gateway/domain_routes.py 只有 GET /v1/wealth/assessment，没有提交问卷答案的写入口。",
+    "前端 apps/web/src/pages/DomainPages.tsx:158-160 的“开始风险测评”按钮只把路由切回 /chat，没有问卷表单。"
+  ],
+  "secondary_issue": "执行失败后 operation 仍停在 dispatching（未收敛为 failed），与任务终态不一致，需单独核查执行器异常分支。",
+  "impact": "S3 的“风险测评 → 产品比较 → 申购/赎回”链路在第一步就无法完成；用户看到“失败”，且无法通过任何 HTTP 入口提交六个维度的答案。",
+  "not_impacted": [
+    "GET /v1/wealth/products、GET /v1/wealth/comparison 仍可用（测评缺失时返回 assessment_required / 不适用）。",
+    "其他五个场景不受此缺陷影响。"
+  ]
+}

@@ -30,6 +30,23 @@ logger = logging.getLogger("finpilot.workers.outbox.loop")
 _STOP = False
 
 
+def bootstrap() -> dict:
+    """Worker 启动时必须注册提供方适配器。
+
+    Outbox 投递与 API 是**两个进程**，适配器注册表不共享。历史上只有 API 启动时注册，
+    导致 Worker 投递时 ``get_adapter`` 抛 ``PROVIDER_CAPABILITY_MISSING``：操作直接
+    failed、任务停在 reconciling、日志里只有 ``delivered=0 retried=N``。
+    """
+    from finpilot.adapters.registry import bootstrap_worker_adapters
+
+    status = bootstrap_worker_adapters()
+    logger.info("提供方适配器已注册：%s", status.get("registered"))
+    unavailable = {k: v for k, v in status.items() if k != "registered" and str(v).startswith("unavailable")}
+    if unavailable:
+        logger.warning("部分适配器不可用：%s", unavailable)
+    return status
+
+
 def _handle_signal(signum: int, _frame) -> None:  # pragma: no cover - 信号处理
     global _STOP
     _STOP = True
@@ -79,6 +96,8 @@ def main(argv: list[str] | None = None) -> int:
         signal.signal(signal.SIGTERM, _handle_signal)
     except (AttributeError, ValueError):  # pragma: no cover - 部分平台无 SIGTERM
         pass
+
+    bootstrap()
 
     totals = run_loop(
         interval=args.interval,

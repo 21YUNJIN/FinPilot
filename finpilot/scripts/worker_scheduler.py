@@ -29,6 +29,18 @@ logger = logging.getLogger("finpilot.workers.scheduler.loop")
 _STOP = False
 
 
+def bootstrap() -> dict:
+    """调度器与 API 是不同进程，必须在本进程内注册提供方适配器（原因见 worker_outbox）。"""
+    from finpilot.adapters.registry import bootstrap_worker_adapters
+
+    status = bootstrap_worker_adapters()
+    logger.info("提供方适配器已注册：%s", status.get("registered"))
+    unavailable = {k: v for k, v in status.items() if k != "registered" and str(v).startswith("unavailable")}
+    if unavailable:
+        logger.warning("部分适配器不可用：%s", unavailable)
+    return status
+
+
 def _handle_signal(signum: int, _frame) -> None:  # pragma: no cover - 信号处理
     global _STOP
     _STOP = True
@@ -68,6 +80,8 @@ def main(argv: list[str] | None = None) -> int:
         signal.signal(signal.SIGTERM, _handle_signal)
     except (AttributeError, ValueError):  # pragma: no cover
         pass
+
+    bootstrap()
 
     totals = run_loop(interval=args.interval, limit=args.limit, once=args.once)
     logger.info("调度器工作者退出：%s", totals)
