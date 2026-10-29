@@ -20,8 +20,11 @@ SRC = REPO_ROOT / "services" / "api" / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-os.environ.setdefault("APP_MODE", "mock")
-os.environ.setdefault("QUANT_BACKEND", "local_reference")
+# 测试基线必须可复现：本机 .env（例如演示环境的 QUANT_BACKEND=remote、APP_MODE=live）
+# 不得改变测试语义，否则单元测试会尝试联网请求量化服务而失败。
+# 需要其它模式的用例在用例内用 monkeypatch.setenv 显式覆盖。
+os.environ["APP_MODE"] = "mock"
+os.environ["QUANT_BACKEND"] = "local_reference"
 
 from finpilot import db as dbmod  # noqa: E402
 from finpilot import models  # noqa: E402
