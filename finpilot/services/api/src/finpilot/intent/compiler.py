@@ -44,7 +44,9 @@ UNSUPPORTED_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"贷款|借钱给我|授信|提额到|套现|分期套现", "credit_or_loan"),
     (r"保证收益|稳赚|包赚|保本高息", "guaranteed_return"),
     (r"帮我查别人|其他人的账户|他的余额|查一下我老婆|查一下我老公的卡", "other_user_data"),
-    (r"[\u4e00-\u9fa5]{2,4}的(账单|报表|报告|消费记录|流水)", "other_user_data"),
+    # 间接注入常见形态：把账单/身份/验证码等送往外部地址或第三方（必须带外部目的地，避免误伤"转发给我"）
+    (r"(发送|上传|转发|导出|提交|回传).{0,24}(https?://|attacker\.|@[a-z0-9.-]+\.[a-z]{2,})", "exfiltration_request"),
+    (r"(账单|身份|身份证|验证码|密码|密钥|令牌).{0,16}(发送|上传|转发|发|传).{0,12}(https?://|attacker|外部|第三方)", "exfiltration_request"),
     (r"改一下(政策|规则|权限)|把(额度|限额)调高到|sudo|管理员权限", "policy_change"),
     (r"跳过(审批|确认|授权|核验)|不用(确认|审批|授权)|不需要(确认|审批)|别让我确认|无需确认|免确认", "approval_bypass"),
 )
@@ -485,6 +487,15 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
         )
         if negation_hit and not unsupported_reason:
             unsupported_reason, unsupported_span = "negated_request", negation_hit.group(0)
+
+    # 他人账单：只在"某某的账单"里由**人名**触发；上个月/这个月这类时间词不算人名。
+    if not unsupported_reason:
+        name_bill = re.search(r"([\u4e00-\u9fa5]{2,4})的(账单|报表|报告|消费记录|流水)", text)
+        if name_bill:
+            token = name_bill.group(1)
+            time_words = ("月", "年", "周", "天", "季度", "最近", "我", "你", "他", "她", "它")
+            if not any(word in token for word in time_words):
+                unsupported_reason, unsupported_span = "other_user_data", name_bill.group(0)
     hint_action = None
     model_clarification = False
     if model_hint is not None and not unsupported_reason:
@@ -550,6 +561,8 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
             question = "检测到否定/取消表达，我不会执行这笔操作；如果确实要办理，请去掉否定词后重新说明。"
         elif unsupported_reason == "approval_bypass":
             question = "不能跳过确认或授权：资金、卡片与代扣操作都必须由你本人在服务端确认后执行。"
+        elif unsupported_reason == "exfiltration_request":
+            question = "不会把账单、身份信息、验证码或密钥发送到外部地址；这类请求一律拒绝。"
         else:
             question = "这个需求不在本版本支持范围内（不含证券下单、授信、跨币种与保证收益）。我可以帮你在已支持的能力内换一种做法。"
         unresolved.append(_clarification("unsupported", question, blocking=False))
