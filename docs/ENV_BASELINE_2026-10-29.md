@@ -79,7 +79,18 @@ cd .\finpilot
 | `GET :58102/merchant/health` | 200 |
 | `GET :8770/healthz` | 200 |
 
-### 4.3 交接书声明与本次实测的差异
+### 4.3 前端
+
+`pnpm install --frozen-lockfile`（pnpm 11.28.5、Node 24.16.0）成功安装 166 个包，锁文件供应链校验通过。随后：
+
+| 检查 | 结果 | 日志 |
+|---|---|---|
+| `pnpm test` | **144 passed**（shared-ui 135、im 5、web 4），16s | `evidence/frontend_tests_20261029_envrepro.log` |
+| `pnpm build` | 三个包全部通过，5s | `evidence/frontend_build_20261029_envrepro.log` |
+
+重建产物文件名与交接包内预构建产物一致（`index-BW6YiIQO.js`、`index-JG0chknX.css`、`index-gr6Aj6UX.js`、`index-BUHEGP9v.css`），说明前端源码与预构建产物同源、构建可复现。注意 `finpilot/.gitignore` 忽略 `apps/*/dist/`，构建产物靠 `SHA256SUMS.json` 校验，不在 Git 跟踪范围内。
+
+### 4.4 交接书声明与本次实测的差异
 
 | 交接书 | 本次实测 |
 |---|---|
