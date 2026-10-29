@@ -703,7 +703,8 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
         has_period_word = re.search(r"(本月|这个月|上个月|上月|去年|今年|季度|周|月|年|最近)", text)
         has_explicit_date = re.search(r"\d{4}-\d{2}-\d{2}", text)
         vague_request = re.search(r"(最近|看看|了解一下|整理|消费情况|花了多少)", text)
-        if vague_request and not has_period_word and not has_explicit_date:
+        explain_request = re.search(r"(异常|可疑|为什么|解释|说明|核对|误报|漏报)", text)
+        if vague_request and not explain_request and not has_period_word and not has_explicit_date:
             unresolved.append(
                 _clarification(
                     "period",
@@ -751,7 +752,8 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
                 profile_view = current_profile(session, auth)
             except Exception:  # pragma: no cover - 领域未装配
                 profile_view = {"usable": False}
-            if not profile_view.get("usable"):
+            states_own_level = re.search(r"R[1-5]", text)
+            if not profile_view.get("usable") and not states_own_level:
                 unresolved.append(
                     _clarification(
                         "risk_questionnaire",
