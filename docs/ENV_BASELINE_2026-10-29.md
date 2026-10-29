@@ -61,6 +61,7 @@ cd .\finpilot
 | 第 2 次 | 显式 `QUANT_BACKEND=local_reference`、`FINPILOT_PG_BIN` 指向便携 PostgreSQL | **672 passed / 0 failed / 0 skipped**，375.74s | `evidence/finpilot_pytest_20261029_162940_envrepro.log` |
 | 第 3 次 | 修复 Worker 适配器注册 + 新增 2 个回归用例后 | **674 passed / 0 failed / 0 skipped**，257.98s | `evidence/finpilot_pytest_20261029_170900_workerfix.log` |
 | 第 4 次 | S3 问卷/产品解析 + 回调验签与任务对账 + 六场景修复后 | **679 passed / 0 failed / 0 skipped**，466.45s | `evidence/finpilot_pytest_20261029_180900_scenes.log` |
+| 第 5 次 | 容器隔离配置 + 外泄拒绝规则后 | **681 passed / 0 failed / 0 skipped**，358.27s | `evidence/finpilot_pytest_20261029_184500_round3.log` |
 
 第 1 次的 3 个失败全部在 `tests/unit/domains/test_quant.py`、`test_suitability.py`：单元测试继承了演示配置的 `QUANT_BACKEND=remote`，`compare_products` 尝试请求未启动的量化服务，历史指标回退成 `QuantUnavailable`，而不是 `insufficient_history`。**这不是代码回归，而是测试基线受本机配置污染。**
 
