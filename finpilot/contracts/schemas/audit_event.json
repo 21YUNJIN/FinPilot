@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/audit_event.json",
+  "title": "AuditEvent",
+  "description": "追加写审计事件：事件哈希链 + 独立签名摘要，可串起授权到资金效果并检测删改（SEC-05、T36）。不保存模型私有思维链，不保存验证码、密码、完整卡号或 TOTP 秘钥。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "seq",
+    "event_type",
+    "actor",
+    "actor_role",
+    "payload",
+    "payload_hash",
+    "previous_hash",
+    "event_hash",
+    "timestamp"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "单调递增序号，唯一。"
+    },
+    "aggregate_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "actor_role": {
+      "enum": [
+        "customer",
+        "operator",
+        "risk",
+        "system",
+        "agent"
+      ]
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "grant_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "policy_version": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "model_version": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "payload": {
+      "type": "object",
+      "description": "结构化依据与可检查决定；不含模型私有思维链。"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "previous_hash": {
+      "type": "string",
+      "pattern": "^(|[0-9a-f]{64})$",
+      "description": "创世事件为空串。"
+    },
+    "event_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "signature": {
+      "type": "string",
+      "maxLength": 128,
+      "description": "独立保存的签名摘要，用于检测链重写。"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "chain_of_thought"
+        ]
+      },
+      {
+        "required": [
+          "model_reasoning"
+        ]
+      },
+      {
+        "required": [
+          "otp"
+        ]
+      },
+      {
+        "required": [
+          "totp_code"
+        ]
+      },
+      {
+        "required": [
+          "factor_response"
+        ]
+      },
+      {
+        "required": [
+          "password"
+        ]
+      },
+      {
+        "required": [
+          "full_pan"
+        ]
+      }
+    ]
+  }
+}

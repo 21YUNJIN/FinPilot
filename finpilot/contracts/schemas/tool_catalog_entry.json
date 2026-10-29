@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/tool_catalog_entry.json",
+  "title": "ToolCatalogEntry",
+  "description": "工具目录项（V5 第 16.1 节）：读写性质、权限规则、输入输出 Schema、超时、幂等、前置条件、效果、补偿条件、敏感字段与错误码。未分级的写操作不允许出现在目录中；OPERATOR 工具不得暴露给模型。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "category",
+    "read_write",
+    "default_level",
+    "agent_exposed",
+    "idempotent",
+    "timeout_seconds",
+    "input_schema",
+    "output_schema",
+    "preconditions",
+    "effects",
+    "compensation",
+    "sensitive_fields",
+    "error_codes",
+    "implemented_by"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+$"
+    },
+    "category": {
+      "enum": [
+        "account",
+        "transfer",
+        "schedule",
+        "aa",
+        "billing",
+        "risk",
+        "wealth",
+        "card",
+        "subscription",
+        "mandate",
+        "reminder",
+        "merchant",
+        "quant",
+        "operator"
+      ]
+    },
+    "read_write": {
+      "enum": [
+        "read",
+        "write"
+      ]
+    },
+    "default_level": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED",
+        "OPERATOR"
+      ]
+    },
+    "level_rule": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "等级升级／降级规则；必须可被服务端策略复算。"
+    },
+    "agent_exposed": {
+      "type": "boolean",
+      "description": "false 表示模型无权调用（人类专用或运营专用）。"
+    },
+    "idempotent": {
+      "type": "boolean"
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 120
+    },
+    "input_schema": {
+      "type": "string",
+      "pattern": "^https://finpilot\\.local/schemas/[a-z_]+\\.json$"
+    },
+    "output_schema": {
+      "type": "string",
+      "pattern": "^https://finpilot\\.local/schemas/[a-z_]+\\.json$"
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "compensation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "description"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "auto",
+            "manual",
+            "within_authorized_scope"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "tool": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 64
+        }
+      }
+    },
+    "sensitive_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      }
+    },
+    "error_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "https://finpilot.local/schemas/error_envelope.json#/$defs/error_code"
+      }
+    },
+    "implemented_by": {
+      "type": "string",
+      "pattern": "^services/[A-Za-z0-9_\\-/]+\\.py$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "read_write": {
+            "const": "read"
+          }
+        },
+        "required": [
+          "read_write"
+        ]
+      },
+      "then": {
+        "properties": {
+          "idempotent": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "default_level": {
+            "const": "OPERATOR"
+          }
+        },
+        "required": [
+          "default_level"
+        ]
+      },
+      "then": {
+        "properties": {
+          "agent_exposed": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "agent_exposed": {
+            "const": false
+          }
+        },
+        "required": [
+          "agent_exposed"
+        ]
+      },
+      "then": {
+        "properties": {
+          "default_level": {
+            "enum": [
+              "RED",
+              "OPERATOR"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

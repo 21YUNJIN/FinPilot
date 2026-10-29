@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "request_id": "req_0001",
+  "task_id": "task_demo_birthday",
+  "operation_id": "op_transfer_demo_01",
+  "status": "unknown",
+  "data": null,
+  "error": {
+    "code": "PROVIDER_TIMEOUT",
+    "safe_message": "请求结果尚未确认，正在查询原订单。",
+    "retry_mode": "query_same_operation",
+    "reason_codes": [
+      "provider_timeout_after_submit"
+    ],
+    "details": {
+      "query_attempts": "3"
+    }
+  },
+  "provenance": {
+    "adapter": "bank_sandbox_v1",
+    "observed_at": "2026-10-22T10:05:00+08:00",
+    "schema_version": "1.0",
+    "mode": "mock"
+  }
+}

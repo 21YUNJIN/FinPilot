@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/plan_step.json",
+  "title": "PlanStep",
+  "description": "计划步骤：read_set／write_set 供增量恢复计算受影响集合（V5 第 5.4 节）；每步最多消费一次对应授权。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "step_id",
+    "plan_id",
+    "seq",
+    "node_id",
+    "tool",
+    "typed_args",
+    "required_level",
+    "status"
+  ],
+  "properties": {
+    "step_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "plan_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "node_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "tool": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+$",
+      "description": "必须来自 contracts/tool-catalog.yaml；未登记工具名拒绝执行。"
+    },
+    "typed_args": {
+      "type": "object",
+      "description": "类型化参数；模型自由文本不得直接进入本字段。"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 48
+      }
+    },
+    "read_set": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 96
+      },
+      "description": "依赖的事实／版本（账户、报价、条款、授权）。"
+    },
+    "write_set": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 96
+      },
+      "description": "可能产生的业务效果。"
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "expected_effects": {
+      "type": "object"
+    },
+    "compensation_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "auto",
+            "manual",
+            "within_authorized_scope"
+          ]
+        },
+        "tool": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 64
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "max_cost_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+        },
+        "requires_reauthorization": {
+          "type": "boolean"
+        }
+      }
+    },
+    "required_level": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ],
+      "description": "服务端权限等级；客户端与模型不得降低（AUTH-01）。"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "running",
+        "awaiting_authorization",
+        "succeeded",
+        "failed",
+        "skipped",
+        "unknown",
+        "cancelled"
+      ],
+      "description": "步骤状态独立于 Task/Operation 状态；unknown 必须查询原操作后才能判定。"
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "last_error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "unknown"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "operation_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "failed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "last_error"
+        ],
+        "properties": {
+          "last_error": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

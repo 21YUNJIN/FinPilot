@@ -1,0 +1,53 @@
+{
+  "report_id": "bill_2026_09",
+  "owner_user_id": "user_demo_01",
+  "period": {
+    "kind": "month",
+    "year": 2026,
+    "month": 9,
+    "timezone": "Asia/Shanghai"
+  },
+  "generated_at": "2026-10-22T10:10:00+08:00",
+  "data_cutoff_at": "2026-10-22T10:10:00+08:00",
+  "currency": "CNY",
+  "total_inflow_minor": 1200000,
+  "total_outflow_minor": 436700,
+  "net_minor": 763300,
+  "internal_transfer_minor": 50000,
+  "internal_transfers_excluded_from_consumption": true,
+  "fee_minor": 1200,
+  "refund_minor": 8800,
+  "categories": [
+    {
+      "category": "food",
+      "amount_minor": 156000,
+      "count": 22,
+      "share_bps": 3572
+    },
+    {
+      "category": "transport",
+      "amount_minor": 68000,
+      "count": 14,
+      "share_bps": 1557
+    }
+  ],
+  "uncategorized_minor": 12000,
+  "zero_denominator_flags": [],
+  "incomplete_transactions": [
+    "bt_pending_refund_01"
+  ],
+  "corrections": [
+    "bt_0007 由 other 纠正为 food"
+  ],
+  "anomalies": [
+    {
+      "label": "duplicate_charge",
+      "basis": "同商户同日同金额连续两笔，间隔 41 秒"
+    }
+  ],
+  "warnings": [
+    "数据截至 2026-09-30T23:59:59+08:00，之后入账不计入本期"
+  ],
+  "untrusted_text": null,
+  "source": "synthetic"
+}

@@ -1,0 +1,16 @@
+{
+  "task_id": "task_demo_birthday",
+  "task_status": "succeeded",
+  "revision": 3,
+  "mode": "mock",
+  "generated_at": "2026-10-22T10:05:00+08:00",
+  "completed_effects": [
+    {
+      "kind": "transfer",
+      "description": "已成功转账 100.00 元给张三",
+      "verified": false,
+      "authority": "receipt"
+    }
+  ],
+  "next_actions": []
+}

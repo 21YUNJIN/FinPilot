@@ -1,0 +1,1166 @@
+# FinPilot 工具目录（INTERFACES.md 第 5 节 + 第 3 节分级）
+# 每项含：读写性质、权限规则、输入输出 Schema、超时、幂等、前置条件、效果、补偿条件、敏感字段、错误码。
+# 未分级的写操作不得出现在目录中；OPERATOR 工具 agent_exposed 必须为 false。
+schema_version: '1.0'
+policy_version: policy-2026.10
+tools:
+- name: account.balance
+  category: account
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/snapshot.json
+  preconditions:
+  - 身份来自服务端会话
+  - 账户归属校验通过（owner_user_id 或账户链路）
+  effects:
+  - 不产生任何资金或状态变化
+  - 返回可用余额 B−H−F 与可支配 max(0,B−H−F−E)
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields:
+  - account_id
+  - masked_number
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/kernel/snapshots.py
+  level_rule: 纯查询：身份与归属检查后直接执行，不要求额外业务确认。
+- name: payee.resolve
+  category: transfer
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/domain_result.json
+  preconditions:
+  - 身份来自服务端会话
+  - 只检索本人 payee 集合
+  effects:
+  - 不产生资金效果
+  - 同名联系人返回候选列表，未确定前不得写入
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields:
+  - phone_ref
+  - destination_account_ref
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/kernel/transfers.py
+  level_rule: 纯查询：同名歧义只触发澄清（A01/PLAN-01），不升级等级。
+- name: transfer.prepare
+  category: transfer
+  read_write: write
+  default_level: GREEN
+  level_rule: 只登记稳定操作草稿（写 operations 表），不消费授权、不产生外部支付；
+    实际提交由 transfer.submit 按当日累计金额决定 YELLOW/RED
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/operation_view.json
+  preconditions:
+  - 账户归属与对象归属校验通过
+  - 金额为整数分且 > 0
+  - 计划已进入可准备状态
+  effects:
+  - 只登记操作草稿与参数哈希：不产生外部支付、不消费授权、不改变余额
+  - 不创建资金预留（预留由 transfer.submit 在同一事务内处理）
+  compensation:
+    mode: auto
+    description: 未提交的草稿可直接标记 cancelled，不影响资金与授权计数。
+    tool: null
+  sensitive_fields:
+  - payee_id
+  - source_account_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  - PARAM_INVALID
+  - SCHEMA_INVALID
+  - VERSION_CONFLICT
+  implemented_by: services/api/src/finpilot/kernel/submission.py
+  level_rule: 保守定级 YELLOW：登记操作属于写入面但不产生外部支付；随计划确认一起执行，不单独打扰用户。
+- name: transfer.submit
+  category: transfer
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 15
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/operation_view.json
+  preconditions:
+  - 只接受已登记并获授权的 operation 引用（须先由 transfer.prepare 登记并获授权），不接受模型任意新拼装的转账参数
+  - grant.status == active 且 grant_covers(plan_revision, candidate_scope, amount_minor) 为真
+  - 同一事务内重检归属、余额、应急金底线、日额度与对象版本
+  effects:
+  - 产生一次性、不可逆的外部支付
+  - 原子捕获预留并写入守恒的双重记账分录
+  - 登记 Outbox 事件与 GrantUse
+  compensation:
+    mode: manual
+    description: 即时到账转账不可自动撤回；只能登记人工追索，不回改原交易。
+    tool: null
+  sensitive_fields:
+  - payee_id
+  - destination_account_ref
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - PROVIDER_REJECTED
+  - PROVIDER_TIMEOUT
+  - PROVIDER_UNAVAILABLE
+  - RESULT_UNKNOWN
+  - INSUFFICIENT_FUNDS
+  - PROTECTED_FLOOR_VIOLATION
+  - GRANT_SCOPE_VIOLATION
+  - UNKNOWN_TOOL
+  implemented_by: services/api/src/finpilot/kernel/transfers.py
+  level_rule: 当日累计本金（含待执行占用）恰好 100000 分为 YELLOW，超过 100000 分为 RED；手续费不计入本金累计；并发分拆不能绕过升级。
+- name: transfer.status
+  category: transfer
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/operation_view.json
+  preconditions:
+  - 按 owner_user_id 做归属隔离
+  - 超时结果必须用原 operation_id 查询
+  effects:
+  - 不产生资金效果
+  - 返回权威状态、提供方引用与回执状态
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields:
+  - provider_order_ref
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  - RESULT_UNKNOWN
+  implemented_by: services/api/src/finpilot/kernel/submission.py
+  level_rule: 纯查询：unknown 也按 GREEN 查询，不得把查询耗尽写成失败。
+- name: schedule.create
+  category: schedule
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 15
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/operation_view.json
+  preconditions:
+  - 未来执行窗口明确且包含执行时刻
+  - 使用独立于登录会话的未来授权（AUTH-07）
+  - business_day 与 timezone 明确
+  effects:
+  - 持久化 ScheduledJob（不改余额）
+  - 登记独立未来授权引用与去重键
+  - 到点执行前重新分级与重新授权检查
+  compensation:
+    mode: auto
+    description: 未到点且未占用的定时任务可直接取消；已提交操作的取消走独立撤单操作。
+    tool: null
+  sensitive_fields:
+  - due_at
+  - grant_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  implemented_by: services/api/src/finpilot/kernel/scheduler.py
+  level_rule: 新计划至少 YELLOW，并继承被调度动作的具体等级；转账类定时任务按执行日本金累计重新分级。
+- name: schedule.cancel
+  category: schedule
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/operation_view.json
+  preconditions:
+  - 任务属于当前用户
+  - 租约与状态允许取消
+  effects:
+  - 停止尚未提交的调度执行
+  - 对已提交操作只登记撤单请求，不保证撤回成功
+  compensation:
+    mode: none
+    description: 取消本身即补偿动作；失败时保留原状态并给出实际边界。
+    tool: null
+  sensitive_fields:
+  - job_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - CANCEL_NOT_EFFECTIVE
+  implemented_by: services/api/src/finpilot/kernel/scheduler.py
+  level_rule: 原已授权范围内的取消可直接执行；超出范围重新授权。
+- name: schedule.status
+  category: schedule
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/operation_view.json
+  preconditions:
+  - 按 owner_user_id 归属隔离
+  effects:
+  - 不产生资金效果
+  - 返回 state、lease_until、attempts 与下次执行时间
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields: []
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/kernel/scheduler.py
+  level_rule: 纯查询：GREEN。
+- name: aa.create
+  category: aa
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/aa_request.json
+  preconditions:
+  - 实付总额已确定（含费用与不可退成本）
+  - 参与人已澄清
+  - 分摊使用最大余数法且合计严格等于总额
+  effects:
+  - 创建 AA 请求与分摊份额
+  - 只发送收款请求，不代扣任何参与人
+  - 应收不计入发起人可用资金
+  compensation:
+    mode: manual
+    description: 已发起的 AA 请求只能撤销未付款份额；已付款项走独立退款操作。
+    tool: null
+  sensitive_fields:
+  - participant_ref
+  - participant_user_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - PARAM_INVALID
+  - CLARIFICATION_REQUIRED
+  implemented_by: services/api/src/finpilot/domains/aa/service.py
+  level_rule: YELLOW：只发请求不含付款授权；任何参与人的实际付款需其本人独立授权。
+- name: aa.status
+  category: aa
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/aa_request.json
+  preconditions:
+  - 按 owner_user_id 归属隔离
+  effects:
+  - 不产生资金效果
+  - 返回各份额状态、已收金额与调整记录
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields:
+  - participant_ref
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/domains/aa/service.py
+  level_rule: 纯查询：GREEN。
+- name: bill.report
+  category: billing
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/bill_report.json
+  preconditions:
+  - 账期边界与 business_day 口径明确
+  - 只读账本与账单表
+  effects:
+  - 不产生资金效果
+  - 报告注明数据截至时间、缺数据与未完成交易
+  compensation:
+    mode: none
+    description: 只读计算无补偿需求。
+    tool: null
+  sensitive_fields:
+  - merchant_name
+  - counterparty
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/domains/billing/reports.py
+  level_rule: 纯查询：GREEN，不做额外确认（官方纯查询示例）。
+- name: risk.assess
+  category: risk
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 15
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/risk_profile.json
+  preconditions:
+  - 问卷版本与评分规则已冻结
+  - 答案完整且可复算
+  effects:
+  - 持久化风险测评结果与有效期
+  - 不产生资金效果
+  compensation:
+    mode: auto
+    description: 新测评产生新版本，旧版本保留为历史，不改写。
+    tool: null
+  sensitive_fields:
+  - answers
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - PARAM_INVALID
+  implemented_by: services/api/src/finpilot/domains/wealth_rules/risk.py
+  level_rule: YELLOW：提交问卷是低风险配置写入，按规则确定性计算，不涉及资金。
+- name: wealth.compare
+  category: wealth
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/wealth_product.json
+  preconditions:
+  - 产品条款版本与适当性结果可读
+  - 硬约束（风险等级、期限、流动性）用于过滤与排序
+  effects:
+  - 不产生资金效果
+  - 缺历史显示 NA，不承诺收益
+  compensation:
+    mode: none
+    description: 只读比较无补偿需求。
+    tool: null
+  sensitive_fields: []
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/domains/wealth_rules/compare.py
+  level_rule: 纯查询：GREEN。
+- name: wealth.purchase
+  category: wealth
+  read_write: write
+  default_level: RED
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/wealth_order.json
+  preconditions:
+  - 存在有效且未过期的风险测评，且产品风险不高于测评等级
+  - RED 强验证已通过并签发受限授权
+  - 净值未知时不得给出估算份额
+  effects:
+  - 资金冻结／扣划与正式份额分别记账
+  - 持久化订单与异步确认状态
+  - 未知净值不编造份额
+  compensation:
+    mode: auto
+    description: 仅在产品条款允许的撤单窗口内自动撤单；超出窗口按条款收取费用。
+    tool: null
+  sensitive_fields:
+  - product_id
+  - account_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - RISK_MISMATCH
+  - ASSESSMENT_REQUIRED
+  - INSUFFICIENT_FUNDS
+  - NOT_REVERSIBLE
+  implemented_by: services/api/src/finpilot/domains/wealth_orders/purchase.py
+  level_rule: RED：申购属官方红色示例，必须确认摘要 + 实际强验证。
+- name: wealth.redeem
+  category: wealth
+  read_write: write
+  default_level: RED
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/wealth_order.json
+  preconditions:
+  - 赎回份额不超过可用份额（冻结份额不可赎回）
+  - 使用产品日历与截止时间判定受理日
+  - RED 强验证已通过
+  effects:
+  - 冻结可赎回份额并登记赎回订单
+  - 到账前余额不增加
+  - 按产品版本决定撤单与冷静期
+  compensation:
+    mode: manual
+    description: 受理后按条款撤单；到账延迟只能查询，不能提前增加余额。
+    tool: null
+  sensitive_fields:
+  - product_id
+  - account_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - NOT_REVERSIBLE
+  - CAPABILITY_NOT_SUPPORTED
+  implemented_by: services/api/src/finpilot/domains/wealth_orders/redeem.py
+  level_rule: RED：本项目从严策略，赎回与申购同为红色。
+- name: wealth.status
+  category: wealth
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/wealth_order.json
+  preconditions:
+  - 按 owner_user_id 归属隔离
+  effects:
+  - 不产生资金效果
+  - 返回受理、冻结、确认份额与待到账状态
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields: []
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  - RESULT_UNKNOWN
+  implemented_by: services/api/src/finpilot/domains/wealth_orders/orders.py
+  level_rule: 纯查询：GREEN。
+- name: card.apply
+  category: card
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 15
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/card_application.json
+  preconditions:
+  - 申请人身份有效
+  - 虚拟卡产品与模拟审批规则可用
+  - 参数在允许范围内
+  effects:
+  - 创建独立状态的申请单
+  - 未批准不生成有效额度
+  compensation:
+    mode: auto
+    description: 撤回未批准的申请（YELLOW）；已批准额度调整走独立 RED 操作。
+    tool: null
+  sensitive_fields:
+  - account_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - CAPABILITY_NOT_SUPPORTED
+  implemented_by: services/api/src/finpilot/domains/cards/applications.py
+  level_rule: YELLOW：官方小 risk 示例；提额批准为 RED 且需独立运营角色。
+- name: card.set_limit
+  category: card
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/card_control.json
+  preconditions:
+  - 卡片属于当前用户
+  - 调低或增加用户限制；不得申请真实授信
+  effects:
+  - 写入用户级限额控制
+  - 与渠道限制、风控冻结叠加生效
+  compensation:
+    mode: auto
+    description: 用户可自行恢复自己设置的限额；不可解除风控限制。
+    tool: null
+  sensitive_fields:
+  - card_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - FORBIDDEN
+  implemented_by: services/api/src/finpilot/domains/cards/applications.py
+  level_rule: YELLOW 为调低或增加用户限制；提额批准与重要解锁为 RED，且只能由独立运营角色批准。
+- name: card.set_control
+  category: card
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/card_control.json
+  preconditions:
+  - 卡片属于当前用户
+  - 解除限制时必须校验 actor_role 是否有权解除（can_release）
+  effects:
+  - 叠加式卡控：用户锁、渠道锁与风控冻结可同时存在
+  - 只解除有权解除的限制
+  compensation:
+    mode: auto
+    description: 恢复用户自设控制；风控限制只能由风控角色解除。
+    tool: null
+  sensitive_fields:
+  - card_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - FORBIDDEN
+  implemented_by: services/api/src/finpilot/domains/cards/controls.py
+  level_rule: 新增／加强限制为 YELLOW；解除重要限制（风控冻结、渠道锁解锁）升级为 RED。
+- name: card.report_lost
+  category: card
+  read_write: write
+  default_level: RED
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 15
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/card.json
+  preconditions:
+  - 卡片属于当前用户
+  - RED 强验证已通过
+  - 挂失／解挂必须记录原因与时间
+  effects:
+  - 卡片生命周期进入 lost
+  - 影响既有任务的后续支付步骤
+  - 不自动补卡
+  compensation:
+    mode: manual
+    description: 解挂为独立 RED 操作；补卡产生新旧卡关联。
+    tool: null
+  sensitive_fields:
+  - card_id
+  - masked_pan
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - NOT_REVERSIBLE
+  implemented_by: services/api/src/finpilot/domains/cards/controls.py
+  level_rule: RED：挂失／解挂为官方红色示例。
+- name: card.replace
+  category: card
+  read_write: write
+  default_level: RED
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/card_application.json
+  preconditions:
+  - 原卡存在且状态允许补卡
+  - RED 强验证已通过
+  - 新旧卡关联字段可写
+  effects:
+  - 创建补卡申请并维护 replaces_card_id / replaced_by_card_id
+  - 旧卡状态按规则关闭或保留
+  compensation:
+    mode: manual
+    description: 补卡确认前可撤回申请；已制卡不可自动撤销。
+    tool: null
+  sensitive_fields:
+  - card_id
+  - masked_pan
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - NOT_REVERSIBLE
+  implemented_by: services/api/src/finpilot/domains/cards/applications.py
+  level_rule: RED：补卡确认按官方红色示例从严处理。
+- name: card.status
+  category: card
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/card.json
+  preconditions:
+  - 按 owner_user_id 归属隔离
+  - 只返回脱敏卡号
+  effects:
+  - 不产生资金效果
+  - 返回叠加后的限制视图
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields:
+  - masked_pan
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/domains/cards/status.py
+  level_rule: 纯查询：GREEN。
+- name: subscription.list
+  category: subscription
+  read_write: read
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/subscription.json
+  preconditions:
+  - 按 owner_user_id 归属隔离
+  - 官方把订阅查询列为黄色，查询也要明确确认
+  effects:
+  - 不产生资金效果
+  - 区分合同证据与推断证据
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields:
+  - merchant_name
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/domains/subscriptions/service.py
+  level_rule: 官方黄色例外：一切只读均绿色不覆盖本工具，查询也必须确认。
+- name: subscription.cancel
+  category: subscription
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 15
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/subscription.json
+  preconditions:
+  - 订阅属于当前用户
+  - 取消商户合同与解除代扣是两个独立动作
+  effects:
+  - 更新商户合同状态为 pending_cancellation / cancelled
+  - 不自动退款，不自动解除代扣
+  compensation:
+    mode: manual
+    description: 部分成功后只能重试未完成的一端；已发生扣费走独立退款操作。
+    tool: null
+  sensitive_fields:
+  - merchant_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - CANCEL_NOT_EFFECTIVE
+  - PROVIDER_REJECTED
+  implemented_by: services/api/src/finpilot/domains/subscriptions/service.py
+  level_rule: YELLOW：官方黄色示例（订阅查询及取消）。
+- name: mandate.revoke
+  category: mandate
+  read_write: write
+  default_level: RED
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 15
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/mandate.json
+  preconditions:
+  - 代扣授权属于当前用户
+  - RED 强验证已通过
+  - 与商户合同状态互相独立
+  effects:
+  - 解除银行代扣授权
+  - 不回滚已发生的代扣
+  - 展示未解决义务
+  compensation:
+    mode: manual
+    description: 重新签约需商户侧与银行侧各自重新授权。
+    tool: null
+  sensitive_fields:
+  - merchant_id
+  - account_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - NOT_REVERSIBLE
+  implemented_by: services/api/src/finpilot/domains/subscriptions/mandates.py
+  level_rule: RED：解除代扣属重要解锁，按从严策略要求强验证。
+- name: mandate.status
+  category: mandate
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 5
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/mandate.json
+  preconditions:
+  - 按 owner_user_id 归属隔离
+  effects:
+  - 不产生资金效果
+  - 不与合同状态互相冒充
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields: []
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  implemented_by: services/api/src/finpilot/domains/subscriptions/mandates.py
+  level_rule: 纯查询：GREEN（代扣状态查询本身不涉及合同文本）。
+- name: reminder.create
+  category: reminder
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/reminder.json
+  preconditions:
+  - 用户已同意提醒（consent_at 存在）
+  - 时区与 due_at 明确
+  - dedupe_key 唯一
+  effects:
+  - 持久化提醒与去重键
+  - 发送前不产生资金效果
+  - 模拟通知必须标记 simulated
+  compensation:
+    mode: auto
+    description: 取消后不再新增通知；已发出的提醒不可撤回。
+    tool: null
+  sensitive_fields:
+  - timezone
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  implemented_by: services/api/src/finpilot/domains/subscriptions/reminders.py
+  level_rule: YELLOW：低风险配置写入。
+- name: reminder.cancel
+  category: reminder
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/reminder.json
+  preconditions:
+  - 提醒属于当前用户
+  effects:
+  - 停止后续通知
+  - 不删除历史发送记录
+  compensation:
+    mode: none
+    description: 取消本身即补偿动作。
+    tool: null
+  sensitive_fields: []
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  implemented_by: services/api/src/finpilot/domains/subscriptions/reminders.py
+  level_rule: YELLOW：低风险配置写入。
+- name: merchant.quote
+  category: merchant
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/merchant_quote.json
+  preconditions:
+  - 报价包含权威结构化金额、取消费与有效期
+  - 自由文本单独放入 untrusted_text
+  effects:
+  - 不产生资金效果
+  - 缓存键包含用户、数据版本与时间范围
+  compensation:
+    mode: none
+    description: 只读报价无补偿需求。
+    tool: null
+  sensitive_fields:
+  - merchant_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  - PROVIDER_REJECTED
+  - PROVIDER_TIMEOUT
+  - PROVIDER_UNAVAILABLE
+  - RESULT_UNKNOWN
+  - PROVIDER_CAPABILITY_MISSING
+  implemented_by: services/api/src/finpilot/adapters/merchant/client.py
+  level_rule: 纯查询／报价：GREEN。
+- name: merchant.book
+  category: merchant
+  read_write: write
+  default_level: RED
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 25
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/merchant_order.json
+  preconditions:
+  - 报价未过期且条款版本一致
+  - RED 强验证已通过
+  - 适配器支持稳定业务键与结果查询
+  effects:
+  - 产生付费预订的外部效果
+  - 写入订单与不可退费用
+  - 未知结果先查询原订单
+  compensation:
+    mode: auto
+    description: 仅在条款允许窗口内自动取消；取消费单列且不可退。
+    tool: null
+  sensitive_fields:
+  - merchant_id
+  - provider_ref
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - PROVIDER_REJECTED
+  - PROVIDER_TIMEOUT
+  - PROVIDER_UNAVAILABLE
+  - RESULT_UNKNOWN
+  - NOT_REVERSIBLE
+  - PROVIDER_CAPABILITY_MISSING
+  implemented_by: services/api/src/finpilot/adapters/merchant/client.py
+  level_rule: RED：付费商户预订按官方红色示例处理。
+- name: merchant.cancel
+  category: merchant
+  read_write: write
+  default_level: YELLOW
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/merchant_order.json
+  preconditions:
+  - 订单属于当前用户
+  - 处于条款允许的取消窗口
+  - 取消费条款可读
+  effects:
+  - 登记取消并记录实际成本
+  - 取消失败不把原订单改成失败
+  compensation:
+    mode: manual
+    description: 取消失败保留原订单状态并给出实际边界；退款到账前不增加余额。
+    tool: null
+  sensitive_fields:
+  - provider_ref
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - PROVIDER_REJECTED
+  - PROVIDER_TIMEOUT
+  - PROVIDER_UNAVAILABLE
+  - RESULT_UNKNOWN
+  - CANCEL_NOT_EFFECTIVE
+  - NOT_REVERSIBLE
+  implemented_by: services/api/src/finpilot/adapters/merchant/client.py
+  level_rule: YELLOW：原已授权范围内的取消可直接执行；超出授权范围（改对象、涨价）重新授权。
+- name: merchant.status
+  category: merchant
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 10
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/merchant_order.json
+  preconditions:
+  - 按 owner_user_id 归属隔离
+  - 必须用稳定业务键查询
+  effects:
+  - 不产生资金效果
+  - 未知结果保持 pending/unknown
+  compensation:
+    mode: none
+    description: 只读查询无补偿需求。
+    tool: null
+  sensitive_fields:
+  - provider_ref
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  - PROVIDER_REJECTED
+  - PROVIDER_TIMEOUT
+  - PROVIDER_UNAVAILABLE
+  - RESULT_UNKNOWN
+  implemented_by: services/api/src/finpilot/adapters/merchant/client.py
+  level_rule: 纯查询：GREEN。
+- name: quant.risk_report
+  category: quant
+  read_write: read
+  default_level: GREEN
+  agent_exposed: true
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/tool_request.json
+  output_schema: https://finpilot.local/schemas/domain_result.json
+  preconditions:
+  - 只读调用既有 StockQuant 能力
+  - 固定数据与方法版本
+  - 数据不足显示 NA
+  effects:
+  - 不产生资金效果
+  - 可影响筛选与排序，但不输出收益保证
+  compensation:
+    mode: none
+    description: 只读计算无补偿需求。
+    tool: null
+  sensitive_fields: []
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - UNAUTHENTICATED
+  - SYSTEM_ERROR
+  - DEPENDENCY_FAILED
+  - CAPABILITY_NOT_SUPPORTED
+  implemented_by: services/api/src/finpilot/adapters/stockquant/adapter.py
+  level_rule: 纯计算／查询：GREEN。
+- name: operator.card_decision
+  category: operator
+  read_write: write
+  default_level: OPERATOR
+  agent_exposed: false
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/card_application.json
+  preconditions:
+  - 必须核验原客户申请与授权
+  - 独立运营角色与审批规则
+  - 不得改变申请金额或条款
+  effects:
+  - 批准／拒绝原客户申请
+  - 只履行原客户请求，不替客户提高额度
+  compensation:
+    mode: manual
+    description: 审批决定不可自动回滚；纠正必须追加纠正记录并留审计。
+    tool: null
+  sensitive_fields:
+  - account_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - FORBIDDEN
+  - AUDIT_UNAVAILABLE
+  implemented_by: services/api/src/finpilot/domains/cards/applications.py
+  level_rule: OPERATOR：独立角色，不能由 Agent 或普通客户直接批准。
+- name: operator.risk_unfreeze
+  category: operator
+  read_write: write
+  default_level: OPERATOR
+  agent_exposed: false
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/card_control.json
+  preconditions:
+  - 运营解除安全锁必须填写理由
+  - 不得绕过用户强验证
+  - 审计必须可写
+  effects:
+  - 解除风控冻结或安全锁
+  - 不恢复任何被拒绝的业务请求
+  compensation:
+    mode: manual
+    description: 解除后可重新冻结；每次解除留独立审计。
+    tool: null
+  sensitive_fields:
+  - card_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - FORBIDDEN
+  - AUDIT_UNAVAILABLE
+  - SAFETY_LOCKED
+  implemented_by: services/api/src/finpilot/security/card_controls.py
+  level_rule: OPERATOR：风控解冻与安全锁解除为独立角色动作。
+- name: operator.case_action
+  category: operator
+  read_write: write
+  default_level: OPERATOR
+  agent_exposed: false
+  idempotent: true
+  timeout_seconds: 20
+  input_schema: https://finpilot.local/schemas/operation_draft.json
+  output_schema: https://finpilot.local/schemas/result_view.json
+  preconditions:
+  - 接管案例存在且分配给运营角色
+  - 不能伪造客户同意或绕过强验证
+  effects:
+  - 查询／复核在途操作并记录处置
+  - 客户授权动作仍需客户本人完成
+  compensation:
+    mode: manual
+    description: 处置记录只追加；越权动作被拒绝并记审计。
+    tool: null
+  sensitive_fields:
+  - operation_id
+  error_codes:
+  - OBJECT_NOT_ACCESSIBLE
+  - GRANT_REQUIRED
+  - GRANT_INVALID
+  - POLICY_DENIED
+  - VERSION_CONFLICT
+  - IDEMPOTENCY_CONFLICT
+  - SYSTEM_ERROR
+  - FORBIDDEN
+  - AUDIT_UNAVAILABLE
+  implemented_by: services/api/src/finpilot/orchestration/handoff.py
+  level_rule: OPERATOR：运营接管为独立角色动作，模型工具目录不暴露。

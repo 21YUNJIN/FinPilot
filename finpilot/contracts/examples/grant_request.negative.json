@@ -1,0 +1,12 @@
+{
+  "scope_hash": "232254ed42d4f3a024202d6689c843c2ffff30fbada68b586249e7e430722dfc",
+  "expected_revision": 1,
+  "grant_id": "grant_fake_0001",
+  "status": "active",
+  "required_level": "GREEN",
+  "verification_level": "NONE",
+  "scope": {
+    "tool": "transfer.submit",
+    "amount_minor": 900000
+  }
+}

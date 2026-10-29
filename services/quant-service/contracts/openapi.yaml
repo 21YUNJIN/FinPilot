@@ -1,0 +1,202 @@
+openapi: "3.0.3"
+info:
+  title: StockQuant Bank Wealth Risk (S3)
+  version: "1.0.0"
+  description: |
+    Read-only wealth-product risk service for FinPilot's S3 scenario.
+    It exposes NAV risk metrics, suitability ordering and first-order stress
+    scenarios. It cannot trade, transfer, or change a suitability level.
+
+    Every response uses the BANKAGENT_SRS_V5 §16.2 envelope; HTTP 200 does not
+    mean business success, check `status`.
+servers:
+  - url: http://127.0.0.1:8770
+security:
+  - bearerAuth: []
+paths:
+  /healthz:
+    get:
+      security: []
+      summary: Liveness and engine name
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: {type: string}
+                  engine: {type: string}
+                  method_version: {type: string}
+  /v1/meta:
+    get:
+      summary: Capabilities, engine identity, guardrails, limits
+      responses:
+        "200":
+          description: Envelope with capability data
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Envelope"}
+  /v1/quant/risk-report:
+    post:
+      summary: Per-product NAV risk metrics with provenance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/RiskRequest"}
+      responses:
+        "200":
+          description: Envelope; per-product failures are isolated in data.failures
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Envelope"}
+        "400": {description: Invalid request}
+        "403": {description: Missing or wrong token}
+        "413": {description: Body too large}
+        "422": {description: Unprocessable NAV data}
+        "429": {description: Rate limited}
+        "503": {description: Engine unavailable}
+  /v1/quant/rank:
+    post:
+      summary: Hard filters first, then preference-weighted ordering plus A4 baseline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/RankRequest"}
+      responses:
+        "200":
+          description: Envelope with ranked, baseline_ranked and rank_changes
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Envelope"}
+  /v1/quant/stress:
+    post:
+      summary: First-order stress scenarios with explicit assumptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/StressRequest"}
+      responses:
+        "200":
+          description: Envelope with scenarios; every block has not_a_loss_limit
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Envelope"}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Envelope:
+      type: object
+      required: [schema_version, request_id, status, data, error, provenance]
+      properties:
+        schema_version: {type: string, example: "1.0"}
+        request_id: {type: string, example: req_sq_0123456789abcdef}
+        task_id: {type: string, nullable: true}
+        operation_id: {type: string, nullable: true}
+        status: {type: string, enum: [ok, error]}
+        data: {type: object, nullable: true}
+        error:
+          type: object
+          nullable: true
+          properties:
+            code: {type: string}
+            safe_message: {type: string}
+            retry_mode: {type: string}
+        provenance:
+          type: object
+          properties:
+            adapter: {type: string}
+            observed_at: {type: string, format: date-time}
+            method_version: {type: string}
+            engine:
+              type: object
+              properties:
+                name: {type: string}
+                version: {type: string}
+                commit: {type: string}
+                module: {type: string}
+    NavPoint:
+      type: object
+      required: [date, value]
+      properties:
+        date: {type: string, format: date, example: "2026-10-23"}
+        value: {type: number, exclusiveMinimum: 0, example: 1.0831}
+    Product:
+      type: object
+      required: [product_id, nav]
+      properties:
+        product_id: {type: string, example: WM-BOND-102}
+        product_name: {type: string}
+        issuer: {type: string}
+        product_type: {type: string}
+        official_risk_level: {type: string, enum: [R1, R2, R3, R4, R5]}
+        total_fee_bps: {type: number}
+        term_days: {type: integer}
+        settlement_days: {type: integer}
+        min_amount_minor: {type: integer, description: integer CNY cents}
+        nav_source: {type: string}
+        nav:
+          type: array
+          maxItems: 5000
+          items: {$ref: "#/components/schemas/NavPoint"}
+    RiskRequest:
+      type: object
+      required: [as_of, products]
+      properties:
+        as_of: {type: string, format: date}
+        risk_free_rate: {type: number, default: 0.015}
+        products:
+          type: array
+          maxItems: 50
+          items: {$ref: "#/components/schemas/Product"}
+    User:
+      type: object
+      required: [risk_level]
+      properties:
+        risk_level: {type: string, enum: [R1, R2, R3, R4, R5]}
+        preference_mode: {type: string, enum: [stability, balanced, return, cost], default: balanced}
+        horizon_days: {type: integer, minimum: 0}
+        liquidity_need_days: {type: integer, minimum: 0}
+        budget_minor: {type: integer, minimum: 0}
+    RankRequest:
+      type: object
+      required: [as_of, user, products]
+      properties:
+        as_of: {type: string, format: date}
+        risk_free_rate: {type: number, default: 0.015}
+        include_quant: {type: boolean, default: true}
+        user: {$ref: "#/components/schemas/User"}
+        products:
+          type: array
+          maxItems: 50
+          items: {$ref: "#/components/schemas/Product"}
+    StressScenario:
+      type: object
+      required: [kind]
+      properties:
+        name: {type: string}
+        kind: {type: string, enum: [nav_shock, historical_worst_window, parametric_vol_shock]}
+        shock: {type: number, minimum: -1, maximum: 0}
+        window: {type: integer, minimum: 2, maximum: 250}
+        vol_multiplier: {type: number}
+        horizon_days: {type: integer}
+        confidence: {type: number, minimum: 0.5, exclusiveMaximum: 1}
+    StressRequest:
+      type: object
+      required: [as_of, products]
+      properties:
+        as_of: {type: string, format: date}
+        scenarios:
+          type: array
+          items: {$ref: "#/components/schemas/StressScenario"}
+        products:
+          type: array
+          maxItems: 50
+          items: {$ref: "#/components/schemas/Product"}

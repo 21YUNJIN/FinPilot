@@ -1,0 +1,9 @@
+{
+  "grant_use_id": "guse_birthday_1",
+  "grant_id": "grant_birthday_1",
+  "operation_id": "op_transfer_demo_01",
+  "authorized_parameter_hash": "d756a982506f0d07d2f7db5a886a82a83c5ad2258170f888ff7fa6cb0f53d864",
+  "amount_minor": 0,
+  "use_status": "consumed",
+  "created_at": "2026-10-22T10:02:00+08:00"
+}

@@ -1,0 +1,290 @@
+# FinPilot deployment topology -- V5 NFR-02 / DEL-02 / SYS-04
+#
+# STATUS: NOT EXECUTED ON THE REFERENCE HOST.
+# This machine has no container runtime (`docker` is not on PATH), so every service
+# below is a *target configuration*, not a verified fact. The verified deployment
+# path for the reference host is the Windows-native path in deploy/README.md
+# ("Path B"), which was executed end to end (see README.md evidence section).
+#
+# Usage on a Linux host with a container runtime (repository root):
+#   docker compose -f deploy/compose.yaml --env-file deploy/compose.env up -d postgres
+#   docker compose -f deploy/compose.yaml --env-file deploy/compose.env run --rm migrate
+#   docker compose -f deploy/compose.yaml --env-file deploy/compose.env up -d
+#   docker compose -f deploy/compose.yaml --env-file deploy/compose.env --profile tools run --rm seed
+#   curl http://127.0.0.1:58000/healthz
+#
+# Ports are aligned with the project-wide convention: API 58000, bank sandbox 58101,
+# merchant sandbox 58102, PostgreSQL 55432, APP client 5173, IM client 5174.
+
+name: finpilot
+
+# --- shared environment -------------------------------------------------------
+x-db-env: &db-env
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-finpilot}:${POSTGRES_PASSWORD:-finpilot_dev_pw}@postgres:5432/${POSTGRES_DB:-finpilot}
+  TEST_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-finpilot}:${POSTGRES_PASSWORD:-finpilot_dev_pw}@postgres:5432/${TEST_DATABASE_DB:-finpilot_test}
+  DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+  DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+  DB_LOCK_TIMEOUT_MS: ${DB_LOCK_TIMEOUT_MS:-20000}
+  DB_IDLE_TX_TIMEOUT_MS: ${DB_IDLE_TX_TIMEOUT_MS:-60000}
+
+x-runtime-env: &runtime-env
+  APP_MODE: ${APP_MODE:-mock}
+  ENVIRONMENT: ${ENVIRONMENT:-container}
+  # The three secret-bearing settings MUST be provided by the operator for anything
+  # beyond the competition demo; the defaults are dev-only placeholders.
+  TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY:-dev_only_totp_key_change_me_0123456789abcdef}
+  AUDIT_SIGNING_KEY: ${AUDIT_SIGNING_KEY:-dev_only_audit_signing_key_change_me}
+  PROVIDER_CALLBACK_SECRET: ${PROVIDER_CALLBACK_SECRET:-dev_only_provider_callback_secret}
+  # Containers talk to each other by service name (never 127.0.0.1)
+  PROVIDER_CALLBACK_BASE_URL: http://api:58000
+  BANK_SANDBOX_BASE_URL: http://bank-sandbox:58101
+  MERCHANT_SANDBOX_BASE_URL: http://merchant-sandbox:58102
+  BANK_SANDBOX_STATE: /state/bank_sandbox.sqlite3
+  MERCHANT_SANDBOX_STATE: /state/merchant_sandbox.sqlite3
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
+  HOME: /tmp
+
+x-app-image: &app-image
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  image: finpilot-app:local
+
+# Hardening applied to every FinPilot process container (not to postgres).
+# read_only root + tmpfs /tmp + no-new-privileges + cap_drop ALL; writable state goes
+# to explicitly declared volumes. Documented rationale: deploy/README.md.
+x-hardening: &hardening
+  read_only: true
+  tmpfs:
+    - /tmp:rw,size=128m
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  restart: unless-stopped
+
+services:
+  # --- PostgreSQL 17 ----------------------------------------------------------
+  postgres:
+    image: postgres:17
+    container_name: finpilot-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-finpilot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finpilot_dev_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-finpilot}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Test database used by the integration/security suites (created on first init)
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-finpilot} -d ${POSTGRES_DB:-finpilot}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  # --- One-shot: Alembic migration chain (DATA-04) ----------------------------
+  # api/workers wait for this to exit 0 (service_completed_successfully), so the
+  # schema is always at head before any process starts serving traffic.
+  migrate:
+    <<: [*app-image, *hardening]
+    container_name: finpilot-migrate
+    restart: "no"
+    working_dir: /app
+    environment:
+      <<: [*db-env, *runtime-env]
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    # migrations/env.py resolves the URL from -x db_url=... first, then from
+    # DATABASE_URL (already injected by *db-env), so no URL/credentials appear here.
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # --- One-shot: seed data (tools profile; never runs automatically) ----------
+  seed:
+    <<: [*app-image, *hardening]
+    container_name: finpilot-seed
+    profiles: ["tools"]
+    restart: "no"
+    working_dir: /app
+    environment:
+      <<: [*db-env, *runtime-env]
+    command: ["python", "-m", "finpilot.seed", "--json", "data/synthetic/seed_app.json"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # --- API --------------------------------------------------------------------
+  api:
+    <<: [*app-image, *hardening]
+    container_name: finpilot-api
+    working_dir: /app
+    environment:
+      <<: [*db-env, *runtime-env]
+    command: ["python", "-m", "uvicorn", "finpilot.app:app", "--host", "0.0.0.0", "--port", "58000", "--workers", "${API_WORKERS:-1}"]
+    ports:
+      - "127.0.0.1:58000:58000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:58000/healthz',timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      bank-sandbox:
+        condition: service_healthy
+      merchant-sandbox:
+        condition: service_healthy
+
+  # --- Outbox worker (provider dispatch) --------------------------------------
+  worker-outbox:
+    <<: [*app-image, *hardening]
+    container_name: finpilot-worker-outbox
+    working_dir: /app
+    environment:
+      <<: [*db-env, *runtime-env]
+    # same code path as the Windows-native dev stack (scripts/worker_outbox.py):
+    # process_pending + requeue_stuck in a loop, graceful SIGTERM exit
+    command: ["python", "scripts/worker_outbox.py", "--interval", "5", "--limit", "50"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # --- Scheduler worker (due jobs, window re-check) ---------------------------
+  worker-scheduler:
+    <<: [*app-image, *hardening]
+    container_name: finpilot-worker-scheduler
+    working_dir: /app
+    environment:
+      <<: [*db-env, *runtime-env]
+    command: ["python", "scripts/worker_scheduler.py", "--interval", "5"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # --- Independent provider sandboxes (own sqlite state, no finpilot import) ---
+  bank-sandbox:
+    <<: [*app-image, *hardening]
+    container_name: finpilot-bank-sandbox
+    working_dir: /app
+    environment:
+      BANK_SANDBOX_STATE: /state/bank_sandbox.sqlite3
+      PROVIDER_CALLBACK_SECRET: ${PROVIDER_CALLBACK_SECRET:-dev_only_provider_callback_secret}
+      PROVIDER_CALLBACK_BASE_URL: http://api:58000
+      PYTHONDONTWRITEBYTECODE: "1"
+      HOME: /tmp
+    command: ["python", "-m", "uvicorn", "bank:app", "--app-dir", "services/provider-sandbox", "--host", "0.0.0.0", "--port", "58101"]
+    ports:
+      - "127.0.0.1:58101:58101"
+    volumes:
+      - bank_state:/state
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:58101/bank/health',timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  merchant-sandbox:
+    <<: [*app-image, *hardening]
+    container_name: finpilot-merchant-sandbox
+    working_dir: /app
+    environment:
+      MERCHANT_SANDBOX_STATE: /state/merchant_sandbox.sqlite3
+      PROVIDER_CALLBACK_SECRET: ${PROVIDER_CALLBACK_SECRET:-dev_only_provider_callback_secret}
+      PROVIDER_CALLBACK_BASE_URL: http://api:58000
+      PYTHONDONTWRITEBYTECODE: "1"
+      HOME: /tmp
+    command: ["python", "-m", "uvicorn", "merchant:app", "--app-dir", "services/provider-sandbox", "--host", "0.0.0.0", "--port", "58102"]
+    ports:
+      - "127.0.0.1:58102:58102"
+    volumes:
+      - merchant_state:/state
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:58102/merchant/health',timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  # --- OPTIONAL: static hosting for the two clients (profile "clients") -------
+  # The API itself already serves the built clients at /app and /im when
+  # apps/*/dist exists (finpilot/app.py); these services are for a standalone
+  # static host with SPA fallback + API reverse proxy.
+  # nginx-unprivileged listens on 8080 and runs as uid 101, which is compatible
+  # with read_only + cap_drop ALL.
+  web:
+    image: nginxinc/nginx-unprivileged:1.27-alpine
+    container_name: finpilot-web
+    profiles: ["clients"]
+    ports:
+      - "127.0.0.1:5173:8080"
+    volumes:
+      - ../apps/web/dist:/usr/share/nginx/html:ro
+      - ./nginx-clients.conf:/etc/nginx/conf.d/default.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:rw,size=32m
+      - /var/run:rw,size=8m
+      - /tmp:rw,size=8m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/ >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+  im:
+    image: nginxinc/nginx-unprivileged:1.27-alpine
+    container_name: finpilot-im
+    profiles: ["clients"]
+    ports:
+      - "127.0.0.1:5174:8080"
+    volumes:
+      - ../apps/im/dist:/usr/share/nginx/html:ro
+      - ./nginx-clients.conf:/etc/nginx/conf.d/default.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:rw,size=32m
+      - /var/run:rw,size=8m
+      - /tmp:rw,size=8m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/ >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  bank_state:
+  merchant_state:

@@ -1,0 +1,7 @@
+{
+  "message": "给张三转 100 元",
+  "channel": "app",
+  "user_id": "user_demo_02",
+  "owner_user_id": "user_demo_02",
+  "status": "succeeded"
+}

@@ -1,0 +1,290 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/operation_view.json",
+  "title": "OperationView",
+  "description": "权威操作视图（V5 第 7.1 节）：状态、费用、提供方引用、回执、版本、待处理事项。unknown 先查询原操作，不重复扣款；查询耗尽不得写成失败。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operation_id",
+    "owner_user_id",
+    "tool",
+    "parameters_hash",
+    "idempotency_key",
+    "status",
+    "required_level",
+    "amount_minor",
+    "fee_minor",
+    "currency",
+    "version",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "plan_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "plan_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "tool": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+$"
+    },
+    "typed_args": {
+      "type": "object"
+    },
+    "parameters_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "status": {
+      "enum": [
+        "created",
+        "awaiting_authorization",
+        "authorized",
+        "dispatching",
+        "pending",
+        "unknown",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ],
+      "description": "与 models.OPERATION_STATUSES 逐字一致。"
+    },
+    "required_level": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ],
+      "description": "服务端权限等级；客户端与模型不得降低（AUTH-01）。"
+    },
+    "grant_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48,
+      "description": "客户端传来的 grant_id 只是引用，服务端仍核验真实状态。"
+    },
+    "source_account_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "currency": {
+      "const": "CNY",
+      "description": "币种固定 CNY。"
+    },
+    "provider_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "provider_order_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 96
+    },
+    "original_operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64,
+      "description": "补偿／退款操作引用原操作。"
+    },
+    "effect_confirmed": {
+      "type": "boolean",
+      "description": "只有权威回执确认后才为 true；HTTP 200 不等于成功。"
+    },
+    "unknown_since": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "submitted_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "settled_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "domain_result": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "https://finpilot.local/schemas/domain_result.json"
+        }
+      ]
+    },
+    "receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "error_code": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "pending_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 128
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "unknown"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "unknown_since"
+        ],
+        "properties": {
+          "unknown_since": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "succeeded"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "effect_confirmed",
+          "settled_at"
+        ],
+        "properties": {
+          "effect_confirmed": {
+            "const": true
+          },
+          "settled_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "failed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "error_code"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

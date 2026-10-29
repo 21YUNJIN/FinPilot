@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/error_envelope.json",
+  "title": "ErrorEnvelope",
+  "description": "统一返回信封与错误对象（V5 第 16.2 节）。HTTP 200 不等于业务成功，调用方必须读 status 与 error；错误不泄露其他用户对象是否存在、数据库堆栈或密钥。错误码与重试方式必须与 errors.ERROR_SPECS 一致。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "status",
+    "data",
+    "error",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "pending",
+        "unknown",
+        "failed",
+        "rejected"
+      ],
+      "description": "与 envelope.STATUS_* 常量一致；PROVIDER_TIMEOUT／RESULT_UNKNOWN 为 unknown。"
+    },
+    "data": {
+      "type": [
+        "object",
+        "array",
+        "string",
+        "integer",
+        "boolean",
+        "null"
+      ],
+      "description": "成功数据；业务状态以 status／error 为准。"
+    },
+    "error": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "safe_message",
+            "retry_mode"
+          ],
+          "properties": {
+            "code": {
+              "$ref": "https://finpilot.local/schemas/error_envelope.json#/$defs/error_code"
+            },
+            "safe_message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "retry_mode": {
+              "$ref": "https://finpilot.local/schemas/error_envelope.json#/$defs/retry_mode"
+            },
+            "reason_codes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "details": {
+              "type": "object",
+              "description": "只放可公开的结构化信息；禁止堆栈、SQL、密钥与其他用户对象线索。"
+            }
+          }
+        }
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "observed_at"
+      ],
+      "properties": {
+        "adapter": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+        },
+        "schema_version": {
+          "const": "1.0"
+        },
+        "mode": {
+          "enum": [
+            "live",
+            "offline_replay",
+            "mock"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ok"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "failed",
+              "rejected",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "error": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "error_code": {
+      "enum": [
+        "PARAM_INVALID",
+        "AMOUNT_PRECISION",
+        "SCHEMA_INVALID",
+        "UNKNOWN_TOOL",
+        "EXTRA_DANGEROUS_FIELD",
+        "UNAUTHENTICATED",
+        "FORBIDDEN",
+        "OBJECT_NOT_ACCESSIBLE",
+        "POLICY_DENIED",
+        "GRANT_REQUIRED",
+        "GRANT_INVALID",
+        "GRANT_SCOPE_VIOLATION",
+        "CHALLENGE_EXPIRED",
+        "CHALLENGE_FAILED",
+        "CHALLENGE_LOCKED",
+        "FACTOR_NOT_ENROLLED",
+        "VERSION_CONFLICT",
+        "IDEMPOTENCY_CONFLICT",
+        "NOT_REVERSIBLE",
+        "CANCEL_NOT_EFFECTIVE",
+        "INSUFFICIENT_FUNDS",
+        "PROTECTED_FLOOR_VIOLATION",
+        "RESERVATION_EXCEEDED",
+        "RISK_MISMATCH",
+        "ASSESSMENT_REQUIRED",
+        "INFEASIBLE",
+        "PLANNING_LIMIT",
+        "PROVIDER_REJECTED",
+        "RATE_LIMITED",
+        "PROVIDER_TIMEOUT",
+        "PROVIDER_UNAVAILABLE",
+        "PROVIDER_CAPABILITY_MISSING",
+        "RESULT_UNKNOWN",
+        "SANDBOX_UNAVAILABLE",
+        "SANDBOX_VIOLATION",
+        "AUDIT_UNAVAILABLE",
+        "CIRCUIT_OPEN",
+        "SAFETY_LOCKED",
+        "CAPABILITY_NOT_SUPPORTED",
+        "DEPENDENCY_FAILED",
+        "CLARIFICATION_REQUIRED",
+        "SYSTEM_ERROR"
+      ],
+      "description": "与 errors.ERROR_SPECS 键集合逐字一致。"
+    },
+    "retry_mode": {
+      "enum": [
+        "never",
+        "safe_query",
+        "query_same_operation",
+        "retry_same_operation",
+        "retry_after_backoff",
+        "after_reauthorization",
+        "after_input_fix"
+      ],
+      "description": "与 errors.RETRY_* 常量逐字一致。"
+    }
+  }
+}

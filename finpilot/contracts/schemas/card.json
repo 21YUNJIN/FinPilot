@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/card.json",
+  "title": "Card",
+  "description": "虚拟卡：生命周期状态与额度；完整卡号、CVV 与有效期不得出现在接口、日志或模型上下文（SEC-04）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "card_id",
+    "owner_user_id",
+    "account_id",
+    "masked_pan",
+    "lifecycle_status",
+    "credit_limit_minor",
+    "version"
+  ],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "account_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "masked_pan": {
+      "type": "string",
+      "pattern": "^(\\*{4} ){3}\\d{4}$",
+      "description": "仅脱敏展示：**** **** **** 1234。"
+    },
+    "brand": {
+      "type": "string",
+      "maxLength": 24
+    },
+    "lifecycle_status": {
+      "enum": [
+        "inactive",
+        "active",
+        "lost",
+        "closed"
+      ],
+      "description": "与 models.CARD_LIFECYCLE 逐字一致。"
+    },
+    "credit_limit_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "replaces_card_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "replaced_by_card_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "$ref": "https://finpilot.local/schemas/card_control.json"
+      }
+    },
+    "effective_controls": {
+      "type": "object",
+      "description": "叠加后的限制视图（security/card_controls.effective_controls）；用户锁、渠道锁、风控冻结可同时存在。"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "pan"
+        ]
+      },
+      {
+        "required": [
+          "full_pan"
+        ]
+      },
+      {
+        "required": [
+          "cvv"
+        ]
+      },
+      {
+        "required": [
+          "expiry"
+        ]
+      },
+      {
+        "required": [
+          "pin"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "event_id": "audit_0001",
+  "seq": 1,
+  "aggregate_id": "op_transfer_demo_01",
+  "event_type": "operation.succeeded",
+  "actor": "user_demo_01",
+  "actor_role": "customer",
+  "task_id": "task_demo_birthday",
+  "operation_id": "op_transfer_demo_01",
+  "grant_id": "grant_birthday_1",
+  "policy_version": "policy-2026.10",
+  "model_version": "deepseek-v4.1-flash",
+  "payload": {
+    "decision": "allow",
+    "required_level": "YELLOW",
+    "parameters_hash": "d756a982506f0d07d2f7db5a886a82a83c5ad2258170f888ff7fa6cb0f53d864",
+    "amount_minor": 10000,
+    "receipt_state": "applied"
+  },
+  "payload_hash": "c1280112aa96467be58658e25c0be8e1d23e24e36884b4047f76575197ca4dbb",
+  "previous_hash": "",
+  "event_hash": "c412d65ff08190834955443054667111f66ed7c1f88ec0a56d6a14a0256ed3c0",
+  "signature": "sig_7f3a1c9b",
+  "timestamp": "2026-10-22T10:05:00+08:00"
+}

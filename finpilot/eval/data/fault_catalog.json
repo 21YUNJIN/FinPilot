@@ -1,0 +1,799 @@
+[
+  {
+    "fault_id": "flt_pre_submit_network_loss_001",
+    "fault_class": "pre_submit_network_loss",
+    "injection_point": "kernel/submission.submit_operation 之前，provider.submit() 调用尚未发出",
+    "duration_ms": 30000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "failed",
+      "cancelled",
+      "ready",
+      "succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_001_0049"
+  },
+  {
+    "fault_id": "flt_pre_submit_network_loss_002",
+    "fault_class": "pre_submit_network_loss",
+    "injection_point": "kernel/submission.submit_operation 之前，provider.submit() 调用尚未发出",
+    "duration_ms": 60000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "failed",
+      "cancelled",
+      "ready",
+      "succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_005_0053"
+  },
+  {
+    "fault_id": "flt_pre_submit_network_loss_003",
+    "fault_class": "pre_submit_network_loss",
+    "injection_point": "kernel/submission.submit_operation 之前，provider.submit() 调用尚未发出",
+    "duration_ms": 120000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "failed",
+      "cancelled",
+      "ready",
+      "succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_005_0047"
+  },
+  {
+    "fault_id": "flt_pre_submit_network_loss_004",
+    "fault_class": "pre_submit_network_loss",
+    "injection_point": "kernel/submission.submit_operation 之前，provider.submit() 调用尚未发出",
+    "duration_ms": 300000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "failed",
+      "cancelled",
+      "ready",
+      "succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_003_0051"
+  },
+  {
+    "fault_id": "flt_pre_submit_network_loss_005",
+    "fault_class": "pre_submit_network_loss",
+    "injection_point": "kernel/submission.submit_operation 之前，provider.submit() 调用尚未发出",
+    "duration_ms": 45000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "failed",
+      "cancelled",
+      "ready",
+      "succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_001_0055"
+  },
+  {
+    "fault_id": "flt_provider_accepted_response_lost_001",
+    "fault_class": "provider_accepted_response_lost",
+    "injection_point": "provider.submit() 已被受理，但响应在返回途中丢失（status 未知）",
+    "duration_ms": 60000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s3_e_hid_006_0260"
+  },
+  {
+    "fault_id": "flt_provider_accepted_response_lost_002",
+    "fault_class": "provider_accepted_response_lost",
+    "injection_point": "provider.submit() 已被受理，但响应在返回途中丢失（status 未知）",
+    "duration_ms": 180000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s4_e_hid_002_0356"
+  },
+  {
+    "fault_id": "flt_provider_accepted_response_lost_003",
+    "fault_class": "provider_accepted_response_lost",
+    "injection_point": "provider.submit() 已被受理，但响应在返回途中丢失（status 未知）",
+    "duration_ms": 90000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s6_e_hid_003_0545"
+  },
+  {
+    "fault_id": "flt_provider_accepted_response_lost_004",
+    "fault_class": "provider_accepted_response_lost",
+    "injection_point": "provider.submit() 已被受理，但响应在返回途中丢失（status 未知）",
+    "duration_ms": 240000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s2_e_hid_001_0143"
+  },
+  {
+    "fault_id": "flt_provider_accepted_response_lost_005",
+    "fault_class": "provider_accepted_response_lost",
+    "injection_point": "provider.submit() 已被受理，但响应在返回途中丢失（status 未知）",
+    "duration_ms": 150000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s3_e_hid_002_0256"
+  },
+  {
+    "fault_id": "flt_repeated_query_failure_001",
+    "fault_class": "repeated_query_failure",
+    "injection_point": "provider.query() 连续返回 5xx/超时（第 1—5 次）",
+    "duration_ms": 120000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "reconciling",
+      "blocked",
+      "awaiting_human",
+      "succeeded"
+    ],
+    "target_task_id": "task_s4_e_hid_004_0352"
+  },
+  {
+    "fault_id": "flt_repeated_query_failure_002",
+    "fault_class": "repeated_query_failure",
+    "injection_point": "provider.query() 连续返回 5xx/超时（第 1—5 次）",
+    "duration_ms": 300000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "reconciling",
+      "blocked",
+      "awaiting_human",
+      "succeeded"
+    ],
+    "target_task_id": "task_s5_e_hid_006_0448"
+  },
+  {
+    "fault_id": "flt_repeated_query_failure_003",
+    "fault_class": "repeated_query_failure",
+    "injection_point": "provider.query() 连续返回 5xx/超时（第 1—5 次）",
+    "duration_ms": 600000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "reconciling",
+      "blocked",
+      "awaiting_human",
+      "succeeded"
+    ],
+    "target_task_id": "task_s6_e_hid_002_0556"
+  },
+  {
+    "fault_id": "flt_repeated_query_failure_004",
+    "fault_class": "repeated_query_failure",
+    "injection_point": "provider.query() 连续返回 5xx/超时（第 1—5 次）",
+    "duration_ms": 90000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "reconciling",
+      "blocked",
+      "awaiting_human",
+      "succeeded"
+    ],
+    "target_task_id": "task_s6_e_hid_006_0548"
+  },
+  {
+    "fault_id": "flt_repeated_query_failure_005",
+    "fault_class": "repeated_query_failure",
+    "injection_point": "provider.query() 连续返回 5xx/超时（第 1—5 次）",
+    "duration_ms": 200000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "reconciling",
+      "blocked",
+      "awaiting_human",
+      "succeeded"
+    ],
+    "target_task_id": "task_s4_e_hid_005_0359"
+  },
+  {
+    "fault_id": "flt_duplicate_callback_001",
+    "fault_class": "duplicate_callback",
+    "injection_point": "internal/provider-events 同一 event_id 重复投递 3 次",
+    "duration_ms": 5000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s2_e_hid_002_0144"
+  },
+  {
+    "fault_id": "flt_duplicate_callback_002",
+    "fault_class": "duplicate_callback",
+    "injection_point": "internal/provider-events 同一 event_id 重复投递 3 次",
+    "duration_ms": 15000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s5_e_hid_005_0459"
+  },
+  {
+    "fault_id": "flt_duplicate_callback_003",
+    "fault_class": "duplicate_callback",
+    "injection_point": "internal/provider-events 同一 event_id 重复投递 3 次",
+    "duration_ms": 30000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s4_e_hid_006_0348"
+  },
+  {
+    "fault_id": "flt_duplicate_callback_004",
+    "fault_class": "duplicate_callback",
+    "injection_point": "internal/provider-events 同一 event_id 重复投递 3 次",
+    "duration_ms": 10000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s2_e_hid_004_0152"
+  },
+  {
+    "fault_id": "flt_duplicate_callback_005",
+    "fault_class": "duplicate_callback",
+    "injection_point": "internal/provider-events 同一 event_id 重复投递 3 次",
+    "duration_ms": 20000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s4_e_hid_004_0358"
+  },
+  {
+    "fault_id": "flt_out_of_order_late_callback_001",
+    "fault_class": "out_of_order_late_callback",
+    "injection_point": "先投递 confirmed，再投递 pending，最后投递迟到 30 分钟的 succeeded",
+    "duration_ms": 1800000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling"
+    ],
+    "target_task_id": "task_s1_e_hid_004_0052"
+  },
+  {
+    "fault_id": "flt_out_of_order_late_callback_002",
+    "fault_class": "out_of_order_late_callback",
+    "injection_point": "先投递 confirmed，再投递 pending，最后投递迟到 30 分钟的 succeeded",
+    "duration_ms": 900000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling"
+    ],
+    "target_task_id": "task_s6_e_hid_001_0555"
+  },
+  {
+    "fault_id": "flt_out_of_order_late_callback_003",
+    "fault_class": "out_of_order_late_callback",
+    "injection_point": "先投递 confirmed，再投递 pending，最后投递迟到 30 分钟的 succeeded",
+    "duration_ms": 600000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling"
+    ],
+    "target_task_id": "task_s1_e_hid_004_0046"
+  },
+  {
+    "fault_id": "flt_out_of_order_late_callback_004",
+    "fault_class": "out_of_order_late_callback",
+    "injection_point": "先投递 confirmed，再投递 pending，最后投递迟到 30 分钟的 succeeded",
+    "duration_ms": 3600000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling"
+    ],
+    "target_task_id": "task_s3_e_hid_004_0246"
+  },
+  {
+    "fault_id": "flt_out_of_order_late_callback_005",
+    "fault_class": "out_of_order_late_callback",
+    "injection_point": "先投递 confirmed，再投递 pending，最后投递迟到 30 分钟的 succeeded",
+    "duration_ms": 1200000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "reconciling"
+    ],
+    "target_task_id": "task_s5_e_hid_006_0454"
+  },
+  {
+    "fault_id": "flt_concurrent_fund_reservation_conflict_001",
+    "fault_class": "concurrent_fund_reservation_conflict",
+    "injection_point": "两个任务同时对同一账户创建预留（同一可支配金额）",
+    "duration_ms": 2000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization"
+    ],
+    "target_task_id": "task_s6_e_hid_001_0549"
+  },
+  {
+    "fault_id": "flt_concurrent_fund_reservation_conflict_002",
+    "fault_class": "concurrent_fund_reservation_conflict",
+    "injection_point": "两个任务同时对同一账户创建预留（同一可支配金额）",
+    "duration_ms": 5000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization"
+    ],
+    "target_task_id": "task_s6_e_hid_005_0553"
+  },
+  {
+    "fault_id": "flt_concurrent_fund_reservation_conflict_003",
+    "fault_class": "concurrent_fund_reservation_conflict",
+    "injection_point": "两个任务同时对同一账户创建预留（同一可支配金额）",
+    "duration_ms": 10000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization"
+    ],
+    "target_task_id": "task_s6_e_hid_006_0554"
+  },
+  {
+    "fault_id": "flt_concurrent_fund_reservation_conflict_004",
+    "fault_class": "concurrent_fund_reservation_conflict",
+    "injection_point": "两个任务同时对同一账户创建预留（同一可支配金额）",
+    "duration_ms": 8000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization"
+    ],
+    "target_task_id": "task_s6_e_hid_004_0552"
+  },
+  {
+    "fault_id": "flt_concurrent_fund_reservation_conflict_005",
+    "fault_class": "concurrent_fund_reservation_conflict",
+    "injection_point": "两个任务同时对同一账户创建预留（同一可支配金额）",
+    "duration_ms": 3000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "succeeded",
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization"
+    ],
+    "target_task_id": "task_s6_e_hid_006_0560"
+  },
+  {
+    "fault_id": "flt_quote_inventory_change_001",
+    "fault_class": "quote_inventory_change",
+    "injection_point": "merchant.quote 在提交前返回新价格或库存为 0",
+    "duration_ms": 10000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization",
+      "blocked"
+    ],
+    "target_task_id": "task_s6_e_hid_003_0551"
+  },
+  {
+    "fault_id": "flt_quote_inventory_change_002",
+    "fault_class": "quote_inventory_change",
+    "injection_point": "merchant.quote 在提交前返回新价格或库存为 0",
+    "duration_ms": 30000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization",
+      "blocked"
+    ],
+    "target_task_id": "task_s6_e_hid_002_0550"
+  },
+  {
+    "fault_id": "flt_quote_inventory_change_003",
+    "fault_class": "quote_inventory_change",
+    "injection_point": "merchant.quote 在提交前返回新价格或库存为 0",
+    "duration_ms": 60000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization",
+      "blocked"
+    ],
+    "target_task_id": "task_s6_e_hid_004_0546"
+  },
+  {
+    "fault_id": "flt_quote_inventory_change_004",
+    "fault_class": "quote_inventory_change",
+    "injection_point": "merchant.quote 在提交前返回新价格或库存为 0",
+    "duration_ms": 20000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization",
+      "blocked"
+    ],
+    "target_task_id": "task_s6_e_hid_004_0558"
+  },
+  {
+    "fault_id": "flt_quote_inventory_change_005",
+    "fault_class": "quote_inventory_change",
+    "injection_point": "merchant.quote 在提交前返回新价格或库存为 0",
+    "duration_ms": 45000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "replanning",
+      "awaiting_authorization",
+      "blocked"
+    ],
+    "target_task_id": "task_s6_e_hid_005_0547"
+  },
+  {
+    "fault_id": "flt_terms_policy_version_change_001",
+    "fault_class": "terms_policy_version_change",
+    "injection_point": "提交事务内政策版本或产品条款版本发生变化（policy-2026.10 → 新版本）",
+    "duration_ms": 1000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "awaiting_authorization",
+      "replanning",
+      "blocked",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s5_e_hid_006_0460"
+  },
+  {
+    "fault_id": "flt_terms_policy_version_change_002",
+    "fault_class": "terms_policy_version_change",
+    "injection_point": "提交事务内政策版本或产品条款版本发生变化（policy-2026.10 → 新版本）",
+    "duration_ms": 5000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "awaiting_authorization",
+      "replanning",
+      "blocked",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s2_e_hid_005_0159"
+  },
+  {
+    "fault_id": "flt_terms_policy_version_change_003",
+    "fault_class": "terms_policy_version_change",
+    "injection_point": "提交事务内政策版本或产品条款版本发生变化（policy-2026.10 → 新版本）",
+    "duration_ms": 15000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "awaiting_authorization",
+      "replanning",
+      "blocked",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s3_e_hid_004_0252"
+  },
+  {
+    "fault_id": "flt_terms_policy_version_change_004",
+    "fault_class": "terms_policy_version_change",
+    "injection_point": "提交事务内政策版本或产品条款版本发生变化（policy-2026.10 → 新版本）",
+    "duration_ms": 3000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "awaiting_authorization",
+      "replanning",
+      "blocked",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_005_0059"
+  },
+  {
+    "fault_id": "flt_terms_policy_version_change_005",
+    "fault_class": "terms_policy_version_change",
+    "injection_point": "提交事务内政策版本或产品条款版本发生变化（policy-2026.10 → 新版本）",
+    "duration_ms": 8000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "awaiting_authorization",
+      "replanning",
+      "blocked",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s4_e_hid_003_0345"
+  },
+  {
+    "fault_id": "flt_process_crash_at_commit_001",
+    "fault_class": "process_crash_at_commit",
+    "injection_point": "提交事务 commit 前 / commit 后回执前 / Outbox 投递中各杀一次进程",
+    "duration_ms": 5000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "reconciling",
+      "partially_succeeded",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s3_e_hid_001_0249"
+  },
+  {
+    "fault_id": "flt_process_crash_at_commit_002",
+    "fault_class": "process_crash_at_commit",
+    "injection_point": "提交事务 commit 前 / commit 后回执前 / Outbox 投递中各杀一次进程",
+    "duration_ms": 20000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "reconciling",
+      "partially_succeeded",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s5_e_hid_005_0447"
+  },
+  {
+    "fault_id": "flt_process_crash_at_commit_003",
+    "fault_class": "process_crash_at_commit",
+    "injection_point": "提交事务 commit 前 / commit 后回执前 / Outbox 投递中各杀一次进程",
+    "duration_ms": 60000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "reconciling",
+      "partially_succeeded",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s2_e_hid_003_0157"
+  },
+  {
+    "fault_id": "flt_process_crash_at_commit_004",
+    "fault_class": "process_crash_at_commit",
+    "injection_point": "提交事务 commit 前 / commit 后回执前 / Outbox 投递中各杀一次进程",
+    "duration_ms": 120000,
+    "expected_recoverability": "recoverable_after_requery",
+    "allowed_final_states": [
+      "succeeded",
+      "reconciling",
+      "partially_succeeded",
+      "awaiting_human"
+    ],
+    "target_task_id": "task_s4_e_hid_005_0347"
+  },
+  {
+    "fault_id": "flt_scheduler_missed_window_001",
+    "fault_class": "scheduler_missed_window",
+    "injection_point": "调度器在到期时刻不可用，恢复时已超过默认 10 分钟执行窗口",
+    "duration_ms": 600000,
+    "expected_recoverability": "not_recoverable_requires_handoff",
+    "allowed_final_states": [
+      "missed",
+      "awaiting_authorization",
+      "cancelled",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_002_0056"
+  },
+  {
+    "fault_id": "flt_scheduler_missed_window_002",
+    "fault_class": "scheduler_missed_window",
+    "injection_point": "调度器在到期时刻不可用，恢复时已超过默认 10 分钟执行窗口",
+    "duration_ms": 1800000,
+    "expected_recoverability": "not_recoverable_requires_handoff",
+    "allowed_final_states": [
+      "missed",
+      "awaiting_authorization",
+      "cancelled",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_006_0048"
+  },
+  {
+    "fault_id": "flt_scheduler_missed_window_003",
+    "fault_class": "scheduler_missed_window",
+    "injection_point": "调度器在到期时刻不可用，恢复时已超过默认 10 分钟执行窗口",
+    "duration_ms": 3600000,
+    "expected_recoverability": "not_recoverable_requires_handoff",
+    "allowed_final_states": [
+      "missed",
+      "awaiting_authorization",
+      "cancelled",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_003_0045"
+  },
+  {
+    "fault_id": "flt_scheduler_missed_window_004",
+    "fault_class": "scheduler_missed_window",
+    "injection_point": "调度器在到期时刻不可用，恢复时已超过默认 10 分钟执行窗口",
+    "duration_ms": 900000,
+    "expected_recoverability": "not_recoverable_requires_handoff",
+    "allowed_final_states": [
+      "missed",
+      "awaiting_authorization",
+      "cancelled",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_004_0058"
+  },
+  {
+    "fault_id": "flt_compensation_refused_or_refund_delay_001",
+    "fault_class": "compensation_refused_or_refund_delay",
+    "injection_point": "merchant.cancel 返回拒绝，或退款回执延迟 24—72 小时",
+    "duration_ms": 86400000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "awaiting_human",
+      "failed",
+      "succeeded"
+    ],
+    "target_task_id": "task_s6_e_hid_002_0544"
+  },
+  {
+    "fault_id": "flt_compensation_refused_or_refund_delay_002",
+    "fault_class": "compensation_refused_or_refund_delay",
+    "injection_point": "merchant.cancel 返回拒绝，或退款回执延迟 24—72 小时",
+    "duration_ms": 172800000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "awaiting_human",
+      "failed",
+      "succeeded"
+    ],
+    "target_task_id": "task_s6_e_hid_003_0557"
+  },
+  {
+    "fault_id": "flt_compensation_refused_or_refund_delay_003",
+    "fault_class": "compensation_refused_or_refund_delay",
+    "injection_point": "merchant.cancel 返回拒绝，或退款回执延迟 24—72 小时",
+    "duration_ms": 259200000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "awaiting_human",
+      "failed",
+      "succeeded"
+    ],
+    "target_task_id": "task_s6_e_hid_005_0559"
+  },
+  {
+    "fault_id": "flt_compensation_refused_or_refund_delay_004",
+    "fault_class": "compensation_refused_or_refund_delay",
+    "injection_point": "merchant.cancel 返回拒绝，或退款回执延迟 24—72 小时",
+    "duration_ms": 43200000,
+    "expected_recoverability": "recoverable",
+    "allowed_final_states": [
+      "partially_succeeded",
+      "awaiting_human",
+      "failed",
+      "succeeded"
+    ],
+    "target_task_id": "task_s6_e_hid_001_0543"
+  },
+  {
+    "fault_id": "flt_model_rate_limit_bad_schema_sandbox_unavailable_001",
+    "fault_class": "model_rate_limit_bad_schema_sandbox_unavailable",
+    "injection_point": "模型网关 429、工具返回坏 Schema、沙箱启动失败（三类依赖故障）",
+    "duration_ms": 30000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "blocked",
+      "replanning",
+      "awaiting_human",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s1_e_hid_006_0060"
+  },
+  {
+    "fault_id": "flt_model_rate_limit_bad_schema_sandbox_unavailable_002",
+    "fault_class": "model_rate_limit_bad_schema_sandbox_unavailable",
+    "injection_point": "模型网关 429、工具返回坏 Schema、沙箱启动失败（三类依赖故障）",
+    "duration_ms": 120000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "blocked",
+      "replanning",
+      "awaiting_human",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s5_e_hid_001_0455"
+  },
+  {
+    "fault_id": "flt_model_rate_limit_bad_schema_sandbox_unavailable_003",
+    "fault_class": "model_rate_limit_bad_schema_sandbox_unavailable",
+    "injection_point": "模型网关 429、工具返回坏 Schema、沙箱启动失败（三类依赖故障）",
+    "duration_ms": 300000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "blocked",
+      "replanning",
+      "awaiting_human",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s2_e_hid_006_0148"
+  },
+  {
+    "fault_id": "flt_model_rate_limit_bad_schema_sandbox_unavailable_004",
+    "fault_class": "model_rate_limit_bad_schema_sandbox_unavailable",
+    "injection_point": "模型网关 429、工具返回坏 Schema、沙箱启动失败（三类依赖故障）",
+    "duration_ms": 60000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "blocked",
+      "replanning",
+      "awaiting_human",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s5_e_hid_002_0456"
+  },
+  {
+    "fault_id": "flt_model_rate_limit_bad_schema_sandbox_unavailable_005",
+    "fault_class": "model_rate_limit_bad_schema_sandbox_unavailable",
+    "injection_point": "模型网关 429、工具返回坏 Schema、沙箱启动失败（三类依赖故障）",
+    "duration_ms": 900000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "blocked",
+      "replanning",
+      "awaiting_human",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s3_e_hid_006_0254"
+  },
+  {
+    "fault_id": "flt_model_rate_limit_bad_schema_sandbox_unavailable_006",
+    "fault_class": "model_rate_limit_bad_schema_sandbox_unavailable",
+    "injection_point": "模型网关 429、工具返回坏 Schema、沙箱启动失败（三类依赖故障）",
+    "duration_ms": 45000,
+    "expected_recoverability": "recoverable_with_reauthorization",
+    "allowed_final_states": [
+      "blocked",
+      "replanning",
+      "awaiting_human",
+      "partially_succeeded"
+    ],
+    "target_task_id": "task_s2_e_hid_003_0145"
+  }
+]

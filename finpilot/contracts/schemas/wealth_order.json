@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/wealth_order.json",
+  "title": "WealthOrder",
+  "description": "申购／赎回订单：受理、资金冻结／扣划、正式份额分别记录；未知净值不编造份额；赎回不得超可用份额（S3-03、S3-04、T10、T11）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "order_id",
+    "operation_id",
+    "owner_user_id",
+    "account_id",
+    "product_id",
+    "side",
+    "amount_minor",
+    "fee_minor",
+    "status",
+    "product_terms_version",
+    "version",
+    "created_at"
+  ],
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "account_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "product_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "side": {
+      "enum": [
+        "purchase",
+        "redeem"
+      ]
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "申购金额：整数分。"
+    },
+    "fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "费用：整数分。"
+    },
+    "redeemed_shares_e8": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "份额：1e-8 定点整数（shares_e8），单位=份×1e8；禁止浮点。"
+    },
+    "estimated_shares_e8": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "份额：1e-8 定点整数（shares_e8），单位=份×1e8；禁止浮点。"
+    },
+    "confirmed_shares_e8": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "份额：1e-8 定点整数（shares_e8），单位=份×1e8；禁止浮点。"
+    },
+    "status": {
+      "enum": [
+        "submitted",
+        "accepted",
+        "awaiting_confirmation",
+        "confirmed",
+        "rejected",
+        "redeeming",
+        "settled",
+        "failed",
+        "cancelled"
+      ],
+      "description": "与 models.WEALTH_ORDER_STATUS 逐字一致。"
+    },
+    "product_terms_version": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "nav_e6": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "成交／估值净值：1e-6 定点整数。"
+    },
+    "nav_is_na": {
+      "type": "boolean",
+      "description": "净值未知时为 true；此时不得给出估算份额。"
+    },
+    "reject_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "accepted_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "confirmed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "settled_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "expected_settlement_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "side": {
+            "const": "redeem"
+          }
+        },
+        "required": [
+          "side"
+        ]
+      },
+      "then": {
+        "required": [
+          "redeemed_shares_e8"
+        ],
+        "properties": {
+          "redeemed_shares_e8": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "rejected",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "reject_reason"
+        ],
+        "properties": {
+          "reject_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "nav_is_na": {
+            "const": true
+          }
+        },
+        "required": [
+          "nav_is_na"
+        ]
+      },
+      "then": {
+        "properties": {
+          "nav_e6": {
+            "type": "null"
+          },
+          "estimated_shares_e8": {
+            "const": 0
+          },
+          "confirmed_shares_e8": {
+            "const": 0
+          }
+        }
+      }
+    }
+  ]
+}

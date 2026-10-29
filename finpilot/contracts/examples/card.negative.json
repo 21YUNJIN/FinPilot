@@ -1,0 +1,11 @@
+{
+  "card_id": "card_virtual_01",
+  "owner_user_id": "user_demo_01",
+  "account_id": "account_salary",
+  "masked_pan": "6222021234567890",
+  "lifecycle_status": "active",
+  "credit_limit_minor": 200000,
+  "pan": "6222021234567890",
+  "cvv": "123",
+  "version": 3
+}

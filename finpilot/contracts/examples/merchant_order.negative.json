@@ -1,0 +1,15 @@
+{
+  "order_id": "mo_catering_01",
+  "operation_id": "op_merchant_book_02",
+  "owner_user_id": "user_demo_01",
+  "merchant_id": "merchant_catering_01",
+  "quote_id": "quote_catering_01",
+  "offer_code": "CAKE_S",
+  "amount_minor": 18000,
+  "fee_minor": 300,
+  "status": "cancelled",
+  "provider_ref": null,
+  "version": 3,
+  "created_at": "2026-10-22T10:02:00+08:00",
+  "updated_at": "2026-10-22T10:05:00+08:00"
+}

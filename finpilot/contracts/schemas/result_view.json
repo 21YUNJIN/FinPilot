@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/result_view.json",
+  "title": "TaskResultView",
+  "description": "任务结果视图：已完成效果、未完成项、当前等待原因与用户下一步操作（STATE-04、PLAN-06）。只显示已核验事实（verified 恒为 true）；文本漂亮但账本错误不算成功。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "task_status",
+    "revision",
+    "mode",
+    "generated_at",
+    "completed_effects",
+    "next_actions"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "task_status": {
+      "enum": [
+        "draft",
+        "clarifying",
+        "planning",
+        "awaiting_authorization",
+        "ready",
+        "running",
+        "reconciling",
+        "replanning",
+        "awaiting_human",
+        "succeeded",
+        "partially_succeeded",
+        "failed",
+        "cancelled",
+        "blocked"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "mode": {
+      "enum": [
+        "live",
+        "offline_replay",
+        "mock"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "goal_summary": {
+      "type": "object"
+    },
+    "completed_effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "description",
+          "verified",
+          "authority"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 48
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "verified": {
+            "const": true,
+            "description": "只允许展示已核验事实；未核验结果必须出现在 pending/unknown 列表。"
+          },
+          "authority": {
+            "enum": [
+              "receipt",
+              "ledger",
+              "operator"
+            ],
+            "description": "事实来源；模型措辞不是 authority。"
+          },
+          "operation_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          },
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+          }
+        }
+      }
+    },
+    "pending_effects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "unknown_effects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "failed_effects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "waiting_reason": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action_id",
+          "label"
+        ],
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "enum": [
+              "confirm",
+              "verify",
+              "clarify",
+              "retry_same_operation",
+              "wait",
+              "contact_operator",
+              "cancel"
+            ]
+          }
+        }
+      }
+    },
+    "total_spent_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "total_fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "receipts": {
+      "type": "array",
+      "items": {
+        "$ref": "https://finpilot.local/schemas/receipt.json"
+      }
+    },
+    "provenance": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "task_status": {
+            "const": "succeeded"
+          }
+        },
+        "required": [
+          "task_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "completed_effects": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "task_status": {
+            "const": "partially_succeeded"
+          }
+        },
+        "required": [
+          "task_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "pending_effects": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "user_id": "user_demo_01",
+  "roles": [
+    "customer",
+    "root"
+  ],
+  "channel": "app",
+  "session_id": "sess_7f3a1c",
+  "is_operator": false
+}

@@ -1,0 +1,108 @@
+/* APP 式 Web 客户端补充样式（移动优先，桌面居中；基础样式来自 shared-ui/styles.css） */
+
+.web-composer {
+  background: var(--fp-surface);
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  padding: 12px;
+  margin-bottom: var(--fp-gap);
+}
+
+.web-composer__label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.web-composer__input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--fp-border);
+  background: #fff;
+  resize: vertical;
+}
+
+.web-composer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.web-composer__hint,
+.web-hint,
+.web-section-hint {
+  color: var(--fp-muted);
+  font-size: 0.85rem;
+}
+
+.web-section-header {
+  margin-bottom: var(--fp-gap);
+}
+
+.web-section-title {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+}
+
+.web-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--fp-gap);
+}
+
+.fp-app__user {
+  font-size: 0.85rem;
+  color: var(--fp-muted);
+}
+
+.web-task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.web-task-list__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--fp-border);
+}
+
+.web-task-list__objective {
+  flex: 1 1 40%;
+  font-weight: 600;
+}
+
+.web-task-list__time,
+.web-task-list__revision {
+  color: var(--fp-muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 420px) {
+  .fp-app__title {
+    font-size: 0.95rem;
+  }
+
+  .fp-app__nav-item {
+    min-width: 52px;
+    font-size: 0.85rem;
+  }
+
+  .web-task-list__objective {
+    flex-basis: 100%;
+  }
+}
+
+/* 桌面：底部导航仍然可用，但内容区更宽 */
+@media (min-width: 960px) {
+  .fp-app__main {
+    padding: 20px 24px;
+  }
+}

@@ -1,0 +1,16 @@
+# Build-context exclusions for deploy/Dockerfile (BuildKit reads
+# <dockerfile>.dockerignore next to the Dockerfile itself).
+# Keeps the local virtualenv, node_modules and test caches out of the image build.
+.venv/
+node_modules/
+**/node_modules/
+.pytest_cache/
+**/__pycache__/
+**/*.pyc
+backups/
+.state/
+.git/
+eval/
+tests/
+docs/
+*.log

@@ -1,0 +1,85 @@
+{
+  "checks": [
+    {
+      "check": "source_hash_recomputed_client_side",
+      "passed": true,
+      "products": [
+        {
+          "product_id": "WM-CASH-001",
+          "passed": true,
+          "source_hash": "eb3aa518845fe0fa5071fa6318d83120c8c858724fb1ad990e35019a208a589e"
+        },
+        {
+          "product_id": "WM-BOND-101",
+          "passed": true,
+          "source_hash": "67ca2503ebc39f64ab063ca57563a3f87972cae601c089530956c9ea25d091a5"
+        },
+        {
+          "product_id": "WM-BOND-102",
+          "passed": true,
+          "source_hash": "43ddf280c801b37a01d03c1c9899caf9486ac550b752952dd96233aa53406ae1"
+        },
+        {
+          "product_id": "WM-FIX-201",
+          "passed": true,
+          "source_hash": "3c0a0d2fbd31f8f8dc65112a6843a9cc786822941f31ae86c99f53ff9511cc20"
+        },
+        {
+          "product_id": "WM-MIX-301",
+          "passed": true,
+          "source_hash": "dfce135e18a507aeb56b0852b19181bda18cfcbea277235adad7bc23f23a37ce"
+        },
+        {
+          "product_id": "WM-MIX-302",
+          "passed": true,
+          "source_hash": "d98a94e42ff9f56d525a01e8b89a2106c33c5d2178b165623f8396ce33065f55"
+        },
+        {
+          "product_id": "WM-EQ-401",
+          "passed": true,
+          "source_hash": "ae8416112f356bf2f63ba6a9c10fc14227e2614bdf077f1d19d642cfdeb3bed3"
+        },
+        {
+          "product_id": "WM-EQ-402",
+          "passed": true,
+          "source_hash": "308cde2f9d4eefb6ff66724a237d617fe786ae606bc9f3fa8d984921b15585bd"
+        },
+        {
+          "product_id": "WM-QDII-501",
+          "passed": true,
+          "source_hash": "8c31537ea03dc78fb924bc7fbac377fa2d405a1d9eb179554ea831b30626003d"
+        },
+        {
+          "product_id": "WM-PEN-601",
+          "passed": true,
+          "source_hash": "4a7bf6d1e390734882dca2fd34fd7458dace239d6933ed32b3e6b276d5c70f3a"
+        },
+        {
+          "product_id": "WM-NEW-701",
+          "passed": true,
+          "source_hash": "c88262e3c9e491cc188c4b7b5294b2d9721e6af9480c14792b50c4c878103176"
+        },
+        {
+          "product_id": "WM-FIX-202",
+          "passed": true,
+          "source_hash": "5c8bcc1fa7e6089c56310ec9af35120a01574ee34f87f7de00d35d570333e340"
+        }
+      ]
+    },
+    {
+      "check": "cvar_withheld_exactly_when_below_252_returns",
+      "products": [
+        "WM-NEW-701"
+      ],
+      "passed": true
+    },
+    {
+      "check": "short_history_marked_not_usable",
+      "products": [
+        "WM-NEW-701"
+      ],
+      "passed": true
+    }
+  ],
+  "all_passed": true
+}

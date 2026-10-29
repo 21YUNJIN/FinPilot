@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/grant.json",
+  "title": "Grant",
+  "description": "服务端签发的授权。精确授权绑定用户、计划修订、操作 ID、账户、对象 ID、金额、费用上限、时间窗、条款版本与参数哈希；范围授权额外记录商户／产品集合、每笔与总额上限、最多次数与截止时间，并跨修订共享额度计数（V5 第 6.3 节，AUTH-04）。客户端只能引用 grant_id，不能提交或修改任何字段。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "grant_id",
+    "owner_user_id",
+    "plan_id",
+    "plan_revision",
+    "scope_kind",
+    "scope_hash",
+    "scope",
+    "policy_version",
+    "required_level",
+    "verification_level",
+    "status",
+    "max_uses",
+    "used_count",
+    "approved_revision",
+    "expires_at",
+    "created_at",
+    "version"
+  ],
+  "properties": {
+    "grant_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "plan_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48,
+      "description": "精确授权必须绑定计划；客户端不能自行构造。"
+    },
+    "plan_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "精确授权必须绑定批准修订。"
+    },
+    "scope_kind": {
+      "enum": [
+        "exact",
+        "scoped"
+      ]
+    },
+    "scope_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "scope": {
+      "type": "object",
+      "description": "与 confirm 界面同源的确认范围结构。"
+    },
+    "policy_version": {
+      "const": "policy-2026.10"
+    },
+    "required_level": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ],
+      "description": "服务端权限等级；客户端与模型不得降低（AUTH-01）。"
+    },
+    "verification_level": {
+      "enum": [
+        "NONE",
+        "TOTP"
+      ],
+      "description": "RED 授权必须为 TOTP（真实持因验证），点击或模型判断无效。"
+    },
+    "challenge_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48,
+      "description": "RED 授权必须携带已通过验证的挑战引用。"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "active",
+        "consumed",
+        "revoked",
+        "expired"
+      ],
+      "description": "pending → active → consumed / revoked / expired。"
+    },
+    "max_uses": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "used_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "max_total_minor": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "used_total_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "approved_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "lineage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "plan_revision",
+          "subset_proof_hash"
+        ],
+        "properties": {
+          "plan_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "subset_proof_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+          }
+        }
+      },
+      "description": "范围授权跨修订继承必须记录子集校验证明（AUTH-04）。"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "revoked_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "required_level": {
+            "const": "RED"
+          }
+        },
+        "required": [
+          "required_level"
+        ]
+      },
+      "then": {
+        "required": [
+          "challenge_id"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verification_level": {
+            "const": "TOTP"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scope_kind": {
+            "const": "scoped"
+          }
+        },
+        "required": [
+          "scope_kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "max_uses",
+          "max_total_minor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scope_kind": {
+            "const": "exact"
+          }
+        },
+        "required": [
+          "scope_kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "max_uses": {
+            "const": 1
+          },
+          "lineage": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "revoked"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "revoked_at"
+        ],
+        "properties": {
+          "revoked_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  ]
+}

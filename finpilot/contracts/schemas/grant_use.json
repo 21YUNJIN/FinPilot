@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/grant_use.json",
+  "title": "GrantUse",
+  "description": "(grant_id, operation_id) 组合唯一；授权消费与业务操作的首次提交绑定，新幂等键不能重新消费同一授权。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "grant_use_id",
+    "grant_id",
+    "operation_id",
+    "authorized_parameter_hash",
+    "amount_minor",
+    "use_status",
+    "created_at"
+  ],
+  "properties": {
+    "grant_use_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "grant_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "authorized_parameter_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "use_status": {
+      "enum": [
+        "reserved",
+        "consumed",
+        "released",
+        "revoked"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "use_status": {
+            "const": "consumed"
+          }
+        },
+        "required": [
+          "use_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/domain_result.json",
+  "title": "DomainResult",
+  "description": "类型化领域结果：结构化数据、来源、计算／条款版本、可用时间与 warnings（TEAM4 §4.1）。产品和商户自由文本只能放在 untrusted_text，不能与结构化权威金额混用（V5 第 16.1 节、SEC-01）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "result_type",
+    "data",
+    "source",
+    "observed_at",
+    "warnings"
+  ],
+  "properties": {
+    "domain": {
+      "enum": [
+        "cards",
+        "billing",
+        "wealth",
+        "subscriptions",
+        "aa",
+        "merchant",
+        "quant",
+        "transfers"
+      ]
+    },
+    "result_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "data": {
+      "type": "object",
+      "description": "类型化结果；金额字段一律整数分，份额一律 shares_e8 整数。"
+    },
+    "source": {
+      "enum": [
+        "local_ledger",
+        "provider_query",
+        "provider_callback",
+        "synthetic_dataset",
+        "offline_replay",
+        "operator_input"
+      ],
+      "description": "数据来源；界面与报告必须如实标注。"
+    },
+    "terms_version": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "computation_version": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "policy_version": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "dataset_hash": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "available_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "untrusted_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 4096,
+      "description": "商户／产品自由文本：不可信数据，不能获得权限或覆盖结构化金额。"
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "adapter": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "mode": {
+          "enum": [
+            "live",
+            "offline_replay",
+            "mock"
+          ]
+        },
+        "schema_version": {
+          "const": "1.0"
+        }
+      }
+    }
+  }
+}

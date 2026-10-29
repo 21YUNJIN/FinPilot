@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/receipt.json",
+  "title": "Receipt",
+  "description": "权威回执：(operation_id, payload_hash) 唯一；来源、事件版本与验签状态必须如实记录；冲突回执隔离待人工核验。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_id",
+    "operation_id",
+    "provider_id",
+    "provider_ref",
+    "source",
+    "event_version",
+    "received_at",
+    "verified_status",
+    "payload_hash",
+    "payload",
+    "state"
+  ],
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "provider_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "source": {
+      "enum": [
+        "provider_callback",
+        "provider_query",
+        "local_ledger",
+        "operator_input"
+      ]
+    },
+    "event_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "verified_status": {
+      "enum": [
+        "verified",
+        "unverified",
+        "conflict",
+        "rejected"
+      ]
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "state": {
+      "enum": [
+        "accepted",
+        "applied",
+        "duplicate",
+        "conflict",
+        "quarantined"
+      ]
+    },
+    "conflict_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 96
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "enum": [
+              "conflict",
+              "quarantined"
+            ]
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "then": {
+        "required": [
+          "conflict_reason"
+        ],
+        "properties": {
+          "conflict_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "applied"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verified_status": {
+            "const": "verified"
+          }
+        }
+      }
+    }
+  ]
+}

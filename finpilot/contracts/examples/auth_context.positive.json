@@ -1,0 +1,13 @@
+{
+  "user_id": "user_demo_01",
+  "roles": [
+    "customer"
+  ],
+  "channel": "app",
+  "session_id": "sess_7f3a1c",
+  "is_operator": false,
+  "user_status": "active",
+  "issued_at": "2026-10-22T10:00:00+08:00",
+  "expires_at": "2026-10-22T18:00:00+08:00",
+  "policy_version": "policy-2026.10"
+}

@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-10-29T14:05:33.636112",
+  "mode": "mock",
+  "synthetic_data": true,
+  "database_health": true,
+  "registered_adapters": [
+    "bank_sandbox_local",
+    "bank_sandbox_v1",
+    "merchant_sandbox_local",
+    "merchant_sandbox_v1"
+  ],
+  "app_http": 200,
+  "im_http": 200,
+  "bank_health": 200,
+  "merchant_health": 200,
+  "quant_verified_products": 3,
+  "quant_request_id": "fp_cf7d160016894f7ebe57007934a610a8",
+  "quant_source_verified": true,
+  "subscription_gate_before_details": true,
+  "subscription_confirmed": true,
+  "task_creation_results": [
+    {
+      "scene": "转账",
+      "status": "awaiting_authorization",
+      "goal_scene": null
+    },
+    {
+      "scene": "账单",
+      "status": "succeeded",
+      "goal_scene": null
+    },
+    {
+      "scene": "理财",
+      "status": "succeeded",
+      "goal_scene": null
+    },
+    {
+      "scene": "卡片",
+      "status": "succeeded",
+      "goal_scene": null
+    },
+    {
+      "scene": "订阅",
+      "status": "awaiting_authorization",
+      "goal_scene": null
+    },
+    {
+      "scene": "跨场景",
+      "status": "clarifying",
+      "goal_scene": null
+    }
+  ],
+  "browser_check_exit": 0,
+  "browser_check_output": "{\"app_login_and_real_quant_view\":true,\"app_subscription_confirmation\":true,\"im_login\":true}\n"
+}

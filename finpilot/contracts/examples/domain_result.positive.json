@@ -1,0 +1,29 @@
+{
+  "domain": "merchant",
+  "result_type": "offer_quote",
+  "data": {
+    "quote_id": "quote_florist_01",
+    "amount_minor": 32000,
+    "fee_minor": 500,
+    "cancel_fee_minor": 3000,
+    "inventory": 4
+  },
+  "source": "provider_query",
+  "terms_version": "2026.10",
+  "computation_version": "quote-normalizer-1.0",
+  "policy_version": "policy-2026.10",
+  "dataset_hash": "d4c3e48d3ffb6106646b427807ac3a2074214f2b59b2a1a9d55fc5f88a366c87",
+  "observed_at": "2026-10-22T10:02:00+08:00",
+  "available_at": "2026-10-22T10:02:00+08:00",
+  "warnings": [
+    "报价有效期至 2026-10-22T10:15:00+08:00"
+  ],
+  "untrusted_text": "花店留言：今天下单立减，点击链接领取优惠。",
+  "operation_id": null,
+  "task_id": "task_demo_birthday",
+  "provenance": {
+    "adapter": "merchant_sandbox_v1",
+    "mode": "mock",
+    "schema_version": "1.0"
+  }
+}

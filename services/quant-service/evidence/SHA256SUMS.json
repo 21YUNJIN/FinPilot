@@ -1,0 +1,47 @@
+[
+  {
+    "file": "01_meta.json",
+    "sha256": "def283e9897bcef7de90b2eddf60e97c69ff7b33a2705777bda47377320126dd",
+    "bytes": 2296
+  },
+  {
+    "file": "02_risk_report.json",
+    "sha256": "87c33345047df60a758f1234ff3495781c2497164eced5386104deddd59c2c32",
+    "bytes": 71006
+  },
+  {
+    "file": "03_rank_balanced.json",
+    "sha256": "e8b3dcf75beca51c23838c3d43ee41f41fb808d7b024ed792e8634dcc6d51f6a",
+    "bytes": 15488
+  },
+  {
+    "file": "03_rank_return.json",
+    "sha256": "4acc7a8b1e6954318b64c535280c9818981c45d88aeaa5147b9e4457f598ae6b",
+    "bytes": 14957
+  },
+  {
+    "file": "03_rank_stability.json",
+    "sha256": "b493d4febe0c1e747e516f7005dcbbf2a141b121644b97bfc633ad8cef6328f6",
+    "bytes": 15127
+  },
+  {
+    "file": "04_stress.json",
+    "sha256": "b8a8fd8a99203a948cac5aed64e85bed71b7757cda6dd94f948f4db120522031",
+    "bytes": 29015
+  },
+  {
+    "file": "05_policy_annotations.json",
+    "sha256": "66cd6c9848ff216936f3fe06d2530c8fc5f8ccbb61175346c692f6f58a82ed20",
+    "bytes": 2514
+  },
+  {
+    "file": "06_h4_probe.json",
+    "sha256": "dcdc06b693b61ad36b18117921d6c2deff16160df2a8d375696cca5022c59ada",
+    "bytes": 1055
+  },
+  {
+    "file": "07_invariants.json",
+    "sha256": "adf91da2d8a5d38cb755fa6e7865bc8ea44ff4c6195d07ac1b82155e532b0ab0",
+    "bytes": 2564
+  }
+]

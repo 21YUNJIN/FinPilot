@@ -1,0 +1,11 @@
+[project]
+name = "stockquant-bank"
+version = "1.0.0"
+description = "Read-only S3 wealth-risk service built on the StockQuant kernel"
+requires-python = ">=3.9"
+dependencies = ["flask>=3.0", "requests>=2.28"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

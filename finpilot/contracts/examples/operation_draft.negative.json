@@ -1,0 +1,14 @@
+{
+  "operation_id": "op_transfer_demo_01",
+  "tool": "transfer.submit",
+  "typed_args": {
+    "payee_id": "payee_zhangsan_1",
+    "amount_minor": 10000
+  },
+  "idempotency_key": "idem_20261022_transfer_0001",
+  "task_id": "task_demo_birthday",
+  "plan_id": "plan_birthday_1",
+  "plan_revision": 1,
+  "source_account_id": "account_salary",
+  "amount_minor": 10000
+}

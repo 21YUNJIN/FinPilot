@@ -1,0 +1,693 @@
+{
+  "data": {
+    "as_of": "2026-10-23",
+    "not_a_loss_limit": true,
+    "products": [
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-CASH-001",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.959154,
+            "nav_before": 1.065727,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -1400,
+            "impact_ratio": -0.0014001384,
+            "kind": "historical_worst_window",
+            "nav_after": 1.064235,
+            "nav_before": 1.065727,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2024-07-09",
+            "observed_to": "2024-08-06",
+            "scenario": "historical_worst_20d",
+            "shock": -0.0014001384,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.00193372,
+            "assumptions": [
+              "以样本年化波动 0.001934 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -1792,
+            "impact_ratio": -0.0017921176,
+            "kind": "parametric_vol_shock",
+            "nav_after": 1.063817,
+            "nav_before": 1.065727,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.0017921176,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-BOND-101",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.941279,
+            "nav_before": 1.045865,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -11774,
+            "impact_ratio": -0.0117738582,
+            "kind": "historical_worst_window",
+            "nav_after": 1.033551,
+            "nav_before": 1.045865,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2026-02-19",
+            "observed_to": "2026-03-19",
+            "scenario": "historical_worst_20d",
+            "shock": -0.0117738582,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.01132885,
+            "assumptions": [
+              "以样本年化波动 0.011329 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -10499,
+            "impact_ratio": -0.010499241,
+            "kind": "parametric_vol_shock",
+            "nav_after": 1.034884,
+            "nav_before": 1.045865,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.010499241,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-BOND-102",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 1.008091,
+            "nav_before": 1.120101,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -23918,
+            "impact_ratio": -0.0239180324,
+            "kind": "historical_worst_window",
+            "nav_after": 1.09331,
+            "nav_before": 1.120101,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2024-04-30",
+            "observed_to": "2024-05-28",
+            "scenario": "historical_worst_20d",
+            "shock": -0.0239180324,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.01928654,
+            "assumptions": [
+              "以样本年化波动 0.019287 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -17874,
+            "impact_ratio": -0.0178741915,
+            "kind": "parametric_vol_shock",
+            "nav_after": 1.10008,
+            "nav_before": 1.120101,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.0178741915,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-FIX-201",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 1.063246,
+            "nav_before": 1.181384,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -32895,
+            "impact_ratio": -0.0328950547,
+            "kind": "historical_worst_window",
+            "nav_after": 1.142522,
+            "nav_before": 1.181384,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2026-06-03",
+            "observed_to": "2026-07-01",
+            "scenario": "historical_worst_20d",
+            "shock": -0.0328950547,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.04736277,
+            "assumptions": [
+              "以样本年化波动 0.047363 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -43894,
+            "impact_ratio": -0.0438943913,
+            "kind": "parametric_vol_shock",
+            "nav_after": 1.129528,
+            "nav_before": 1.181384,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.0438943913,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-MIX-301",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.824521,
+            "nav_before": 0.916134,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -66675,
+            "impact_ratio": -0.0666752966,
+            "kind": "historical_worst_window",
+            "nav_after": 0.85505,
+            "nav_before": 0.916134,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2026-04-13",
+            "observed_to": "2026-05-11",
+            "scenario": "historical_worst_20d",
+            "shock": -0.0666752966,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.08851669,
+            "assumptions": [
+              "以样本年化波动 0.088517 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -82035,
+            "impact_ratio": -0.0820346164,
+            "kind": "parametric_vol_shock",
+            "nav_after": 0.840979,
+            "nav_before": 0.916134,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.0820346164,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-MIX-302",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 1.243066,
+            "nav_before": 1.381184,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -107516,
+            "impact_ratio": -0.1075156669,
+            "kind": "historical_worst_window",
+            "nav_after": 1.232685,
+            "nav_before": 1.381184,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2024-07-04",
+            "observed_to": "2024-08-01",
+            "scenario": "historical_worst_20d",
+            "shock": -0.1075156669,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.13186568,
+            "assumptions": [
+              "以样本年化波动 0.131866 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -122209,
+            "impact_ratio": -0.1222091628,
+            "kind": "parametric_vol_shock",
+            "nav_after": 1.212391,
+            "nav_before": 1.381184,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.1222091628,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-EQ-401",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.785955,
+            "nav_before": 0.873283,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -275357,
+            "impact_ratio": -0.2753566312,
+            "kind": "historical_worst_window",
+            "nav_after": 0.632819,
+            "nav_before": 0.873283,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2024-07-19",
+            "observed_to": "2024-08-16",
+            "scenario": "historical_worst_20d",
+            "shock": -0.2753566312,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.21628769,
+            "assumptions": [
+              "以样本年化波动 0.216288 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -200449,
+            "impact_ratio": -0.2004489498,
+            "kind": "parametric_vol_shock",
+            "nav_after": 0.698234,
+            "nav_before": 0.873283,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.2004489498,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-EQ-402",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.810627,
+            "nav_before": 0.900697,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -217563,
+            "impact_ratio": -0.2175633758,
+            "kind": "historical_worst_window",
+            "nav_after": 0.704738,
+            "nav_before": 0.900697,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2023-03-20",
+            "observed_to": "2023-04-17",
+            "scenario": "historical_worst_20d",
+            "shock": -0.2175633758,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.34347578,
+            "assumptions": [
+              "以样本年化波动 0.343476 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -318323,
+            "impact_ratio": -0.3183230593,
+            "kind": "parametric_vol_shock",
+            "nav_after": 0.613984,
+            "nav_before": 0.900697,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.3183230593,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-QDII-501",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.8674,
+            "nav_before": 0.963778,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -141674,
+            "impact_ratio": -0.141674328,
+            "kind": "historical_worst_window",
+            "nav_after": 0.827235,
+            "nav_before": 0.963778,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2026-02-26",
+            "observed_to": "2026-03-26",
+            "scenario": "historical_worst_20d",
+            "shock": -0.141674328,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.14356708,
+            "assumptions": [
+              "以样本年化波动 0.143567 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -133054,
+            "impact_ratio": -0.1330536688,
+            "kind": "parametric_vol_shock",
+            "nav_after": 0.835544,
+            "nav_before": 0.963778,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.1330536688,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-PEN-601",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 1.015267,
+            "nav_before": 1.128074,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -70643,
+            "impact_ratio": -0.0706426595,
+            "kind": "historical_worst_window",
+            "nav_after": 1.048384,
+            "nav_before": 1.128074,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2024-07-08",
+            "observed_to": "2024-08-05",
+            "scenario": "historical_worst_20d",
+            "shock": -0.0706426595,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.10066435,
+            "assumptions": [
+              "以样本年化波动 0.100664 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -93293,
+            "impact_ratio": -0.0932927005,
+            "kind": "parametric_vol_shock",
+            "nav_after": 1.022833,
+            "nav_before": 1.128074,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.0932927005,
+            "vol_multiplier": 2.0
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-NEW-701",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.993929,
+            "nav_before": 1.104366,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": 23746,
+            "impact_ratio": 0.0237460507,
+            "kind": "historical_worst_window",
+            "nav_after": 1.13059,
+            "nav_before": 1.104366,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2026-09-22",
+            "observed_to": "2026-10-20",
+            "scenario": "historical_worst_20d",
+            "shock": 0.0237460507,
+            "window": 20
+          },
+          {
+            "available": false,
+            "kind": "parametric_vol_shock",
+            "na_reason": "insufficient_history_min_60_returns",
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct"
+          }
+        ]
+      },
+      {
+        "as_of_end": "2026-10-23",
+        "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+        "product_id": "WM-FIX-202",
+        "scenarios": [
+          {
+            "assumptions": [
+              "假设产品净值一次性下跌该比例，未建模费用、暂停赎回或分红。",
+              "不同资产类别的实际传导不同，本情景不区分股债相关性。"
+            ],
+            "impact_on_10000_cny_minor": -100000,
+            "impact_ratio": -0.1,
+            "kind": "nav_shock",
+            "nav_after": 0.909063,
+            "nav_before": 1.01007,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "equity_shock_-10pct",
+            "shock": -0.1
+          },
+          {
+            "assumptions": [
+              "取样本内最差的 20 个交易日累计跌幅，按一次性冲击重放。",
+              "这是样本内已发生的情形，不是对未来的预测。"
+            ],
+            "impact_on_10000_cny_minor": -33104,
+            "impact_ratio": -0.0331042717,
+            "kind": "historical_worst_window",
+            "nav_after": 0.976632,
+            "nav_before": 1.01007,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "observed_from": "2024-08-15",
+            "observed_to": "2024-09-12",
+            "scenario": "historical_worst_20d",
+            "shock": -0.0331042717,
+            "window": 20
+          },
+          {
+            "annual_volatility": 0.03281711,
+            "assumptions": [
+              "以样本年化波动 0.032817 乘 2.0 倍，按正态假设推 20 个交易日的 95% 分位跌幅。",
+              "真实收益厚尾且可能相关性上升，正态情景通常低估极端损失。"
+            ],
+            "confidence": 0.95,
+            "horizon_days": 20,
+            "impact_on_10000_cny_minor": -30414,
+            "impact_ratio": -0.03041391,
+            "kind": "parametric_vol_shock",
+            "nav_after": 0.97935,
+            "nav_before": 1.01007,
+            "not_a_loss_limit": "情景结果不是损失上限，也不代表发生概率。",
+            "scenario": "vol_x2_20d_95pct",
+            "shock": -0.03041391,
+            "vol_multiplier": 2.0
+          }
+        ]
+      }
+    ]
+  },
+  "error": null,
+  "operation_id": null,
+  "provenance": {
+    "adapter": "stockquant_bank.wealth_risk/1",
+    "engine": {
+      "commit": "5559e3f",
+      "kernel_functions": [
+        "daily_returns",
+        "max_drawdown",
+        "sharpe_statistics"
+      ],
+      "method_version": "sq-wealth-risk/1.0.0",
+      "module": "stockquant.backtest.metrics",
+      "name": "stockquant",
+      "trading_days_per_year": 252,
+      "version": "0.1.0"
+    },
+    "method_version": "sq-wealth-risk/1.0.0",
+    "observed_at": "2026-10-28T17:42:29+08:00"
+  },
+  "request_id": "fp_1793180549026",
+  "schema_version": "1.0",
+  "status": "ok",
+  "task_id": null
+}

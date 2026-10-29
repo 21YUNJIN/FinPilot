@@ -1,0 +1,18 @@
+{
+  "allow": true,
+  "required_level": "YELLOW",
+  "challenge_required": false,
+  "reason_codes": [
+    "daily_cumulative_within_yellow_limit"
+  ],
+  "policy_version": "policy-2026.10",
+  "tool": "transfer.submit",
+  "task_id": "task_demo_birthday",
+  "operation_id": "op_transfer_demo_01",
+  "daily_cumulative_principal_minor": 10000,
+  "evaluated_at": "2026-10-22T10:02:00+08:00",
+  "snapshot_version": 7,
+  "conditions": [
+    "当日累计本金 10000 分 ≤ 100000 分"
+  ]
+}

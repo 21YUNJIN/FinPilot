@@ -1,0 +1,580 @@
+# FinPilot 模块注册表：id、owner、path、provides、depends_on、status。
+schema_version: '1.0'
+contract_version: '1.0'
+policy_version: policy-2026.10
+owner_legend:
+  A: 交互与卡片：两客户端、意图澄清、确认／强验证交互、结果展示、卡片应用层
+  B: 交易内核：身份、账本、预留、授权消费、转账、调度、订单、回执对账与部署
+  C: 金融分析与业务：账单、风险测评、产品比较、量化、订阅／商户、AA、数据与统计
+  D: 规划与系统验证：DAG 规划、运行时策略、增量恢复、沙箱、审计、评测与集成协调
+status_legend:
+  planned: 已登记未开工（代码目录尚不存在）
+  in_progress: 正在实现（path 必须已存在）
+  integrated: 已合入主分支并通过当前轮集成样例
+change_protocol: 新增可选字段也要通过契约测试；删除／改名、状态含义改变、金额口径改变与权限变化必须同步列出全部消费者，先做兼容提供方，再迁移消费者，最后删除旧字段（TEAM4 §4.4、GOV-01）。
+modules:
+- id: contracts
+  owner: D
+  co_owners:
+  - A
+  - B
+  - C
+  path: contracts/
+  provides:
+  - json_schema
+  - openapi
+  - tool_catalog
+  - module_manifest
+  - examples
+  - error_codes_contract
+  - requirement_trace
+  depends_on: []
+  status: in_progress
+  work_packages:
+  - A01
+  - D02
+  - D06
+- id: core-common
+  owner: B
+  path: services/api/src/finpilot/
+  provides:
+  - config
+  - errors
+  - envelope
+  - ids
+  - money
+  - timeutil
+  - models
+  - db
+  depends_on: []
+  status: in_progress
+  work_packages:
+  - B01
+  - B03
+- id: test-fixtures
+  owner: B
+  path: tests/conftest.py
+  provides:
+  - db_fixture
+  - session_fixture
+  - clean_db
+  - seed_sample
+  - injectable_clock
+  - api_client_fixture
+  depends_on:
+  - core-common
+  status: in_progress
+  work_packages:
+  - B01
+- id: gateway-api
+  owner: A
+  path: services/api/src/finpilot/gateway/
+  provides:
+  - http_endpoints
+  - task_endpoints
+  - confirm_endpoints
+  - operation_endpoints
+  - privacy_endpoints
+  - operator_endpoints
+  - provider_callback_endpoint
+  - meta_tools_endpoint
+  depends_on:
+  - core-common
+  - kernel-identity
+  - kernel-authorization
+  - orchestration-planner
+  - security-policy
+  status: planned
+  work_packages:
+  - A01
+  - A03
+- id: clients-web
+  owner: A
+  path: apps/web/
+  provides:
+  - app_client
+  - confirm_ui
+  - verify_ui
+  - result_ui
+  - status_ui
+  depends_on:
+  - gateway-api
+  - shared-ui
+  status: planned
+  work_packages:
+  - A01
+  - A02
+  - A06
+- id: clients-im
+  owner: A
+  path: apps/im/
+  provides:
+  - im_client
+  - message_stream_ui
+  - confirm_card_ui
+  depends_on:
+  - gateway-api
+  - shared-ui
+  status: planned
+  work_packages:
+  - A01
+  - A06
+- id: shared-ui
+  owner: A
+  path: apps/shared-ui/
+  provides:
+  - confirm_card
+  - status_card
+  - table_card
+  - compare_card
+  - error_card
+  - mode_badge
+  depends_on: []
+  status: planned
+  work_packages:
+  - A01
+  - A05
+  - A06
+- id: intent-compiler
+  owner: A
+  path: services/api/src/finpilot/intent/
+  provides:
+  - compile_goal
+  - clarification_builder
+  - reference_time_resolver
+  - unsupported_fallback
+  depends_on:
+  - core-common
+  - contracts
+  status: planned
+  work_packages:
+  - A02
+- id: domains-cards
+  owner: A
+  path: services/api/src/finpilot/domains/cards/
+  provides:
+  - card_apply
+  - card_set_limit
+  - card_controls
+  - card_report_lost
+  - card_replace
+  - card_status
+  - card_decision
+  depends_on:
+  - core-common
+  - kernel-authorization
+  - security-card-controls
+  status: planned
+  work_packages:
+  - A04
+- id: gateway-privacy
+  owner: A
+  path: services/api/src/finpilot/gateway/privacy.py
+  provides:
+  - privacy_export
+  - privacy_delete
+  - retention_policy
+  depends_on:
+  - core-common
+  - security-audit
+  status: planned
+  work_packages:
+  - A05
+- id: docs-release
+  owner: A
+  path: docs/
+  provides:
+  - module_docs
+  - security_self_assessment_index
+  - evidence_index
+  - release_notes
+  - demo_script
+  depends_on:
+  - contracts
+  status: planned
+  work_packages:
+  - A06
+  - D06
+- id: kernel-identity
+  owner: B
+  path: services/api/src/finpilot/kernel/identity.py
+  provides:
+  - authenticate
+  - create_session
+  - register_user
+  - enroll_totp
+  - confirm_totp
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - B01
+- id: kernel-funds
+  owner: B
+  path: services/api/src/finpilot/kernel/
+  provides:
+  - post_transaction
+  - account_available_minor
+  - reserved_minor
+  - ledger_history
+  - create_reservation
+  - capture_reservation
+  - release_reservation
+  - get_snapshot
+  - grade_transfer
+  - hold_daily_quota
+  - settle_daily_quota
+  - release_daily_quota
+  depends_on:
+  - core-common
+  - kernel-identity
+  status: planned
+  work_packages:
+  - B01
+- id: kernel-authorization
+  owner: B
+  path: services/api/src/finpilot/kernel/grants.py
+  provides:
+  - create_exact_grant
+  - create_scoped_grant
+  - activate_grant
+  - consume_grant
+  - revoke_grant
+  - scope_is_subset
+  - grant_covers
+  - issue_challenge
+  - verify_challenge
+  - prepare_operation
+  - submit_operation
+  - operation_view
+  - state_machine
+  depends_on:
+  - core-common
+  - kernel-funds
+  - security-policy
+  status: planned
+  work_packages:
+  - B02
+- id: kernel-transfers
+  owner: B
+  path: services/api/src/finpilot/kernel/transfers.py
+  provides:
+  - execute_transfer
+  - execute_scheduled
+  - provider_adapter_protocol
+  - reconcile_unknown
+  - circuit_breaker
+  depends_on:
+  - core-common
+  - kernel-funds
+  - kernel-authorization
+  status: planned
+  work_packages:
+  - B03
+- id: kernel-scheduler
+  owner: B
+  path: services/api/src/finpilot/kernel/scheduler.py
+  provides:
+  - create_job
+  - cancel_job
+  - lease_job
+  - expire_idle_reservations
+  - outbox_worker
+  depends_on:
+  - core-common
+  - kernel-authorization
+  status: planned
+  work_packages:
+  - B04
+- id: domains-wealth-orders
+  owner: B
+  path: services/api/src/finpilot/domains/wealth_orders/
+  provides:
+  - wealth_purchase
+  - wealth_redeem
+  - wealth_order_status
+  - share_confirmation
+  depends_on:
+  - core-common
+  - kernel-funds
+  - domains-wealth-rules
+  status: planned
+  work_packages:
+  - B05
+- id: deploy-ops
+  owner: B
+  path: deploy/
+  provides:
+  - migrations
+  - backup_restore
+  - sandbox_policy
+  - clean_environment_script
+  - readme_install
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - B06
+- id: provider-sandbox-bank
+  owner: B
+  path: services/provider-sandbox/bank.py
+  provides:
+  - bank_provider_state
+  - stable_operation_key
+  - provider_query
+  - provider_cancel
+  depends_on: []
+  status: planned
+  work_packages:
+  - B06
+- id: domains-billing
+  owner: C
+  path: services/api/src/finpilot/domains/billing/
+  provides:
+  - bill_report
+  - category_correction
+  - refund_attribution
+  - anomaly_hints
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - C02
+- id: domains-wealth-rules
+  owner: C
+  path: services/api/src/finpilot/domains/wealth_rules/
+  provides:
+  - risk_assess
+  - suitability_check
+  - wealth_compare
+  - terms_versioning
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - C03
+- id: adapters-stockquant
+  owner: C
+  path: services/api/src/finpilot/adapters/stockquant/
+  provides:
+  - quant_risk_report
+  - readonly_adapter
+  - version_trace
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - C03
+- id: domains-subscriptions
+  owner: C
+  path: services/api/src/finpilot/domains/subscriptions/
+  provides:
+  - subscription_list
+  - subscription_cancel
+  - mandate_revoke
+  - mandate_status
+  - reminder_create
+  - reminder_cancel
+  - period_inference
+  depends_on:
+  - core-common
+  - kernel-scheduler
+  status: planned
+  work_packages:
+  - C04
+- id: domains-aa
+  owner: C
+  path: services/api/src/finpilot/domains/aa/
+  provides:
+  - aa_create
+  - aa_status
+  - largest_remainder_split
+  - actual_cost_reconcile
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - C05
+- id: adapters-merchant
+  owner: C
+  path: services/api/src/finpilot/adapters/merchant/
+  provides:
+  - merchant_quote
+  - merchant_book
+  - merchant_cancel
+  - merchant_status
+  - untrusted_text_isolation
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - C05
+- id: provider-sandbox-merchant
+  owner: C
+  path: services/provider-sandbox/merchant.py
+  provides:
+  - merchant_provider_state
+  - inventory
+  - cancel_terms
+  - late_callback_simulation
+  depends_on: []
+  status: planned
+  work_packages:
+  - C05
+- id: data-synthetic
+  owner: C
+  path: data/synthetic/
+  provides:
+  - synthetic_dataset
+  - data_card
+  - license_index
+  - dataset_hash
+  depends_on: []
+  status: planned
+  work_packages:
+  - C01
+- id: eval-statistics
+  owner: C
+  path: eval/stats/
+  provides:
+  - confidence_intervals
+  - paired_tests
+  - failure_case_index
+  - cost_report
+  depends_on:
+  - eval-harness
+  status: planned
+  work_packages:
+  - C06
+- id: orchestration-planner
+  owner: D
+  path: services/api/src/finpilot/orchestration/planner.py
+  provides:
+  - build_plan
+  - solve
+  - check_dag
+  - plan_limits
+  depends_on:
+  - core-common
+  - contracts
+  status: planned
+  work_packages:
+  - D01
+- id: orchestration-executor
+  owner: D
+  path: services/api/src/finpilot/orchestration/executor.py
+  provides:
+  - execute_step
+  - run_task
+  - resume_task
+  - repair_plan
+  - affected_nodes
+  - remaining_budget_minor
+  - open_case
+  - case_handoff
+  - operator_action
+  depends_on:
+  - orchestration-planner
+  - kernel-authorization
+  - security-policy
+  status: planned
+  work_packages:
+  - D03
+- id: security-policy
+  owner: D
+  path: services/api/src/finpilot/security/policy.py
+  provides:
+  - evaluate_policy
+  - build_scope
+  - describe_scope
+  - grade_matrix
+  - trust_boundary
+  depends_on:
+  - core-common
+  - contracts
+  status: planned
+  work_packages:
+  - D02
+- id: security-card-controls
+  owner: D
+  path: services/api/src/finpilot/security/card_controls.py
+  provides:
+  - effective_controls
+  - can_release
+  - risk_unfreeze
+  depends_on:
+  - core-common
+  - contracts
+  status: planned
+  work_packages:
+  - D02
+- id: security-sandbox
+  owner: D
+  path: services/api/src/finpilot/security/sandbox.py
+  provides:
+  - analysis_sandbox
+  - resource_limits
+  - generated_code_policy
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - D04
+- id: security-audit
+  owner: D
+  path: services/api/src/finpilot/security/audit.py
+  provides:
+  - append_audit_event
+  - hash_chain_verify
+  - signature_digest
+  - redaction
+  depends_on:
+  - core-common
+  status: planned
+  work_packages:
+  - D04
+- id: eval-harness
+  owner: D
+  path: eval/
+  provides:
+  - task_runner
+  - final_state_judge
+  - baseline_ablation
+  - formal_check_bounded
+  - attack_suite
+  - evidence_index
+  depends_on:
+  - contracts
+  - orchestration-executor
+  status: planned
+  work_packages:
+  - D05
+- id: tests-contracts
+  owner: D
+  path: tests/contracts/
+  provides:
+  - schema_examples_test
+  - openapi_path_test
+  - tool_catalog_test
+  - requirement_trace_test
+  depends_on:
+  - contracts
+  status: in_progress
+  work_packages:
+  - D06
+- id: docs-governance
+  owner: D
+  co_owners:
+  - A
+  path: docs/requirement-trace.md
+  provides:
+  - requirement_trace
+  - change_protocol_record
+  - cross_review_record
+  depends_on:
+  - contracts
+  - tests-contracts
+  status: in_progress
+  work_packages:
+  - D06
+  - A06

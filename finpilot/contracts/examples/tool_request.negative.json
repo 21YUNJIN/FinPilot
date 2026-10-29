@@ -1,0 +1,10 @@
+{
+  "tool": "transfer.submit",
+  "typed_args": {
+    "payee_id": "payee_zhangsan_1",
+    "amount_minor": 900000
+  },
+  "operation_id": "op_transfer_demo_01",
+  "required_level": "GREEN",
+  "grant_id": "grant_fake_0001"
+}

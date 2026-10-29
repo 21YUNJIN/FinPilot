@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/snapshot.json",
+  "title": "Snapshot",
+  "description": "资金与依赖版本快照（V5 第 8.1 节）。不变量：可用 = B − H − F；可支配 = max(0, B − H − F − E)。持仓估值、待赎回金额、未收到的 AA 和退款都不包含在 B 中。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "accounts",
+    "protected_floor_minor",
+    "protection_scope",
+    "observed_at",
+    "pending_inflows_minor",
+    "unconfirmed_receivables_minor"
+  ],
+  "properties": {
+    "accounts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "https://finpilot.local/schemas/snapshot_account.json"
+      }
+    },
+    "currency": {
+      "const": "CNY",
+      "description": "币种固定 CNY。"
+    },
+    "protected_floor_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "protection_scope": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "maxLength": 48
+      }
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "pending_inflows_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "在途入账：整数分，不构成可用资金。"
+    },
+    "unconfirmed_receivables_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "未确认应收：整数分，不构成可用资金。"
+    },
+    "unconfirmed_receivables_are_spendable": {
+      "const": false
+    },
+    "mode": {
+      "enum": [
+        "live",
+        "offline_replay",
+        "mock"
+      ]
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "政策／条款／报价版本（policy_version、terms_version、quote_observed_at 等）。"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "adapter": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+        },
+        "schema_version": {
+          "const": "1.0"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "basis": "synthetic_bank_catalog_v2",
+  "not_competition_evidence": true,
+  "preference_modes": {
+    "stability": {
+      "eligible": 6,
+      "top1": "WM-CASH-001",
+      "baseline_top1": "WM-CASH-001",
+      "top1_changed_by_quant": false,
+      "products_with_rank_change": 2,
+      "max_abs_delta": 1
+    },
+    "balanced": {
+      "eligible": 6,
+      "top1": "WM-CASH-001",
+      "baseline_top1": "WM-CASH-001",
+      "top1_changed_by_quant": false,
+      "products_with_rank_change": 2,
+      "max_abs_delta": 1
+    },
+    "return": {
+      "eligible": 6,
+      "top1": "WM-BOND-102",
+      "baseline_top1": "WM-CASH-001",
+      "top1_changed_by_quant": true,
+      "products_with_rank_change": 5,
+      "max_abs_delta": 3
+    }
+  },
+  "stability_vs_return_top1_differs": true,
+  "interpretation": "同一组合、同一数据，只改用户明确表达的偏好，排序首位发生变化；移除量化指标的 baseline 也给出不同首位。这说明指标进入了决策，但仍需用真实产品净值与真实用户偏好重跑。"
+}

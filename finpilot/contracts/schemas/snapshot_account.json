@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/snapshot_account.json",
+  "title": "SnapshotAccount",
+  "description": "单账户资金事实。禁止把同一冻结同时计入 H（任务预留）与 F（其他冻结）；写入后可用余额不得为负。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "account_id",
+    "owner_user_id",
+    "currency",
+    "posted_balance_minor",
+    "reserved_minor",
+    "frozen_other_minor",
+    "available_minor",
+    "spendable_minor",
+    "version"
+  ],
+  "properties": {
+    "account_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "account_type": {
+      "type": "string",
+      "maxLength": 24
+    },
+    "currency": {
+      "const": "CNY",
+      "description": "币种固定 CNY。"
+    },
+    "posted_balance_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "reserved_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "frozen_other_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "available_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "B − H − F；整数分，不得为负。"
+    },
+    "spendable_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "max(0, B − H − F − E)；整数分。"
+    },
+    "protected_floor_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "frozen",
+        "closed"
+      ]
+    },
+    "masked_number": {
+      "type": "string",
+      "maxLength": 32,
+      "description": "脱敏卡号／账号；完整号码不进入模型与日志。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "frozen"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "spendable_minor": {
+            "const": 0
+          }
+        }
+      }
+    }
+  ]
+}

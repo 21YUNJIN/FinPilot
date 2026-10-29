@@ -1,0 +1,45 @@
+{
+  "step_id": "step_transfer",
+  "plan_id": "plan_birthday_1",
+  "seq": 2,
+  "node_id": "node_transfer",
+  "tool": "transfer.submit",
+  "typed_args": {
+    "payee_id": "payee_zhangsan_1",
+    "source_account_id": "account_salary",
+    "amount_minor": 10000,
+    "currency": "CNY"
+  },
+  "dependencies": [
+    "node_flowers"
+  ],
+  "read_set": [
+    "account:account_salary:v7",
+    "payee:payee_zhangsan_1",
+    "grant:plan_birthday_1:1"
+  ],
+  "write_set": [
+    "ledger_entries",
+    "reservations",
+    "operations"
+  ],
+  "preconditions": [
+    "available_minor >= 10000",
+    "spendable_minor >= 10000",
+    "grant.status == active"
+  ],
+  "expected_effects": {
+    "funds_moved_minor": 10000,
+    "irreversible": true
+  },
+  "compensation_policy": {
+    "mode": "manual",
+    "reason": "即时到账转账不可自动撤回",
+    "requires_reauthorization": true
+  },
+  "required_level": "YELLOW",
+  "status": "pending",
+  "operation_id": null,
+  "attempt": 0,
+  "last_error": null
+}

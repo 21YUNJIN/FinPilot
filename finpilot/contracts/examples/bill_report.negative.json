@@ -1,0 +1,16 @@
+{
+  "report_id": "bill_custom_01",
+  "owner_user_id": "user_demo_01",
+  "period": {
+    "kind": "custom",
+    "timezone": "Asia/Shanghai"
+  },
+  "generated_at": "2026-10-22T10:10:00+08:00",
+  "data_cutoff_at": "2026-10-22T10:10:00+08:00",
+  "currency": "CNY",
+  "total_inflow_minor": 0,
+  "total_outflow_minor": 0,
+  "net_minor": 0,
+  "categories": [],
+  "warnings": []
+}

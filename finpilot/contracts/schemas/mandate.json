@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/mandate.json",
+  "title": "Mandate",
+  "description": "银行代扣授权：与商户合同状态互相独立；解除代扣不等于取消合同（S5-03、T14）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mandate_id",
+    "owner_user_id",
+    "merchant_id",
+    "status",
+    "version",
+    "created_at"
+  ],
+  "properties": {
+    "mandate_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "subscription_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "merchant_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "account_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "status": {
+      "enum": [
+        "active",
+        "revoked",
+        "pending_revocation"
+      ],
+      "description": "与 models.MANDATE_STATUS 逐字一致。"
+    },
+    "revoked_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "pending_revocation_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "revoked"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "revoked_at"
+        ],
+        "properties": {
+          "revoked_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "pending_revocation"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "pending_revocation_at"
+        ],
+        "properties": {
+          "pending_revocation_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  ]
+}

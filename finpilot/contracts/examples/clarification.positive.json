@@ -1,0 +1,27 @@
+{
+  "clarification_id": "clr_payee_zhangsan",
+  "task_id": "task_demo_transfer",
+  "revision": 1,
+  "field": "payee_id",
+  "prompt": "存在两个同名联系人“张三”，请选择收款对象：尾号 0001 还是 0002？",
+  "blocking": true,
+  "options": [
+    {
+      "option_id": "payee_zhangsan_1",
+      "label": "张三（尾号 0001）",
+      "object_ref": "payee_zhangsan_1",
+      "detail": "常用联系人"
+    },
+    {
+      "option_id": "payee_zhangsan_2",
+      "label": "张三（尾号 0002）",
+      "object_ref": "payee_zhangsan_2",
+      "detail": "近 90 天无往来"
+    }
+  ],
+  "status": "open",
+  "answer": null,
+  "answered_at": null,
+  "created_at": "2026-10-22T10:00:00+08:00",
+  "reason_code": "ambiguous_payee"
+}

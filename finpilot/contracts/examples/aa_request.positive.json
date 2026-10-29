@@ -1,0 +1,50 @@
+{
+  "aa_id": "aa_dinner_01",
+  "owner_user_id": "user_demo_01",
+  "task_id": "task_demo_birthday",
+  "title": "生日晚餐",
+  "final_cost_minor": 10000,
+  "status": "collecting",
+  "participant_shares": [
+    {
+      "share_id": "share_initiator",
+      "aa_id": "aa_dinner_01",
+      "participant_ref": "user_demo_01",
+      "participant_user_id": "user_demo_01",
+      "display_name": "演示用户一",
+      "share_minor": 3334,
+      "adjusted_minor": 0,
+      "status": "paid",
+      "is_initiator": true,
+      "auto_debit_allowed": false,
+      "operation_id": "op_aa_pay_initiator",
+      "paid_at": "2026-10-22T10:05:00+08:00",
+      "created_at": "2026-10-22T10:00:00+08:00"
+    },
+    {
+      "share_id": "share_guest_a",
+      "aa_id": "aa_dinner_01",
+      "participant_ref": "user_demo_02",
+      "participant_user_id": "user_demo_02",
+      "display_name": "演示用户二",
+      "share_minor": 3333,
+      "adjusted_minor": 0,
+      "status": "pending",
+      "is_initiator": false,
+      "auto_debit_allowed": false,
+      "operation_id": null,
+      "paid_at": null,
+      "created_at": "2026-10-22T10:00:00+08:00"
+    }
+  ],
+  "linked_orders": [
+    "mo_catering_01"
+  ],
+  "adjustments": [],
+  "received_minor": 3334,
+  "received_minor_is_spendable": false,
+  "reconciled": false,
+  "currency": "CNY",
+  "created_at": "2026-10-22T10:00:00+08:00",
+  "updated_at": "2026-10-22T10:05:00+08:00"
+}

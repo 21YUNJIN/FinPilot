@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/plan.json",
+  "title": "ExecutionPlan",
+  "description": "候选 DAG 计划（V5 第 5.2、5.3 节）：有序步骤、资金计划、前置条件、风险分级、确认摘要、备选方案与不能执行的原因。限额 24 节点 / 128 候选 / 2 秒，超限返回 PLANNING_LIMIT，不声称数学无解。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "task_id",
+    "revision",
+    "status",
+    "scope",
+    "scope_hash",
+    "required_level",
+    "feasible",
+    "steps",
+    "total_estimated_minor",
+    "total_fee_minor",
+    "created_at"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "awaiting_authorization",
+        "confirmed",
+        "running",
+        "completed",
+        "superseded",
+        "cancelled"
+      ]
+    },
+    "goal_snapshot": {
+      "$ref": "https://finpilot.local/schemas/goal.json"
+    },
+    "snapshot_ref": {
+      "type": "object",
+      "description": "求解所用快照引用（账户、条款、报价版本与 observed_at）。"
+    },
+    "scope": {
+      "type": "object",
+      "description": "确认范围结构；与 UI 摘要同源（security/scope.build_scope）。"
+    },
+    "scope_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "required_level": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ],
+      "description": "服务端权限等级；客户端与模型不得降低（AUTH-01）。"
+    },
+    "feasible": {
+      "type": "boolean"
+    },
+    "infeasible_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "https://finpilot.local/schemas/plan_step.json"
+      }
+    },
+    "total_estimated_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "total_fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "手续费合计：整数分；手续费计入资金预算，不计入转账本金日累计。"
+    },
+    "solver": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 96
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 48
+        },
+        "candidates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "optimal_claim": {
+          "type": "boolean",
+          "description": "仅在满足算法前提时允许声称最优，否则只能称“找到的可行方案”。"
+        }
+      }
+    },
+    "confirmed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "feasible": {
+            "const": false
+          }
+        },
+        "required": [
+          "feasible"
+        ]
+      },
+      "then": {
+        "required": [
+          "infeasible_reasons"
+        ],
+        "properties": {
+          "infeasible_reasons": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "confirmed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "confirmed_at"
+        ],
+        "properties": {
+          "confirmed_at": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

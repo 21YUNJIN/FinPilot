@@ -1,0 +1,15 @@
+{
+  "share_id": "share_guest_a",
+  "aa_id": "aa_dinner_01",
+  "participant_ref": "user_demo_02",
+  "participant_user_id": "user_demo_02",
+  "display_name": "演示用户二",
+  "share_minor": 3333,
+  "adjusted_minor": 0,
+  "status": "pending",
+  "is_initiator": false,
+  "auto_debit_allowed": true,
+  "operation_id": null,
+  "paid_at": null,
+  "created_at": "2026-10-22T10:00:00+08:00"
+}

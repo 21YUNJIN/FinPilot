@@ -1,0 +1,61 @@
+# --- 前端工作区（apps/*，pnpm workspace）---
+node_modules/
+apps/*/node_modules/
+apps/*/dist/
+apps/*/coverage/
+apps/*/.vite/
+apps/*/tsconfig.tsbuildinfo
+*.tsbuildinfo
+coverage/
+.vite/
+.pnpm-store/
+pnpm-debug.log*
+npm-debug.log*
+yarn-error.log*
+.vitest-cache/
+test-results/
+playwright-report/
+
+# 前端环境变量：只提交 .env.example，不提交真实配置
+apps/*/.env
+apps/*/.env.local
+apps/*/.env.*.local
+.env.local
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- Python 运行时（后端 + 迁移 + 运维脚本）---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- 环境配置：只提交示例，不提交真实密钥 ---
+.env
+.env.*
+!.env.example
+deploy/compose.env
+!deploy/compose.env.example
+
+# --- 本机运行产物（scripts/dev_up.ps1、deploy/verify_install.ps1 等写入）---
+.run/
+.state/
+*.log
+
+# --- 备份与评测产物：体积大且含业务数据，不入库 ---
+backups/
+*.dump
+*.manifest.json
+*.audit-digest.json
+eval-results/

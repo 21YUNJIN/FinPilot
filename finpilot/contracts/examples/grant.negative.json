@@ -1,0 +1,29 @@
+{
+  "grant_id": "grant_wealth_01",
+  "owner_user_id": "user_demo_01",
+  "task_id": "task_demo_wealth",
+  "plan_id": "plan_wealth_1",
+  "plan_revision": 1,
+  "scope_kind": "exact",
+  "scope_hash": "27a9d1c195af7958f3825a2b61d7eb8318631f6ee3ab96f2eb5a47495f83cbb0",
+  "scope": {
+    "tool": "wealth.purchase",
+    "product_id": "prod_mmf_01",
+    "amount_minor": 500000
+  },
+  "policy_version": "policy-2026.10",
+  "required_level": "RED",
+  "verification_level": "NONE",
+  "challenge_id": null,
+  "status": "active",
+  "max_uses": 1,
+  "used_count": 0,
+  "max_total_minor": null,
+  "used_total_minor": 0,
+  "approved_revision": 1,
+  "lineage": [],
+  "expires_at": "2026-10-22T10:10:00+08:00",
+  "revoked_at": null,
+  "created_at": "2026-10-22T10:00:05+08:00",
+  "version": 1
+}

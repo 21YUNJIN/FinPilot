@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/grant_request.json",
+  "title": "PlanConfirmRequest",
+  "description": "POST /v1/plans/{plan_id}/confirm 的请求体：人类确认入口，模型无权调用（x-agent-exposed: false）。接受与屏幕相同的 scope_hash，签发黄色授权或发起红色挑战；服务端必须核验 scope_hash 与当前修订一致。 本 Schema 为对外输入面：`additionalProperties: false`，并显式禁止 `user_id`、`owner_user_id`、`grant_id`、`status`、`required_level`、`verification_level`、`challenge_id`、`scope`、`scope_kind`、`max_uses`、`max_total_minor`、`posted_balance_minor`、`approved_revision` 等由服务端持有的字段。 出现这些字段时契约层直接拒绝并返回 `EXTRA_DANGEROUS_FIELD`（V5 API-01、第 4.2 节、第 6.4 节），拒绝原因是身份、归属、授权、状态与余额事实只能由可信服务端产生，客户端或模型覆盖它们等于伪造授权或账本事实。",
+  "type": "object",
+  "additionalProperties": false,
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "user_id"
+        ]
+      },
+      {
+        "required": [
+          "owner_user_id"
+        ]
+      },
+      {
+        "required": [
+          "grant_id"
+        ]
+      },
+      {
+        "required": [
+          "status"
+        ]
+      },
+      {
+        "required": [
+          "required_level"
+        ]
+      },
+      {
+        "required": [
+          "verification_level"
+        ]
+      },
+      {
+        "required": [
+          "challenge_id"
+        ]
+      },
+      {
+        "required": [
+          "scope"
+        ]
+      },
+      {
+        "required": [
+          "scope_kind"
+        ]
+      },
+      {
+        "required": [
+          "max_uses"
+        ]
+      },
+      {
+        "required": [
+          "max_total_minor"
+        ]
+      },
+      {
+        "required": [
+          "posted_balance_minor"
+        ]
+      },
+      {
+        "required": [
+          "approved_revision"
+        ]
+      }
+    ]
+  },
+  "x-client-writable": true,
+  "x-forbidden-client-fields": [
+    "user_id",
+    "owner_user_id",
+    "grant_id",
+    "status",
+    "required_level",
+    "verification_level",
+    "challenge_id",
+    "scope",
+    "scope_kind",
+    "max_uses",
+    "max_total_minor",
+    "posted_balance_minor",
+    "approved_revision"
+  ],
+  "required": [
+    "scope_hash",
+    "expected_revision"
+  ],
+  "properties": {
+    "scope_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "expected_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "并发基线；旧修订返回 VERSION_CONFLICT。"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "description": "可选：重复确认不得产生第二个 grant。"
+    },
+    "task_id": {
+      "type": "string",
+      "maxLength": 48
+    },
+    "plan_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "acknowledged_diff": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      },
+      "description": "用户可见的差异确认项；仅为回执，不参与授权范围计算。"
+    }
+  }
+}

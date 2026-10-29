@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/subscription.json",
+  "title": "Subscription",
+  "description": "订阅合同：周期识别与合同证据分开（evidence=contract/inferred），疑似周期不得冒充合同；查询也按官方黄色例外要求确认（S5-01、S5-04、T14）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "subscription_id",
+    "owner_user_id",
+    "merchant_id",
+    "merchant_name",
+    "amount_minor",
+    "period",
+    "status",
+    "evidence",
+    "terms_version",
+    "version",
+    "created_at"
+  ],
+  "properties": {
+    "subscription_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "merchant_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "merchant_name": {
+      "type": "string",
+      "maxLength": 96
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "每期金额：整数分。"
+    },
+    "period": {
+      "enum": [
+        "weekly",
+        "monthly",
+        "quarterly",
+        "yearly"
+      ]
+    },
+    "next_charge_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "cancelled",
+        "pending_cancellation",
+        "ended"
+      ],
+      "description": "与 models.SUBSCRIPTION_STATUS 逐字一致。"
+    },
+    "evidence": {
+      "enum": [
+        "contract",
+        "inferred"
+      ],
+      "description": "contract=真实合同；inferred=从一个周期流水推断。"
+    },
+    "inference_confidence_bps": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "is_contract_evidence": {
+      "type": "boolean"
+    },
+    "terms_version": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "cancel_terms": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "mandate_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48,
+      "description": "银行代扣授权与商户合同状态互相独立。"
+    },
+    "last_charged_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "cancelled_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "evidence": {
+            "const": "inferred"
+          }
+        },
+        "required": [
+          "evidence"
+        ]
+      },
+      "then": {
+        "required": [
+          "inference_confidence_bps",
+          "is_contract_evidence"
+        ],
+        "properties": {
+          "is_contract_evidence": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "evidence": {
+            "const": "contract"
+          }
+        },
+        "required": [
+          "evidence"
+        ]
+      },
+      "then": {
+        "properties": {
+          "is_contract_evidence": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "cancelled"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "cancelled_at"
+        ],
+        "properties": {
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  ]
+}

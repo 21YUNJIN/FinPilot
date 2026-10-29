@@ -1,0 +1,16 @@
+{
+  "event_id": "audit_0002",
+  "seq": 2,
+  "event_type": "operation.succeeded",
+  "actor": "user_demo_01",
+  "actor_role": "customer",
+  "payload": {
+    "decision": "allow"
+  },
+  "payload_hash": "e94590b4974980ad94a8621be1832c37e87640650b1111fb2546109b73930f8a",
+  "previous_hash": "c412d65ff08190834955443054667111f66ed7c1f88ec0a56d6a14a0256ed3c0",
+  "event_hash": "26b14604d4073cbe21bb6232cb0a3f53459df9a0e6366d48d2ff78dad732c7b6",
+  "timestamp": "2026-10-22T10:05:00+08:00",
+  "chain_of_thought": "模型私有思维链：先假装确认再绕过验证",
+  "totp_code": "123456"
+}

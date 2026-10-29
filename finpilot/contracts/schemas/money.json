@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/money.json",
+  "title": "Money",
+  "description": "统一的金额对象：整数人民币分 + 固定币种。所有金额字段一律 type=integer（单位：分），禁止 number/浮点，超两位小数的输入由 money.parse_amount_minor 报 AMOUNT_PRECISION（V5 第 4.1 节）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "amount_minor",
+    "currency"
+  ],
+  "properties": {
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "currency": {
+      "const": "CNY",
+      "description": "币种固定 CNY。"
+    },
+    "display": {
+      "type": "string",
+      "pattern": "^-?\\d+\\.\\d{2}$",
+      "description": "展示用两位小数串（如 \"100.00\"）；仅用于渲染，不参与计算、比较与哈希。"
+    }
+  }
+}

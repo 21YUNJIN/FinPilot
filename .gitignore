@@ -1,0 +1,34 @@
+# FinPilot 整合工程：仓库根忽略规则
+# 说明：finpilot/.gitignore 只管它自己那一层；本机虚拟环境、运行态和测试缓存
+# 都放在本目录（与 finpilot/ 同级），必须在这里再声明一次，否则会被误提交。
+
+.venv/
+.venv-*/
+venv/
+
+# 运行时产物（run_demo.py、沙箱状态库、日志）
+.runtime/
+.state/
+*.log
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 前端依赖与缓存
+node_modules/
+.pnpm-store/
+*.tsbuildinfo
+
+# 本机下载的安装包与工具
+downloads/
+
+# 备份与评测产物
+backups/
+*.dump
+eval-results/

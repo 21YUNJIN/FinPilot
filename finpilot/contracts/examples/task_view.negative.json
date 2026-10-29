@@ -1,0 +1,11 @@
+{
+  "task_id": "task_demo_birthday",
+  "owner_user_id": "user_demo_01",
+  "channel": "app",
+  "status": "blocked",
+  "revision": 2,
+  "reference_time": "2026-10-22T10:00:00+08:00",
+  "mode": "mock",
+  "created_at": "2026-10-22T10:00:00+08:00",
+  "updated_at": "2026-10-22T10:02:00+08:00"
+}

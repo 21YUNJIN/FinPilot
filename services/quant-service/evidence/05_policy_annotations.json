@@ -1,0 +1,130 @@
+[
+  {
+    "product_id": "WM-CASH-001",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-BOND-101",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-BOND-102",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-FIX-201",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-MIX-301",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-MIX-302",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-EQ-401",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-EQ-402",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-QDII-501",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-PEN-601",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  },
+  {
+    "product_id": "WM-NEW-701",
+    "decision": {
+      "allowed": true,
+      "mode": "degrade",
+      "reason": "INSUFFICIENT_NAV_HISTORY",
+      "user_message": "该产品历史净值不足，无法给出可比较的风险指标，已明确标记为 NA。"
+    },
+    "missing_metrics": [
+      "annual_volatility",
+      "autocorrelation_factor",
+      "downside_deviation",
+      "historical_cvar_95",
+      "sharpe",
+      "sharpe_se_annual",
+      "sharpe_t_stat"
+    ]
+  },
+  {
+    "product_id": "WM-FIX-202",
+    "decision": {
+      "allowed": true,
+      "mode": "full",
+      "reason": "OK",
+      "user_message": ""
+    },
+    "missing_metrics": []
+  }
+]

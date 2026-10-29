@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stockquant-mvp"
+version = "0.1.0"
+description = "Dependency-free stock quant research MVP with point-in-time discipline, walk-forward backtesting, risk controls, and HTML reports."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "Codex"}]
+dependencies = []
+
+[project.optional-dependencies]
+research = [
+  "numpy",
+  "pandas",
+  "scipy",
+  "scikit-learn",
+  "lightgbm",
+  "pyarrow",
+  "duckdb",
+]
+providers = ["akshare", "tushare", "yfinance"]
+execution = ["ccxt"]
+app = ["flask", "fastapi", "uvicorn", "streamlit"]
+bankagent = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.8",
+  "pypdf>=5.0",
+  "pdfplumber>=0.11",
+  "rank-bm25>=0.2.2",
+]
+
+[project.scripts]
+stockquant = "stockquant.cli:main"
+finpilot = "bankagent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["stockquant*", "bankagent*"]

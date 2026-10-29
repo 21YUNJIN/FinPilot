@@ -1,0 +1,19 @@
+{
+  "event_id": "evt_callback_0002",
+  "provider_id": "bank_sandbox_v1",
+  "provider_event_id": "bank_evt_20261022_0002",
+  "operation_id": "op_transfer_demo_01",
+  "event_type": "order.succeeded",
+  "event_version": 1,
+  "signature_ok": true,
+  "verified_status": "verified",
+  "state_applied": true,
+  "received_at": "2026-10-22T10:05:00+08:00",
+  "payload_hash": "bd2b8df905415f26fb849f0622340b119fd782551a343f936094491c3e45b538",
+  "payload": {
+    "status": "succeeded",
+    "amount_minor": 10000,
+    "owner_user_id": "user_demo_02"
+  },
+  "owner_user_id": "user_demo_02"
+}

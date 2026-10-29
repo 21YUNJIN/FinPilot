@@ -1,0 +1,9 @@
+# 融策智能体（FinPilot）前端工作区：两个独立客户端 + 共享 UI 组件库
+# 对应 V5 需求 SYS-01（两客户端与共享 API）、NFR-03（交互与真实状态）、NFR-04（模式标识）
+packages:
+  - "apps/*"
+
+# pnpm 11 默认阻止依赖的安装脚本。esbuild（vite/vitest 的依赖）需要运行安装脚本校验本地二进制；
+# 只放行 esbuild，其余依赖脚本保持默认阻止（供应链最小权限）。键名 allowBuilds 为 pnpm 11 的新配置。
+allowBuilds:
+  esbuild: true

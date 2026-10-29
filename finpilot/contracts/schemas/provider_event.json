@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/provider_event.json",
+  "title": "ProviderEvent",
+  "description": "业务回调事件：验签、事件 ID 去重、业务版本核验、乱序与冲突隔离（API-04、T33）。回调载荷不能覆盖本地订单归属；旧 pending 回执不能覆盖新的 succeeded。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "provider_id",
+    "provider_event_id",
+    "event_type",
+    "event_version",
+    "signature_ok",
+    "verified_status",
+    "state_applied",
+    "received_at",
+    "payload_hash",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "provider_event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96,
+      "description": "(provider_id, provider_event_id) 唯一，用于去重。"
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "provider_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 96
+    },
+    "event_type": {
+      "enum": [
+        "order.accepted",
+        "order.pending",
+        "order.succeeded",
+        "order.failed",
+        "order.cancelled",
+        "payment.succeeded",
+        "payment.failed",
+        "refund.settled",
+        "quote.changed"
+      ]
+    },
+    "event_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "signature_ok": {
+      "type": "boolean"
+    },
+    "verified_status": {
+      "enum": [
+        "verified",
+        "rejected",
+        "duplicate",
+        "stale",
+        "conflict"
+      ]
+    },
+    "state_applied": {
+      "type": "boolean",
+      "description": "只有验签通过、去重通过、版本更新时才允许为 true。"
+    },
+    "rejection_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 96
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "conflict_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 96
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "signature_ok": {
+            "const": false
+          }
+        },
+        "required": [
+          "signature_ok"
+        ]
+      },
+      "then": {
+        "required": [
+          "rejection_reason"
+        ],
+        "properties": {
+          "rejection_reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state_applied": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verified_status": {
+            "enum": [
+              "duplicate",
+              "stale",
+              "conflict",
+              "rejected"
+            ]
+          }
+        },
+        "required": [
+          "verified_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "state_applied": {
+            "const": false
+          }
+        }
+      }
+    }
+  ],
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "owner_user_id"
+        ]
+      },
+      {
+        "required": [
+          "user_id"
+        ]
+      }
+    ]
+  },
+  "$comment": "回调载荷中的 owner_user_id／user_id 不得覆盖本地订单归属（V5 第 16.2 节）。"
+}

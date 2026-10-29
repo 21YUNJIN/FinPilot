@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/aa_request.json",
+  "title": "AARequest",
+  "description": "AA 请求：分摊精确（最大余数法，合计严格等于实付），只发请求、不代扣；独立付款授权；应收不入可用资金（S1-04、T04）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "aa_id",
+    "owner_user_id",
+    "title",
+    "final_cost_minor",
+    "status",
+    "participant_shares",
+    "received_minor",
+    "currency",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "aa_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 96
+    },
+    "final_cost_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "实付总额：整数分（含费用与不可退成本）。"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "collecting",
+        "partially_settled",
+        "settled",
+        "cancelled"
+      ]
+    },
+    "participant_shares": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "https://finpilot.local/schemas/aa_share.json"
+      }
+    },
+    "linked_orders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 48
+      }
+    },
+    "adjustments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "received_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "已收到金额：整数分；到账前不计入可用资金。"
+    },
+    "received_minor_is_spendable": {
+      "const": false
+    },
+    "reconciled": {
+      "type": "boolean"
+    },
+    "currency": {
+      "const": "CNY",
+      "description": "币种固定 CNY。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "settled"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reconciled": {
+            "const": true
+          }
+        }
+      }
+    }
+  ],
+  "$comment": "不变量：Σ participant_shares[].share_minor == final_cost_minor − Σ adjustments[].delta_minor；由 money.largest_remainder_split 保证合计严格等于总额，JSON Schema 无法表达，由内核与测试校验。"
+}

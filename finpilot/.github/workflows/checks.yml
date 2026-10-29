@@ -1,0 +1,255 @@
+# FinPilot CI — 三层检查（V5 GOV-01、DEL-02）
+#
+# 诚实声明：本工作流**未在 GitHub Actions 上实测**（本机无网络/无 docker，无法执行
+# runner 环境）。它按本机真实跑通的命令编写（见 README「验证记录」与 deploy/README.md），
+# 但 `services:` 容器、apt 安装 PostgreSQL 客户端等步骤属于"目标配置"，首次推送后需要
+# 按实际失败信息修正。任何"CI 已通过"的说法都必须附上 Actions 运行链接。
+#
+# 分层与责任人（对应 BANKAGENT_TEAM4_PLAN.md 的工作包划分）：
+#   L1 快速检查  责任人 A（契约/客户端）+ B（内核单测）
+#                触发：每次 push 与 pull_request      期望耗时 < 2 分钟，不需要数据库
+#   L2 集成检查  责任人 B（内核/数据）+ C（提供方沙箱）
+#                触发：pull_request、push 到 main、每日定时 18:00 UTC
+#                需要 PostgreSQL 17 service；覆盖迁移链、集成、安全与备份恢复演练
+#   L3 完整评测  责任人 D（评测与统计）
+#                触发：仅手动 workflow_dispatch（避免把 mock 回放结论当模型能力）
+#                产物：JSONL + 统计报告，作为证据附件上传
+
+name: checks
+
+on:
+  push:
+    branches: ["main", "master", "release/**", "wp/**"]
+  pull_request:
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+    inputs:
+      eval_config:
+        description: "L3 评测配置名（eval.baselines.config_names()）"
+        required: false
+        default: "FULL"
+      eval_split:
+        description: "数据集拆分"
+        required: false
+        default: "dev"
+      eval_limit:
+        description: "只跑前 N 条（空=全量）"
+        required: false
+        default: "12"
+      eval_repeats:
+        description: "独立重复次数"
+        required: false
+        default: "1"
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # L1 快速检查（无数据库）
+  # ---------------------------------------------------------------------------
+  quick:
+    name: "L1 quick: hygiene + contracts + unit"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package (editable) with dev extras
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: "Format/hygiene: ASCII-only alembic.ini and *.ps1 (locale-codec trap)"
+        run: |
+          python - <<'PY'
+          import pathlib, sys
+          targets = [pathlib.Path("alembic.ini")]
+          targets += sorted(pathlib.Path("deploy").glob("*.ps1"))
+          targets += sorted(pathlib.Path("scripts").glob("*.ps1"))
+          bad = []
+          for path in targets:
+              data = path.read_bytes()
+              if any(byte > 127 for byte in data):
+                  bad.append(str(path))
+          print(f"checked {len(targets)} files")
+          if bad:
+              print("NON-ASCII FILES:", bad)
+              sys.exit(1)
+          PY
+
+      - name: "Format/hygiene: python sources compile"
+        run: python -m compileall -q services/api/src migrations eval scripts
+
+      - name: "Contracts + unit tests"
+        run: python -m pytest tests/contracts tests/unit -q
+
+  # ---------------------------------------------------------------------------
+  # L2 集成检查（PostgreSQL 17 service）
+  # ---------------------------------------------------------------------------
+  integration:
+    name: "L2 integration: postgres + migrations + integration + security"
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: quick
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: finpilot
+          POSTGRES_PASSWORD: finpilot_dev_pw
+          POSTGRES_DB: finpilot_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U finpilot -d finpilot_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://finpilot:finpilot_dev_pw@127.0.0.1:5432/finpilot_test
+      TEST_DATABASE_URL: postgresql+psycopg://finpilot:finpilot_dev_pw@127.0.0.1:5432/finpilot_test
+      APP_MODE: mock
+      ENVIRONMENT: ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package (editable) with dev extras
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      # The backup/restore drill shells out to pg_dump/pg_restore; the runner's
+      # default client can be older than the postgres:17 service and would fail with
+      # "server version mismatch". Install a matching client from PGDG.
+      - name: Install PostgreSQL 17 client (pg_dump/pg_restore matching the service)
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+          pg_dump --version
+          pg_restore --version
+
+      - name: "Migration chain: upgrade head + no diff vs models.py (DATA-04)"
+        run: |
+          python -m alembic -x db_url="$TEST_DATABASE_URL" upgrade head
+          python -m alembic -x db_url="$TEST_DATABASE_URL" current
+          python -m alembic -x db_url="$TEST_DATABASE_URL" check
+          python -m alembic -x db_url="$TEST_DATABASE_URL" downgrade base
+          python -m alembic -x db_url="$TEST_DATABASE_URL" upgrade head
+
+      - name: "Integration tests (incl. migration chain and backup/restore drill)"
+        run: python -m pytest tests/integration -q
+
+      - name: "Security tests (audit chain, sandbox, trust boundary)"
+        run: python -m pytest tests/security -q
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: l2-logs
+          path: |
+            .run/logs/
+            backups/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # L3 完整评测（仅手动触发）
+  # ---------------------------------------------------------------------------
+  eval:
+    name: "L3 evaluation (manual only)"
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: integration
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: finpilot
+          POSTGRES_PASSWORD: finpilot_dev_pw
+          POSTGRES_DB: finpilot_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U finpilot -d finpilot_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://finpilot:finpilot_dev_pw@127.0.0.1:5432/finpilot_test
+      TEST_DATABASE_URL: postgresql+psycopg://finpilot:finpilot_dev_pw@127.0.0.1:5432/finpilot_test
+      APP_MODE: mock
+      ENVIRONMENT: ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package (editable) with dev extras
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Prepare schema + seed for evaluation
+        run: |
+          python -m alembic -x db_url="$TEST_DATABASE_URL" upgrade head
+
+      - name: List evaluation configurations
+        run: python -m eval.runner --list-configs
+
+      - name: "Evaluation run (eval.runner)"
+        env:
+          EVAL_CONFIG: ${{ github.event.inputs.eval_config || 'FULL' }}
+          EVAL_SPLIT: ${{ github.event.inputs.eval_split || 'dev' }}
+          EVAL_LIMIT: ${{ github.event.inputs.eval_limit || '12' }}
+          EVAL_REPEATS: ${{ github.event.inputs.eval_repeats || '1' }}
+        run: |
+          mkdir -p eval-results
+          python -m eval.runner \
+            --config "$EVAL_CONFIG" \
+            --split "$EVAL_SPLIT" \
+            --limit "$EVAL_LIMIT" \
+            --repeats "$EVAL_REPEATS" \
+            --mode mock \
+            --out "eval-results/${EVAL_CONFIG}_${EVAL_SPLIT}.jsonl"
+
+      - name: Upload evaluation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval-results/
+          retention-days: 30
+
+      - name: Honest labeling reminder
+        run: |
+          echo "NOTE: APP_MODE=mock. Results measure the deterministic policy/ledger"
+          echo "path and local provider simulators, NOT live model capability."

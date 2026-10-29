@@ -1,0 +1,33 @@
+{
+  "product_id": "prod_mmf_01",
+  "name": "稳健现金管理 A",
+  "issuer": "模拟银行理财",
+  "product_type": "money_market",
+  "terms_version": "2026.10",
+  "issuer_risk_level": "R2",
+  "min_minor": 100000,
+  "fee_bps": 25,
+  "fee_fixed_minor": 0,
+  "term_days": 0,
+  "open_days": [
+    "mon",
+    "tue",
+    "wed",
+    "thu",
+    "fri"
+  ],
+  "cutoff_time": "15:00",
+  "liquidity_terms": "T+1 赎回，工作日 15:00 前当日受理",
+  "cancel_terms": "冷静期 0 天；受理后不可撤单",
+  "cooling_off_days": 0,
+  "settlement_days": 1,
+  "history_ref": "dataset:nav:mmf_01:2026-10-20",
+  "nav_e6": 1023456,
+  "nav_as_of_date": "2026-10-21",
+  "nav_is_na": false,
+  "daily_return_bps": "0.0123",
+  "meta": {
+    "history_points": 730
+  },
+  "is_active": true
+}

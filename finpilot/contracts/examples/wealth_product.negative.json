@@ -1,0 +1,14 @@
+{
+  "product_id": "prod_new_02",
+  "name": "新发净值型 B",
+  "issuer": "模拟银行理财",
+  "product_type": "mixed",
+  "terms_version": "2026.10",
+  "issuer_risk_level": "R3",
+  "min_minor": 10000,
+  "fee_bps": 60,
+  "fee_fixed_minor": 0,
+  "nav_e6": 1000000,
+  "nav_is_na": true,
+  "is_active": true
+}

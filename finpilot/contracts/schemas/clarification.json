@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/clarification.json",
+  "title": "Clarification",
+  "description": "澄清项：关键字段缺失或歧义时生成可回答的问题，未澄清前零写入（PLAN-01、T01）。同名收款人、歧义日期、金额与账户缺失都必须先澄清。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "clarification_id",
+    "task_id",
+    "revision",
+    "field",
+    "prompt",
+    "status",
+    "blocking",
+    "created_at"
+  ],
+  "properties": {
+    "clarification_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "field": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "blocking": {
+      "type": "boolean",
+      "description": "为 true 时禁止执行写操作，直到该字段被确定。"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "option_id",
+          "label"
+        ],
+        "properties": {
+          "option_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "object_ref": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 255
+          }
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "open",
+        "answered",
+        "cancelled",
+        "expired"
+      ]
+    },
+    "answer": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "answered_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "reason_code": {
+      "type": "string",
+      "maxLength": 64
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "answered"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "answer",
+          "answered_at"
+        ],
+        "properties": {
+          "answer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "answered_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  ]
+}

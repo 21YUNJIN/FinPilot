@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/card_control.json",
+  "title": "CardControl",
+  "description": "叠加式卡控：用户锁、渠道锁、风控冻结与限额可同时存在；只解有权解除的限制（S4-03、T13）。风控冻结只能由风控角色解除，客户与 Agent 均无权。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "control_id",
+    "card_id",
+    "control_type",
+    "created_by",
+    "created_by_role",
+    "active",
+    "created_at"
+  ],
+  "properties": {
+    "control_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "card_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "control_type": {
+      "enum": [
+        "user_lock",
+        "channel_lock",
+        "user_limit",
+        "risk_freeze",
+        "risk_limit",
+        "limit"
+      ]
+    },
+    "channel": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "atm",
+        "pos",
+        "online",
+        "contactless",
+        "all",
+        null
+      ]
+    },
+    "limit_minor": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "created_by": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "created_by_role": {
+      "enum": [
+        "customer",
+        "operator",
+        "risk",
+        "system"
+      ]
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "released_by": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "released_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "control_type": {
+            "enum": [
+              "user_limit",
+              "risk_limit",
+              "limit"
+            ]
+          }
+        },
+        "required": [
+          "control_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "limit_minor"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "control_type": {
+            "const": "channel_lock"
+          }
+        },
+        "required": [
+          "control_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "channel"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "control_type": {
+            "enum": [
+              "risk_freeze",
+              "risk_limit"
+            ]
+          }
+        },
+        "required": [
+          "control_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "created_by_role": {
+            "const": "risk"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "active": {
+            "const": false
+          }
+        },
+        "required": [
+          "active"
+        ]
+      },
+      "then": {
+        "required": [
+          "released_by",
+          "released_at"
+        ],
+        "properties": {
+          "released_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "released_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  ]
+}

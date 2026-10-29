@@ -1,0 +1,22 @@
+{
+  "challenge_id": "chl_wealth_01",
+  "user_id": "user_demo_01",
+  "operation_scope_hash": "27a9d1c195af7958f3825a2b61d7eb8318631f6ee3ab96f2eb5a47495f83cbb0",
+  "scope": {
+    "tool": "wealth.purchase",
+    "product_id": "prod_mmf_01",
+    "amount_minor": 500000
+  },
+  "plan_id": "plan_wealth_1",
+  "plan_revision": 1,
+  "factor_type": "totp",
+  "status": "pending",
+  "expires_at": "2026-10-22T10:15:00+08:00",
+  "attempts": 0,
+  "max_attempts": 5,
+  "locked_until": null,
+  "verified_at": null,
+  "consumed_at": null,
+  "last_counter": null,
+  "created_at": "2026-10-22T10:02:00+08:00"
+}

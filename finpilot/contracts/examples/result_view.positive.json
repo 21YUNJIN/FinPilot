@@ -1,0 +1,68 @@
+{
+  "task_id": "task_demo_birthday",
+  "task_status": "partially_succeeded",
+  "revision": 3,
+  "mode": "mock",
+  "generated_at": "2026-10-22T10:05:00+08:00",
+  "goal_summary": {
+    "budget_minor": 80000,
+    "spent_minor": 32000
+  },
+  "completed_effects": [
+    {
+      "kind": "merchant_order",
+      "description": "已预订花束 320.00 元（含服务费 5.00 元）",
+      "verified": true,
+      "authority": "receipt",
+      "operation_id": "op_merchant_book_01",
+      "amount_minor": 32000
+    }
+  ],
+  "pending_effects": [
+    "转账 100.00 元给张三：等待用户确认"
+  ],
+  "unknown_effects": [],
+  "failed_effects": [],
+  "waiting_reason": {
+    "code": "awaiting_authorization",
+    "safe_message": "请确认转账 100.00 元给张三。"
+  },
+  "next_actions": [
+    {
+      "action_id": "act_confirm_transfer",
+      "label": "确认转账",
+      "kind": "confirm"
+    },
+    {
+      "action_id": "act_cancel",
+      "label": "停止后续步骤",
+      "kind": "cancel"
+    }
+  ],
+  "total_spent_minor": 32000,
+  "total_fee_minor": 500,
+  "receipts": [
+    {
+      "receipt_id": "rcpt_transfer_01",
+      "operation_id": "op_transfer_demo_01",
+      "provider_id": "bank_sandbox_v1",
+      "provider_ref": "bank_ord_20261022_0001",
+      "source": "provider_callback",
+      "event_version": 2,
+      "received_at": "2026-10-22T10:05:00+08:00",
+      "verified_status": "verified",
+      "payload_hash": "5f85a3a0073d394ecf8951f9774b9e44385541b9f99d974cab144f28afc6b46a",
+      "payload": {
+        "status": "succeeded",
+        "amount_minor": 10000,
+        "fee_minor": 0
+      },
+      "state": "applied",
+      "conflict_reason": null
+    }
+  ],
+  "provenance": {
+    "adapter": "finpilot-api",
+    "mode": "mock"
+  }
+}

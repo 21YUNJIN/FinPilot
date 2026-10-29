@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/merchant_order.json",
+  "title": "MerchantOrder",
+  "description": "商户订单：服务报价、预订、取消及真实状态可查；未知结果先核验（S6-03、T21、T27）。取消费与实际成本必须单列。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "order_id",
+    "operation_id",
+    "owner_user_id",
+    "merchant_id",
+    "quote_id",
+    "offer_code",
+    "amount_minor",
+    "fee_minor",
+    "status",
+    "provider_ref",
+    "version",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "merchant_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "quote_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "offer_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "订单金额：整数分。"
+    },
+    "fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "服务费：整数分。"
+    },
+    "cancel_fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "取消费：整数分。"
+    },
+    "actual_cost_minor": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "实际成本（含不可退费用），用于 AA 分摊。"
+    },
+    "refundable": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": [
+        "created",
+        "submitted",
+        "accepted",
+        "pending",
+        "confirmed",
+        "cancelled",
+        "failed",
+        "unknown"
+      ]
+    },
+    "provider_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 96
+    },
+    "cancel_terms": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "unknown_since": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "expected_service_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "unknown"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "unknown_since"
+        ],
+        "properties": {
+          "unknown_since": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "cancelled"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "actual_cost_minor"
+        ],
+        "properties": {
+          "actual_cost_minor": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  ]
+}

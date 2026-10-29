@@ -1,0 +1,33 @@
+{
+  "name": "@finpilot/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "FinPilot APP 式 Web 客户端（移动优先）：底部标签导航 + 顶部模式徽标，连接与 IM 客户端相同的后端与账号体系",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@finpilot/shared-ui": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^3.2.4"
+  }
+}

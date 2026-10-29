@@ -1,0 +1,18 @@
+{
+  "profile_id": "risk_prof_01",
+  "owner_user_id": "user_demo_01",
+  "questionnaire_version": "q-2026.10",
+  "answers": {
+    "q1": "b",
+    "q2": "c",
+    "q3": "b",
+    "q4": "a"
+  },
+  "score": 62,
+  "risk_level": "R3",
+  "max_loss_tolerance": "medium",
+  "assessed_at": "2026-10-22T10:00:00+08:00",
+  "expires_at": "2027-04-22T10:00:00+08:00",
+  "version": 1,
+  "is_active": true
+}

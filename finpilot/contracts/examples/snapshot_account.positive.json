@@ -1,0 +1,16 @@
+{
+  "account_id": "account_salary",
+  "owner_user_id": "user_demo_01",
+  "name": "工资卡",
+  "account_type": "salary",
+  "currency": "CNY",
+  "posted_balance_minor": 900000,
+  "reserved_minor": 0,
+  "frozen_other_minor": 0,
+  "available_minor": 900000,
+  "spendable_minor": 100000,
+  "protected_floor_minor": 800000,
+  "version": 7,
+  "status": "active",
+  "masked_number": "6222 **** **** 0001"
+}

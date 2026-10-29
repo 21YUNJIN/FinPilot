@@ -1,0 +1,12 @@
+{
+  "tool": "account.balance",
+  "typed_args": {
+    "account_ids": [
+      "account_salary"
+    ]
+  },
+  "task_id": "task_demo_birthday",
+  "snapshot_ref": {
+    "observed_at": "2026-10-22T10:00:00+08:00"
+  }
+}

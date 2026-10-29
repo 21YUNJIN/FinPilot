@@ -1,0 +1,17 @@
+{
+  "operation_id": "op_transfer_demo_01",
+  "owner_user_id": "user_demo_01",
+  "tool": "transfer.submit",
+  "parameters_hash": "d756a982506f0d07d2f7db5a886a82a83c5ad2258170f888ff7fa6cb0f53d864",
+  "idempotency_key": "idem_20261022_transfer_0001",
+  "status": "succeeded",
+  "required_level": "YELLOW",
+  "amount_minor": 10000,
+  "fee_minor": 0,
+  "currency": "CNY",
+  "effect_confirmed": false,
+  "settled_at": "2026-10-22T10:05:00+08:00",
+  "version": 4,
+  "created_at": "2026-10-22T10:00:05+08:00",
+  "updated_at": "2026-10-22T10:05:00+08:00"
+}

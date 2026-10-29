@@ -1,0 +1,39 @@
+{
+  "name": "transfer.submit",
+  "category": "transfer",
+  "read_write": "write",
+  "default_level": "YELLOW",
+  "level_rule": "当日累计本金（含待执行占用）≤100000 分为 YELLOW，>100000 分为 RED；手续费不计入本金累计。",
+  "agent_exposed": true,
+  "idempotent": true,
+  "timeout_seconds": 15,
+  "input_schema": "https://finpilot.local/schemas/operation_draft.json",
+  "output_schema": "https://finpilot.local/schemas/operation_view.json",
+  "preconditions": [
+    "operation 已由 transfer.prepare 登记",
+    "grant.status == active 且 grant_covers(plan_revision, candidate_scope, amount_minor) 为真",
+    "账户归属校验通过且 available_minor >= amount_minor"
+  ],
+  "effects": [
+    "产生一次性不可逆的外部支付",
+    "写入账本分录与预留捕获",
+    "登记 Outbox 事件"
+  ],
+  "compensation": {
+    "mode": "manual",
+    "description": "即时到账转账不可自动撤回；只能登记人工追索，不能修改原交易",
+    "tool": null
+  },
+  "sensitive_fields": [
+    "payee_id",
+    "destination_account_ref"
+  ],
+  "error_codes": [
+    "GRANT_REQUIRED",
+    "GRANT_SCOPE_VIOLATION",
+    "INSUFFICIENT_FUNDS",
+    "PROTECTED_FLOOR_VIOLATION",
+    "PROVIDER_TIMEOUT"
+  ],
+  "implemented_by": "services/api/src/finpilot/kernel/transfers.py"
+}

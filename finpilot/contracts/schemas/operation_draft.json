@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/operation_draft.json",
+  "title": "OperationDraftRequest",
+  "description": "业务写操作的登记请求（写入面）。服务端在归属、参数哈希与策略校验通过后，据此构造内部 OperationDraft 并登记 Operation；`transfer.submit` 只接受已登记并获授权的操作引用，不接受模型任意新拼装的转账参数（V5 第 16.1 节）。 本 Schema 为对外输入面：`additionalProperties: false`，并显式禁止 `user_id`、`owner_user_id`、`grant_id`、`status`、`posted_balance_minor`、`available_minor`、`required_level`、`parameters_hash`、`provider_order_ref`、`effect_confirmed`、`settled_at`、`version` 等由服务端持有的字段。 出现这些字段时契约层直接拒绝并返回 `EXTRA_DANGEROUS_FIELD`（V5 API-01、第 4.2 节、第 6.4 节），拒绝原因是身份、归属、授权、状态与余额事实只能由可信服务端产生，客户端或模型覆盖它们等于伪造授权或账本事实。",
+  "type": "object",
+  "additionalProperties": false,
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "user_id"
+        ]
+      },
+      {
+        "required": [
+          "owner_user_id"
+        ]
+      },
+      {
+        "required": [
+          "grant_id"
+        ]
+      },
+      {
+        "required": [
+          "status"
+        ]
+      },
+      {
+        "required": [
+          "posted_balance_minor"
+        ]
+      },
+      {
+        "required": [
+          "available_minor"
+        ]
+      },
+      {
+        "required": [
+          "required_level"
+        ]
+      },
+      {
+        "required": [
+          "parameters_hash"
+        ]
+      },
+      {
+        "required": [
+          "provider_order_ref"
+        ]
+      },
+      {
+        "required": [
+          "effect_confirmed"
+        ]
+      },
+      {
+        "required": [
+          "settled_at"
+        ]
+      },
+      {
+        "required": [
+          "version"
+        ]
+      }
+    ]
+  },
+  "x-client-writable": true,
+  "x-forbidden-client-fields": [
+    "user_id",
+    "owner_user_id",
+    "grant_id",
+    "status",
+    "posted_balance_minor",
+    "available_minor",
+    "required_level",
+    "parameters_hash",
+    "provider_order_ref",
+    "effect_confirmed",
+    "settled_at",
+    "version"
+  ],
+  "required": [
+    "operation_id",
+    "tool",
+    "typed_args",
+    "expected_revision"
+  ],
+  "properties": {
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "逻辑操作 ID：重试、恢复、跨渠道必须沿用同一 ID。"
+    },
+    "tool": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+$",
+      "description": "必须来自工具目录的写工具集合。"
+    },
+    "typed_args": {
+      "type": "object",
+      "description": "类型化参数；规范 JSON + sha256 生成 parameters_hash。"
+    },
+    "expected_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "并发基线：写操作必须携带，冲突返回 VERSION_CONFLICT。"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "description": "写工具必须携带；同一幂等键不同参数返回 IDEMPOTENCY_CONFLICT。"
+    },
+    "task_id": {
+      "type": "string",
+      "maxLength": 48
+    },
+    "plan_id": {
+      "type": "string",
+      "maxLength": 48
+    },
+    "plan_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "source_account_id": {
+      "type": "string",
+      "maxLength": 48
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "金额：整数人民币分，必须大于 0（0 元写操作被拒绝）。"
+    },
+    "fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "payee_id": {
+      "type": "string",
+      "maxLength": 48,
+      "description": "稳定对象 ID；同名收款人必须先澄清，不得按姓名直接写入。"
+    },
+    "scope_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tool": {
+            "enum": [
+              "aa.create",
+              "card.apply",
+              "card.replace",
+              "card.report_lost",
+              "card.set_control",
+              "card.set_limit",
+              "mandate.revoke",
+              "merchant.book",
+              "merchant.cancel",
+              "reminder.cancel",
+              "reminder.create",
+              "risk.assess",
+              "schedule.cancel",
+              "schedule.create",
+              "subscription.cancel",
+              "transfer.prepare",
+              "transfer.submit",
+              "wealth.purchase",
+              "wealth.redeem"
+            ]
+          }
+        },
+        "required": [
+          "tool"
+        ]
+      },
+      "then": {
+        "required": [
+          "idempotency_key",
+          "plan_revision"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool": {
+            "enum": [
+              "transfer.prepare",
+              "transfer.submit"
+            ]
+          }
+        },
+        "required": [
+          "tool"
+        ]
+      },
+      "then": {
+        "required": [
+          "source_account_id",
+          "amount_minor"
+        ],
+        "properties": {
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool": {
+            "const": "transfer.submit"
+          }
+        },
+        "required": [
+          "tool"
+        ]
+      },
+      "then": {
+        "required": [
+          "plan_id"
+        ]
+      }
+    }
+  ]
+}

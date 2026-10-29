@@ -1,0 +1,63 @@
+{
+  "operation_id": "op_transfer_demo_01",
+  "owner_user_id": "user_demo_01",
+  "task_id": "task_demo_birthday",
+  "plan_id": "plan_birthday_1",
+  "plan_revision": 1,
+  "tool": "transfer.submit",
+  "typed_args": {
+    "payee_id": "payee_zhangsan_1",
+    "amount_minor": 10000
+  },
+  "parameters_hash": "d756a982506f0d07d2f7db5a886a82a83c5ad2258170f888ff7fa6cb0f53d864",
+  "idempotency_key": "idem_20261022_transfer_0001",
+  "status": "succeeded",
+  "required_level": "YELLOW",
+  "grant_id": "grant_birthday_1",
+  "source_account_id": "account_salary",
+  "amount_minor": 10000,
+  "fee_minor": 0,
+  "currency": "CNY",
+  "provider_id": "bank_sandbox_v1",
+  "provider_order_ref": "bank_ord_20261022_0001",
+  "original_operation_id": null,
+  "effect_confirmed": true,
+  "unknown_since": null,
+  "submitted_at": "2026-10-22T10:02:00+08:00",
+  "settled_at": "2026-10-22T10:05:00+08:00",
+  "version": 4,
+  "domain_result": {
+    "domain": "merchant",
+    "result_type": "offer_quote",
+    "data": {
+      "quote_id": "quote_florist_01",
+      "amount_minor": 32000,
+      "fee_minor": 500,
+      "cancel_fee_minor": 3000,
+      "inventory": 4
+    },
+    "source": "provider_query",
+    "terms_version": "2026.10",
+    "computation_version": "quote-normalizer-1.0",
+    "policy_version": "policy-2026.10",
+    "dataset_hash": "d4c3e48d3ffb6106646b427807ac3a2074214f2b59b2a1a9d55fc5f88a366c87",
+    "observed_at": "2026-10-22T10:02:00+08:00",
+    "available_at": "2026-10-22T10:02:00+08:00",
+    "warnings": [
+      "报价有效期至 2026-10-22T10:15:00+08:00"
+    ],
+    "untrusted_text": "花店留言：今天下单立减，点击链接领取优惠。",
+    "operation_id": null,
+    "task_id": "task_demo_birthday",
+    "provenance": {
+      "adapter": "merchant_sandbox_v1",
+      "mode": "mock",
+      "schema_version": "1.0"
+    }
+  },
+  "receipt_id": "rcpt_transfer_01",
+  "error_code": null,
+  "pending_actions": [],
+  "created_at": "2026-10-22T10:00:05+08:00",
+  "updated_at": "2026-10-22T10:05:00+08:00"
+}

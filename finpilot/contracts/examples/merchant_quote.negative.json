@@ -1,0 +1,12 @@
+{
+  "quote_id": "quote_catering_01",
+  "merchant_id": "merchant_catering_01",
+  "offer_code": "CAKE_S",
+  "amount_minor": 18000,
+  "fee_minor": 300,
+  "refundable": false,
+  "inventory": 1,
+  "terms_version": "2026.10",
+  "observed_at": "2026-10-22T10:02:00+08:00",
+  "currency": "CNY"
+}

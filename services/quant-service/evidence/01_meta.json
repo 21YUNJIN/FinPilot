@@ -1,0 +1,89 @@
+{
+  "data": {
+    "auth": "bearer_token",
+    "capabilities": [
+      "quant.risk_report",
+      "quant.rank",
+      "quant.stress"
+    ],
+    "disclaimers": [
+      "历史样本统计，不代表未来收益，也不构成收益承诺。",
+      "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+      "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+      "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+    ],
+    "engine": {
+      "commit": "5559e3f",
+      "kernel_functions": [
+        "daily_returns",
+        "max_drawdown",
+        "sharpe_statistics"
+      ],
+      "method_version": "sq-wealth-risk/1.0.0",
+      "module": "stockquant.backtest.metrics",
+      "name": "stockquant",
+      "trading_days_per_year": 252,
+      "version": "0.1.0"
+    },
+    "guardrails": {
+      "min_returns_for_cvar_95": 252,
+      "min_returns_for_volatility": 60,
+      "trading_days_per_year": 252
+    },
+    "limits": {
+      "max_body_bytes": 4194304,
+      "max_nav_points_per_product": 5000,
+      "max_products": 50,
+      "rate_limit_per_minute": 120
+    },
+    "preference_modes": {
+      "balanced": {
+        "cvar": 0.15,
+        "drawdown": 0.2,
+        "fee": 0.2,
+        "liquidity": 0.1,
+        "term": 0.1,
+        "vol": 0.25
+      },
+      "cost": {
+        "fee": 0.5,
+        "liquidity": 0.3,
+        "term": 0.2
+      },
+      "return": {
+        "cagr": 0.25,
+        "fee": 0.15,
+        "sharpe": 0.6
+      },
+      "stability": {
+        "cvar": 0.2,
+        "drawdown": 0.3,
+        "fee": 0.1,
+        "vol": 0.4
+      }
+    }
+  },
+  "error": null,
+  "operation_id": null,
+  "provenance": {
+    "adapter": "stockquant_bank.wealth_risk/1",
+    "engine": {
+      "commit": "5559e3f",
+      "kernel_functions": [
+        "daily_returns",
+        "max_drawdown",
+        "sharpe_statistics"
+      ],
+      "method_version": "sq-wealth-risk/1.0.0",
+      "module": "stockquant.backtest.metrics",
+      "name": "stockquant",
+      "trading_days_per_year": 252,
+      "version": "0.1.0"
+    },
+    "observed_at": "2026-10-28T17:42:28+08:00"
+  },
+  "request_id": "req_sq_625d56c9313b8455",
+  "schema_version": "1.0",
+  "status": "ok",
+  "task_id": null
+}

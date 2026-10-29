@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/auth_context.json",
+  "title": "AuthContext",
+  "description": "可信身份上下文。只由服务端会话（sessions 表 + kernel/identity.authenticate）产生，模型与请求体不得构造或覆盖（V5 第 3 节、SYS-02、AUTH-01）。对外 API 不接受客户端声明的身份。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "user_id",
+    "roles",
+    "channel",
+    "session_id",
+    "is_operator"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "customer",
+          "operator",
+          "risk",
+          "auditor"
+        ]
+      },
+      "description": "服务端角色集合；客户端提交的 roles 一律丢弃。"
+    },
+    "channel": {
+      "enum": [
+        "app",
+        "im",
+        "operator"
+      ],
+      "description": "渠道；来自会话记录而非请求体。"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "is_operator": {
+      "type": "boolean"
+    },
+    "user_status": {
+      "enum": [
+        "active",
+        "locked",
+        "disabled"
+      ],
+      "description": "用户状态；非 active 时所有写操作拒绝。"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "policy_version": {
+      "const": "policy-2026.10"
+    }
+  },
+  "x-server-generated": true,
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "assume_admin"
+        ]
+      },
+      {
+        "required": [
+          "escalate"
+        ]
+      },
+      {
+        "required": [
+          "override_user_id"
+        ]
+      }
+    ]
+  }
+}

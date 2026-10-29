@@ -1,0 +1,20 @@
+{
+  "operation_id": "op_transfer_demo_01",
+  "tool": "transfer.submit",
+  "typed_args": {
+    "payee_id": "payee_zhangsan_1",
+    "source_account_id": "account_salary",
+    "amount_minor": 10000,
+    "currency": "CNY",
+    "memo": "生日买花"
+  },
+  "expected_revision": 2,
+  "idempotency_key": "idem_20261022_transfer_0001",
+  "task_id": "task_demo_birthday",
+  "plan_id": "plan_birthday_1",
+  "plan_revision": 1,
+  "source_account_id": "account_salary",
+  "amount_minor": 10000,
+  "fee_minor": 0,
+  "scope_hash": "232254ed42d4f3a024202d6689c843c2ffff30fbada68b586249e7e430722dfc"
+}

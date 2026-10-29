@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/reminder.json",
+  "title": "Reminder",
+  "description": "续费提醒：必须具有同意记录（consent_at）、持久调度、时区、去重键与取消能力；模拟通知必须明确标记（S5-02、T15）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reminder_id",
+    "owner_user_id",
+    "channel",
+    "timezone",
+    "due_at",
+    "consent_at",
+    "dedupe_key",
+    "status",
+    "simulated",
+    "created_at"
+  ],
+  "properties": {
+    "reminder_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "subscription_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "channel": {
+      "enum": [
+        "app",
+        "im"
+      ]
+    },
+    "timezone": {
+      "const": "Asia/Shanghai"
+    },
+    "due_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "consent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "dedupe_key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 160,
+      "description": "去重键：重复领取只生成一个逻辑提醒。"
+    },
+    "status": {
+      "enum": [
+        "scheduled",
+        "sent",
+        "fired",
+        "cancelled",
+        "failed",
+        "skipped"
+      ]
+    },
+    "simulated": {
+      "type": "boolean",
+      "description": "模拟通知必须为 true，界面明确标记。"
+    },
+    "mode": {
+      "enum": [
+        "mock",
+        "offline_replay",
+        "live"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "live"
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "simulated": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

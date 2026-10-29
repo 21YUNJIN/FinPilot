@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/card_application.json",
+  "title": "CardApplication",
+  "description": "卡片申请／补卡／提额申请：申请与批准是两个不同事实，未批准不生成有效额度（S4-02、T12）。被拒绝的提额申请不能通过重新发问变为批准。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "application_id",
+    "owner_user_id",
+    "account_id",
+    "kind",
+    "requested_limit_minor",
+    "application_status",
+    "version"
+  ],
+  "properties": {
+    "application_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "account_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "kind": {
+      "enum": [
+        "new_card",
+        "replacement",
+        "limit_increase",
+        "limit_change"
+      ]
+    },
+    "card_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "requested_limit_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "approved_limit_minor": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "application_status": {
+      "enum": [
+        "submitted",
+        "under_review",
+        "approved",
+        "rejected",
+        "withdrawn"
+      ],
+      "description": "与 models.CARD_APPLICATION_STATUS 逐字一致。"
+    },
+    "decision_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    },
+    "decided_by": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "decided_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "application_status": {
+            "const": "approved"
+          }
+        },
+        "required": [
+          "application_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "approved_limit_minor",
+          "decided_at"
+        ],
+        "properties": {
+          "approved_limit_minor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "decided_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "application_status": {
+            "const": "rejected"
+          }
+        },
+        "required": [
+          "application_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "decision_reason"
+        ],
+        "properties": {
+          "decision_reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "limit_increase",
+              "limit_change"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "requested_limit_minor": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  ]
+}

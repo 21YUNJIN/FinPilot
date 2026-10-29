@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "request_id": "req_0002",
+  "task_id": null,
+  "operation_id": null,
+  "status": "ok",
+  "data": {
+    "ok": true
+  },
+  "error": {
+    "code": "INSUFFICIENT_FUNDS",
+    "safe_message": "可用余额不足。",
+    "retry_mode": "after_input_fix"
+  },
+  "provenance": {
+    "adapter": "finpilot-api",
+    "observed_at": "2026-10-22T10:05:00+08:00"
+  }
+}

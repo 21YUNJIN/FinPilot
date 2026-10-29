@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/policy_decision.json",
+  "title": "PolicyDecision",
+  "description": "确定性策略判定结果（V5 第 6.1 节）。只有可信服务端可生成；初始 UI 级别不是最终凭证，提交事务内必须重新判定。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "allow",
+    "required_level",
+    "reason_codes",
+    "policy_version",
+    "evaluated_at"
+  ],
+  "properties": {
+    "allow": {
+      "type": "boolean"
+    },
+    "required_level": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ],
+      "description": "服务端权限等级；客户端与模型不得降低（AUTH-01）。"
+    },
+    "challenge_required": {
+      "type": "boolean",
+      "description": "RED 必须为 true，且必须走 kernel/verifier.issue_challenge 的真实验证。"
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      }
+    },
+    "policy_version": {
+      "const": "policy-2026.10"
+    },
+    "tool": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+$"
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "daily_cumulative_principal_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "snapshot_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "required_level": {
+            "const": "RED"
+          }
+        },
+        "required": [
+          "required_level"
+        ]
+      },
+      "then": {
+        "properties": {
+          "challenge_required": {
+            "const": true
+          }
+        },
+        "required": [
+          "challenge_required"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "required_level": {
+            "enum": [
+              "GREEN",
+              "YELLOW"
+            ]
+          }
+        },
+        "required": [
+          "required_level"
+        ]
+      },
+      "then": {
+        "properties": {
+          "challenge_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "challenge_required"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "allow": {
+            "const": false
+          }
+        },
+        "required": [
+          "allow"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason_codes": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

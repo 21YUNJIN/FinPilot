@@ -1,0 +1,117 @@
+# FinPilot 受限分析沙箱策略（V5 17.2 / SEC-02 / T37）
+#
+# 本文件有两个用途：
+#   1) 作为 Linux 容器运行时的参考策略（部署到比赛/生产环境时的对照清单）；
+#   2) 作为限额的唯一来源之一：security/sandbox.py 的 SandboxPolicy.from_file()
+#      读取 version 与 limits.*。读取或结构校验失败时，run_analysis 必须返回
+#      status="unavailable"（失败关闭），绝不"用默认值继续跑"。
+#
+# 重要：本机开发环境（Windows，无 Docker）无法执行下面的容器配置。文件中的
+# container.* 是"目标配置"，不是"已验证事实"。验证证据必须来自运行时的实际检查
+# （见 verification 段），不能只凭"用了 Docker"宣称安全隔离。
+
+version: sandbox-2026.10
+spec: "V5 §17.2 生成代码执行"
+enabled: true
+runtime: linux-container
+updated_at: "2026-10-27"
+
+# --- 限额（SandboxPolicy.from_file 读取这一段） ----------------------------
+limits:
+  cpu_seconds: 5            # CPU 时间上限（POSIX: RLIMIT_CPU；Windows: 仅墙钟兜底）
+  wall_seconds: 10          # 墙钟上限（父进程超时 kill）
+  memory_mb: 512            # 内存上限（POSIX: RLIMIT_AS；cgroup: memory.max）
+  output_bytes: 1048576     # 输出上限 1MB（stdout 截断 + 超限阻断）
+  max_processes: 32         # 进程/线程数上限（POSIX: RLIMIT_NPROC；容器: pids.max）
+  workspace_mb: 128         # 临时工作区上限（tmpfs size=128m）
+
+# --- 容器参考策略（Linux 运行时） ------------------------------------------
+container:
+  image_policy: "固定摘要（image@sha256:...），演示环境使用最小基础镜像"
+  user: "65534:65534"                 # 非 root
+  read_only_root_filesystem: true     # 只读根
+  host_mounts: none                   # 无宿主挂载（不挂 docker.sock、不挂仓库目录）
+  network: none                       # --network=none，无 DNS、无出网
+  cap_drop: ["ALL"]
+  cap_add: []                         # 不追加任何 capability
+  security_opt:
+    - "no-new-privileges:true"
+  seccomp:
+    profile: "deploy/seccomp/sandbox.json（默认拒绝 + 显式允许 read/write/exit/brk/mmap/munmap/futex/clock_gettime 等最小集合）"
+    note: "seccomp 必须配合运行时验证：用故意越界样例确认 syscall 真被拒绝，否则视为未生效"
+  pids_limit: 32
+  cpu_quota: 1.0                      # 1 个 CPU
+  memory_limit: "512m"
+  memory_swap_limit: "512m"
+  tmpfs:
+    - "/work:rw,noexec,nosuid,nodev,size=128m"
+  env:
+    inherit: false                    # 不继承宿主环境
+    allow: ["PYTHONIOENCODING=utf-8", "PYTHONDONTWRITEBYTECODE=1"]
+    deny: ["DATABASE_URL", "MODEL_API_KEY", "TOTP_ENCRYPTION_KEY", "AUDIT_SIGNING_KEY", "PROVIDER_CALLBACK_SECRET"]
+  working_dir: "/work"
+  secrets: none                       # 容器内无数据库、模型与签名密钥
+
+# --- 默认禁用能力 ----------------------------------------------------------
+disabled_by_default:
+  - package_install          # pip/apt 安装
+  - dynamic_import           # 运行时动态导入非白名单模块
+  - subprocess               # 创建子进程/线程
+  - arbitrary_file_access    # 任意文件读写（仅 /work 与标准库只读）
+  - network                  # 任何出网、DNS、socket
+  - database_access          # 数据库与缓存连接
+  - model_api_access         # 模型服务凭据
+  - host_device_access       # /dev、宿主设备与内核接口
+
+# --- 允许的能力（最小集合） ------------------------------------------------
+allowed:
+  imports: ["math", "statistics", "decimal", "json", "datetime", "itertools", "functools", "collections", "re", "random"]
+  optional_imports: ["numpy", "pandas"]     # 仅当运行环境已安装且经评审时允许
+  operations: ["纯计算", "对已去标识输入数据的聚合与分组", "受限 DSL（sum/count/avg/min/max/group_by/pct）"]
+
+# --- 运行时验证清单（必须逐条留证据） --------------------------------------
+verification:
+  - id: V1
+    check: "以非 root 运行：容器内 id -u 非 0"
+  - id: V2
+    check: "根文件系统只读：touch /etc/x 失败"
+  - id: V3
+    check: "无网络：socket.connect / DNS 查询失败且被 seccomp 拒绝"
+  - id: V4
+    check: "无宿主挂载：/proc/mounts 不含宿主业务目录"
+  - id: V5
+    check: "cap-drop ALL：capsh --print 无有效 capability"
+  - id: V6
+    check: "seccomp 生效：故意调用被禁 syscall 得到 EPERM/ENOSYS 并被记录"
+  - id: V7
+    check: "内存 512MB / CPU 1 / pids 32 / tmpfs 128MB 限额真实触发（越界样例被 kill）"
+  - id: V8
+    check: "5s CPU / 10s 墙钟 / 1MB 输出上限真实触发"
+  - id: V9
+    check: "容器内无数据库与模型密钥：env 与文件系统检查"
+  - id: V10
+    check: "越界尝试写入审计并告警（sandbox.blocked 事件可检索）"
+  - id: V11
+    check: "沙箱不可用时关闭代码执行，返回 unavailable 且宿主未执行代码（T52）"
+
+# --- Windows 开发环境的等价性与差距（如实记录） ---------------------------
+windows_dev_equivalence:
+  backend: "security/sandbox.py（子进程 + AST 白名单 + 运行时 audit hook + 墙钟/输出限额）"
+  invocation: "sys.executable -I -S <runner.py>，cwd=一次性临时目录，env 最小化（无 DATABASE_URL/模型密钥/HOME）"
+  equivalent_controls:
+    - "无网络：audit hook 拒绝 socket.__new__/connect/getaddrinfo 等事件（sandbox_selfcheck 逐条验证）"
+    - "无子进程：audit hook 拒绝 subprocess.Popen / _winapi.CreateProcess / os.system / os.fork"
+    - "无任意文件访问：AST 拒绝 open/os/pathlib；audit hook 拒绝写模式打开与非标准库目录读打开"
+    - "输出上限 1MB：stdout 限长写入器，超限即阻断（violation: OUTPUT_LIMIT_EXCEEDED）"
+    - "墙钟上限 10s：父进程超时 kill（timeout: WALL_TIMEOUT）"
+    - "环境最小化：不继承数据库、模型与签名密钥等变量"
+    - "工作区隔离：每次运行独立临时目录，结束后删除"
+  gaps_not_covered:
+    - "CPU 时间硬限额：Windows 无 resource 模块，RLIMIT_CPU 未生效，只有墙钟兜底"
+    - "内存硬限额：RLIMIT_AS / cgroup 未生效；大内存分配只能靠超时或进程被杀"
+    - "进程数硬限额：RLIMIT_NPROC 未生效；仅靠 audit hook 拦截创建"
+    - "内核级文件系统隔离：没有容器/只读根，宿主文件系统可达；仅靠 Python 层 open 拦截"
+    - "seccomp / capability / user namespace：完全没有对应机制"
+    - "audit hook 的可绕过面：C 扩展直接系统调用、format 字符串读 dunder（已用 AST 字符串检查缓解）、os.stat 类元数据探测"
+  consequence: "Windows 开发环境的隔离强度显著低于 Linux 容器；演示与评测必须按 platform / limits_not_enforced 字段如实标注，不得对外声称等价于容器隔离"
+  disable_switch: "SANDBOX_ENABLED=false（settings.sandbox_enabled）时 run_analysis 返回 unavailable，绝不回退宿主 exec/eval；个性化报表改走受限 DSL run_dsl"

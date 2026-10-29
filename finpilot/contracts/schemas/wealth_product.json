@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/wealth_product.json",
+  "title": "WealthProduct",
+  "description": "理财产品与条款版本：比较展示风险、费用、期限、流动性与出处；缺历史显示 NA；禁止无依据的收益与到账保证（S3-02、S3-05、QUANT-04）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "product_id",
+    "name",
+    "issuer",
+    "product_type",
+    "terms_version",
+    "issuer_risk_level",
+    "min_minor",
+    "fee_bps",
+    "fee_fixed_minor",
+    "is_active"
+  ],
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "issuer": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "product_type": {
+      "enum": [
+        "fixed_income",
+        "money_market",
+        "mixed",
+        "equity"
+      ]
+    },
+    "terms_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "issuer_risk_level": {
+      "enum": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5"
+      ]
+    },
+    "min_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "起购金额：整数分。"
+    },
+    "fee_bps": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "description": "费率：整数基点（1bp=0.01%），禁止浮点。"
+    },
+    "fee_fixed_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "term_days": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "open_days": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri",
+          "sat",
+          "sun"
+        ]
+      }
+    },
+    "cutoff_time": {
+      "type": "string",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+      "description": "当日截止时间（Asia/Shanghai，HH:MM）。"
+    },
+    "liquidity_terms": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "cancel_terms": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "cooling_off_days": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "settlement_days": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "history_ref": {
+      "type": "string",
+      "maxLength": 96,
+      "description": "历史净值数据引用与哈希；缺数据时保持 NA。"
+    },
+    "nav_e6": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "最新净值：1e-6 定点整数；未知时为 null，不得编造。"
+    },
+    "nav_as_of_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "nav_is_na": {
+      "type": "boolean",
+      "description": "数据不足时必须为 true，展示为 NA。"
+    },
+    "daily_return_bps": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^-?\\d{1,4}(\\.\\d{1,4})?$",
+      "description": "日收益率：十进制定点字符串（基点），禁止 JSON number（浮点漂移）。"
+    },
+    "meta": {
+      "type": "object"
+    },
+    "is_active": {
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "nav_is_na": {
+            "const": true
+          }
+        },
+        "required": [
+          "nav_is_na"
+        ]
+      },
+      "then": {
+        "properties": {
+          "nav_e6": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

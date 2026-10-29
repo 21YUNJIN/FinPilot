@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/bill_report.json",
+  "title": "BillReport",
+  "description": "账单报表（S2、T06—T08）：月／年／自选账期；内部转账不计消费、费用单列、退款口径明确；报告必须注明数据截至时间；空数据与零分母不造值。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "owner_user_id",
+    "period",
+    "generated_at",
+    "data_cutoff_at",
+    "currency",
+    "total_inflow_minor",
+    "total_outflow_minor",
+    "net_minor",
+    "categories",
+    "warnings"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "timezone"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "month",
+            "year",
+            "custom"
+          ]
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100
+        },
+        "month": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "业务日（Asia/Shanghai）日期。"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "description": "业务日（Asia/Shanghai）日期。"
+        },
+        "timezone": {
+          "const": "Asia/Shanghai"
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "data_cutoff_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "currency": {
+      "const": "CNY",
+      "description": "币种固定 CNY。"
+    },
+    "total_inflow_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "入账合计：整数分。"
+    },
+    "total_outflow_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "消费性支出合计：整数分。"
+    },
+    "net_minor": {
+      "type": "integer",
+      "description": "净额：整数分，可为负。"
+    },
+    "internal_transfer_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "internal_transfers_excluded_from_consumption": {
+      "const": true
+    },
+    "fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "费用单列：整数分。"
+    },
+    "refund_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "退款调整：整数分，口径必须与报告说明一致。"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "amount_minor",
+          "count"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "amount_minor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "share_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        }
+      }
+    },
+    "uncategorized_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+    },
+    "zero_denominator_flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      }
+    },
+    "incomplete_transactions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      }
+    },
+    "corrections": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "anomalies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "basis"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "basis": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "提示依据必须可核查；不得表述为欺诈定论。"
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      }
+    },
+    "untrusted_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 4096
+    },
+    "source": {
+      "enum": [
+        "synthetic",
+        "local_ledger",
+        "offline_replay"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "period": {
+            "properties": {
+              "kind": {
+                "const": "custom"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        },
+        "required": [
+          "period"
+        ]
+      },
+      "then": {
+        "properties": {
+          "period": {
+            "required": [
+              "start_date",
+              "end_date"
+            ],
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "end_date": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

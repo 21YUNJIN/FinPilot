@@ -1,0 +1,14 @@
+{
+  "control_id": "ctrl_user_lock_01",
+  "card_id": "card_virtual_01",
+  "control_type": "user_lock",
+  "channel": null,
+  "limit_minor": null,
+  "reason": "用户主动锁定",
+  "created_by": "user_demo_01",
+  "created_by_role": "customer",
+  "active": true,
+  "released_by": null,
+  "released_at": null,
+  "created_at": "2026-10-22T10:00:00+08:00"
+}

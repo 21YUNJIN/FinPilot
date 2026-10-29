@@ -1,0 +1,158 @@
+/* IM 客户端补充样式（共享基础样式来自 shared-ui/styles.css） */
+
+.fp-im__toggle {
+  display: block;
+  margin: 6px 0 0 8px;
+  align-self: flex-start;
+}
+
+.fp-im__sidebar {
+  display: none;
+}
+
+.fp-im__sidebar--open {
+  display: block;
+}
+
+.im-conversations__new {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.im-conversations__label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.im-conversations__input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--fp-border);
+  resize: vertical;
+}
+
+.im-conversations__empty {
+  color: var(--fp-muted);
+}
+
+.im-conversations__title {
+  display: block;
+  font-weight: 600;
+  text-align: left;
+}
+
+.im-conversations__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.im-conversations__time {
+  color: var(--fp-muted);
+  font-size: 0.75rem;
+}
+
+.fp-im__stream-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--fp-border);
+  margin-bottom: 10px;
+}
+
+.fp-im__title {
+  font-size: 1rem;
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.fp-im__revision,
+.fp-im__channel {
+  color: var(--fp-muted);
+  font-size: 0.8rem;
+}
+
+.im-stream__messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 200px;
+}
+
+.im-stream__text {
+  margin: 4px 0;
+  white-space: pre-wrap;
+}
+
+.im-stream__empty {
+  color: var(--fp-muted);
+}
+
+.im-stream__composer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid var(--fp-border);
+  padding: 8px 0 0;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.im-stream__composer-label {
+  font-size: 0.85rem;
+  color: var(--fp-muted);
+}
+
+.im-stream__composer-input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--fp-border);
+  resize: vertical;
+}
+
+.fp-im__footer,
+.fp-im__session {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--fp-muted);
+  font-size: 0.82rem;
+  margin-top: 8px;
+}
+
+/* 手机宽度：会话列表折叠，桌面：左右两栏 */
+@media (min-width: 721px) {
+  .fp-im__toggle {
+    display: none;
+  }
+
+  .fp-im__sidebar {
+    display: block;
+  }
+
+  .fp-im__stream {
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .fp-im__stream {
+    padding: 8px;
+  }
+
+  .fp-im__bubble {
+    padding: 6px 8px;
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/merchant_quote.json",
+  "title": "MerchantQuote",
+  "description": "商户报价缓存：权威金额只来自结构化字段；商户自由文本放在 untrusted_text，不能创建新权限（SEC-01、T34）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "quote_id",
+    "merchant_id",
+    "offer_code",
+    "amount_minor",
+    "fee_minor",
+    "refundable",
+    "inventory",
+    "terms_version",
+    "observed_at",
+    "currency"
+  ],
+  "properties": {
+    "quote_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "merchant_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "offer_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 96
+    },
+    "amount_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "报价金额：整数分。"
+    },
+    "fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "服务费：整数分。"
+    },
+    "cancel_fee_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "取消费：整数分，不可自动退还。"
+    },
+    "refundable": {
+      "type": "boolean"
+    },
+    "inventory": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "terms_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "currency": {
+      "const": "CNY",
+      "description": "币种固定 CNY。"
+    },
+    "untrusted_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 4096
+    },
+    "raw": {
+      "type": "object",
+      "description": "原始载荷，仅供参考；不得作为权威金额来源。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "refundable": {
+            "const": false
+          }
+        },
+        "required": [
+          "refundable"
+        ]
+      },
+      "then": {
+        "required": [
+          "cancel_fee_minor"
+        ]
+      }
+    }
+  ]
+}

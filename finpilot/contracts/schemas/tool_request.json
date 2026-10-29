@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/tool_request.json",
+  "title": "ToolRequest",
+  "description": "模型可见工具的通用调用信封（`GET /v1/meta/tools` 暴露的工具集合）。写工具的调用必须引用已登记操作；读工具不得携带任何资金或授权字段。 本 Schema 为对外输入面：`additionalProperties: false`，并显式禁止 `user_id`、`owner_user_id`、`grant_id`、`status`、`required_level`、`posted_balance_minor`、`available_minor`、`parameters_hash`、`scope_hash`、`effect_confirmed` 等由服务端持有的字段。 出现这些字段时契约层直接拒绝并返回 `EXTRA_DANGEROUS_FIELD`（V5 API-01、第 4.2 节、第 6.4 节），拒绝原因是身份、归属、授权、状态与余额事实只能由可信服务端产生，客户端或模型覆盖它们等于伪造授权或账本事实。",
+  "type": "object",
+  "additionalProperties": false,
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "user_id"
+        ]
+      },
+      {
+        "required": [
+          "owner_user_id"
+        ]
+      },
+      {
+        "required": [
+          "grant_id"
+        ]
+      },
+      {
+        "required": [
+          "status"
+        ]
+      },
+      {
+        "required": [
+          "required_level"
+        ]
+      },
+      {
+        "required": [
+          "posted_balance_minor"
+        ]
+      },
+      {
+        "required": [
+          "available_minor"
+        ]
+      },
+      {
+        "required": [
+          "parameters_hash"
+        ]
+      },
+      {
+        "required": [
+          "scope_hash"
+        ]
+      },
+      {
+        "required": [
+          "effect_confirmed"
+        ]
+      }
+    ]
+  },
+  "x-client-writable": true,
+  "x-forbidden-client-fields": [
+    "user_id",
+    "owner_user_id",
+    "grant_id",
+    "status",
+    "required_level",
+    "posted_balance_minor",
+    "available_minor",
+    "parameters_hash",
+    "scope_hash",
+    "effect_confirmed"
+  ],
+  "required": [
+    "tool",
+    "typed_args"
+  ],
+  "properties": {
+    "tool": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+$",
+      "description": "必须来自 contracts/tool-catalog.yaml。"
+    },
+    "typed_args": {
+      "type": "object",
+      "description": "类型化参数；未登记字段一律拒绝（EXTRA_DANGEROUS_FIELD）。"
+    },
+    "task_id": {
+      "type": "string",
+      "maxLength": 48
+    },
+    "plan_id": {
+      "type": "string",
+      "maxLength": 48
+    },
+    "plan_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "operation_id": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "expected_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "snapshot_ref": {
+      "type": "object",
+      "description": "求解所用快照引用；只影响展示与缓存键。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tool": {
+            "enum": [
+              "aa.create",
+              "card.apply",
+              "card.replace",
+              "card.report_lost",
+              "card.set_control",
+              "card.set_limit",
+              "mandate.revoke",
+              "merchant.book",
+              "merchant.cancel",
+              "reminder.cancel",
+              "reminder.create",
+              "risk.assess",
+              "schedule.cancel",
+              "schedule.create",
+              "subscription.cancel",
+              "transfer.prepare",
+              "transfer.submit",
+              "wealth.purchase",
+              "wealth.redeem"
+            ]
+          }
+        },
+        "required": [
+          "tool"
+        ]
+      },
+      "then": {
+        "required": [
+          "operation_id",
+          "idempotency_key",
+          "expected_revision"
+        ]
+      }
+    }
+  ]
+}

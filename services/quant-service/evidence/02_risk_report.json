@@ -1,0 +1,1997 @@
+{
+  "data": {
+    "as_of": "2026-10-23",
+    "disclaimers": [
+      "历史样本统计，不代表未来收益，也不构成收益承诺。",
+      "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+      "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+      "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+    ],
+    "failures": [],
+    "method_version": "sq-wealth-risk/1.0.0",
+    "products": [
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例银行理财子公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0019337241,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.5465743369,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0004704862,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0162858887,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 10.9376053237,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": 0.065727,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0008974413,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0001988628,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.7129909366,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.0014889812,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5983704972,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.668468591,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 12.4993505312,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0002992156,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.065727,
+          "max": 1.065727,
+          "min": 1.0
+        },
+        "observed_market_risk_band": {
+          "band": "R1",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R1",
+        "product_id": "WM-CASH-001",
+        "product_name": "日日盈现金管理",
+        "product_type": "现金管理类",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "9c289db60380b9da885e283608f2d21e3b2530cca13c46162cf5570afce70dc2",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "eb3aa518845fe0fa5071fa6318d83120c8c858724fb1ad990e35019a208a589e"
+        },
+        "usable_for_ranking": true,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例银行理财子公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0113288525,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.3186438726,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0058147294,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0114454285,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.3215081311,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": 0.045865,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0075132205,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0014388084,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5508559919,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.0355991883,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.3138150125,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5790668145,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 1.744596408,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0042524234,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.045865,
+          "max": 1.052038,
+          "min": 0.995604
+        },
+        "observed_market_risk_band": {
+          "band": "R1",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R2",
+        "product_id": "WM-BOND-101",
+        "product_name": "稳健短债90天",
+        "product_type": "短债",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "925a61f53a189ecb30fbd8bb78c25c7378d2a20275ca8b2cb8db678643ae2f40",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "67ca2503ebc39f64ab063ca57563a3f87972cae601c089530956c9ea25d091a5"
+        },
+        "usable_for_ranking": true,
+        "warnings": [
+          "净值统计风险档 R1 与产品官方等级 R2 不一致，需核对产品映射或数据"
+        ]
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0192865446,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.1562373351,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0070611714,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0292012685,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5764148278,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": 0.120101,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0126397449,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0023907749,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5558912387,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.0506601619,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.7243710605,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5428990908,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 2.7668407955,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.004165012,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.120101,
+          "max": 1.120101,
+          "min": 1.0
+        },
+        "observed_market_risk_band": {
+          "band": "R2",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R2",
+        "product_id": "WM-BOND-102",
+        "product_name": "纯债增强",
+        "product_type": "中长期纯债",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "48b3c458010beeaad0a527d73035bf263a392c3e397c1b31c0b5cddb202a290a",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "43ddf280c801b37a01d03c1c9899caf9486ac550b752952dd96233aa53406ae1"
+        },
+        "usable_for_ranking": true,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0473627654,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.0197584606,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0154478327,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0432085826,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5735879792,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": 0.181384,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0314180964,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0062941508,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5075528701,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.0753303489,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.6001697983,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5091388049,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 1.8008336236,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0139336608,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.181384,
+          "max": 1.230593,
+          "min": 0.994355
+        },
+        "observed_market_risk_band": {
+          "band": "R3",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R3",
+        "product_id": "WM-FIX-201",
+        "product_name": "固收+增强",
+        "product_type": "固收+",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "2352ef1c6bd1b2d69e3955411f6b10e6534dcb9db1dbe981d59ce226fd5b0952",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "3c0a0d2fbd31f8f8dc65112a6843a9cc786822941f31ae86c99f53ff9511cc20"
+        },
+        "usable_for_ranking": true,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0885166913,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.1998733994,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0305265715,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.0219837046,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": -0.1325811171,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.083866,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0605870289,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0111604076,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.4773413897,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.1658132401,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.3763876307,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5518382586,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": -0.374979557,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0240378713,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 0.916134,
+          "max": 1.05301,
+          "min": 0.850164
+        },
+        "observed_market_risk_band": {
+          "band": "R5",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R3",
+        "product_id": "WM-MIX-301",
+        "product_name": "平衡配置混合",
+        "product_type": "混合型",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "9900ff73001a5080109c6003674b7e96102f3b1c869281adb23f8b9a4110d3f5",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "dfce135e18a507aeb56b0852b19181bda18cfcbea277235adad7bc23f23a37ce"
+        },
+        "usable_for_ranking": true,
+        "warnings": [
+          "净值统计风险档 R5 与产品官方等级 R3 不一致，需核对产品映射或数据"
+        ]
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.1318656831,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.0535588202,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0454760869,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0854067936,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.4009035454,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": 0.381184,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.088267466,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0170646099,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5135951662,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.2130357653,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5736918077,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5173191485,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 1.3288584466,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0303356809,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.381184,
+          "max": 1.4481,
+          "min": 0.942237
+        },
+        "observed_market_risk_band": {
+          "band": "R5",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R4",
+        "product_id": "WM-MIX-302",
+        "product_name": "进取配置混合",
+        "product_type": "混合型",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "9f69eb2819656508db14da4d24a0a2bbe7b28634c2a040939690e6fb7a236991",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "d98a94e42ff9f56d525a01e8b89a2106c33c5d2178b165623f8396ce33065f55"
+        },
+        "usable_for_ranking": true,
+        "warnings": [
+          "净值统计风险档 R5 与产品官方等级 R4 不一致，需核对产品映射或数据"
+        ]
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.2162876915,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.1862493126,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0499999369,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.0338011257,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": -0.0698167003,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.126717,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.1510776766,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0276924471,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.501510574,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.4841409799,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.1202974043,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5486744681,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": -0.092851651,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0470849178,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 0.873283,
+          "max": 1.067216,
+          "min": 0.550533
+        },
+        "observed_market_risk_band": {
+          "band": "R5",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R4",
+        "product_id": "WM-EQ-401",
+        "product_name": "沪深300指数增强",
+        "product_type": "股票指数",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "23a993907c213c3a2ff1e068dbe5a04f469befdefd16302ada2829ec7543fcdc",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "ae8416112f356bf2f63ba6a9c10fc14227e2614bdf077f1d19d642cfdeb3bed3"
+        },
+        "usable_for_ranking": true,
+        "warnings": [
+          "净值统计风险档 R5 与产品官方等级 R4 不一致，需核对产品映射或数据"
+        ]
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.3434757814,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.0957430458,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0846301186,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.0261924249,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": -0.0609855203,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.099303,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.2354029425,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0441747868,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.4894259819,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.4294859627,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0503496917,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5273316235,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 0.1782955712,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0619667959,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 0.900697,
+          "max": 1.441087,
+          "min": 0.721326
+        },
+        "observed_market_risk_band": {
+          "band": "R5",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R5",
+        "product_id": "WM-EQ-402",
+        "product_name": "科技成长精选",
+        "product_type": "股票型",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "d1fb160d6fba383f308502027eddb8ab35039a2e41f3ac994bd6c719e9959a5f",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "308cde2f9d4eefb6ff66724a237d617fe786ae606bc9f3fa8d984921b15585bd"
+        },
+        "usable_for_ranking": true,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例资管",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.1435670823,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.1340499928,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0300971677,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.0093192088,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": -0.0208463227,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.036222,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.1026031977,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.019865768,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5045317221,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.4470432954,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.0978466935,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5364654597,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 0.0123662786,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0345820131,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 0.963778,
+          "max": 1.332683,
+          "min": 0.736916
+        },
+        "observed_market_risk_band": {
+          "band": "R5",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R4",
+        "product_id": "WM-QDII-501",
+        "product_name": "全球多元资产",
+        "product_type": "QDII",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "8a2a9b93d4d686dc33065dffde4ac1b528aa5ceb9bfa993ce5802c536e949a6b",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "8c31537ea03dc78fb924bc7fbac377fa2d405a1d9eb179554ea831b30626003d"
+        },
+        "usable_for_ranking": true,
+        "warnings": [
+          "净值统计风险档 R5 与产品官方等级 R4 不一致，需核对产品映射或数据"
+        ]
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.100664348,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.0071933488,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.028046542,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0310555087,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.1963986239,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": 0.128074,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0678347035,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0125871252,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.4884189325,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.1581248793,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.2050996674,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5056337909,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 0.7003284365,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0264524188,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.128074,
+          "max": 1.201544,
+          "min": 0.991706
+        },
+        "observed_market_risk_band": {
+          "band": "R5",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R3",
+        "product_id": "WM-PEN-601",
+        "product_name": "养老目标2035",
+        "product_type": "养老FOF",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "36eece9a79b4280826f0a4d4a63cbeb8950a9ed2a85244c81ce8a7bfc7256e85",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "4a7bf6d1e390734882dca2fd34fd7458dace239d6933ed32b3e6b276d5c70f3a"
+        },
+        "usable_for_ranking": true,
+        "warnings": [
+          "净值统计风险档 R5 与产品官方等级 R3 不一致，需核对产品映射或数据"
+        ]
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 45,
+          "returns": 44,
+          "stale_lag_days": 0,
+          "start": "2026-08-24"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例基金公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": "insufficient_history_min_60_returns",
+            "sample_count": 44,
+            "unit": "ratio_per_year",
+            "value": null,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "n/a",
+            "na_reason": "insufficient_history_min_60_returns",
+            "sample_count": 44,
+            "unit": "ratio",
+            "value": null,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 44,
+            "unit": "daily_return",
+            "value": 0.0243120931,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": "insufficient_history",
+            "sample_count": 44,
+            "unit": "ratio_per_year",
+            "value": 0.7657128074,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 44,
+            "unit": "ratio",
+            "value": 18.2335982092,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 45,
+            "unit": "ratio",
+            "value": 0.104366,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": "insufficient_history_min_60_returns",
+            "sample_count": 44,
+            "unit": "ratio_per_year",
+            "value": null,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": "insufficient_history_min_252_returns",
+            "sample_count": 44,
+            "unit": "daily_return",
+            "value": null,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 44,
+            "unit": "ratio",
+            "value": 0.5,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 45,
+            "unit": "ratio",
+            "value": -0.0419946079,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "n/a",
+            "na_reason": "insufficient_history_min_60_returns",
+            "sample_count": 44,
+            "unit": "ratio",
+            "value": null,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "n/a",
+            "na_reason": "insufficient_history_min_60_returns",
+            "sample_count": 44,
+            "unit": "ratio",
+            "value": null,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "n/a",
+            "na_reason": "insufficient_history_min_60_returns",
+            "sample_count": 44,
+            "unit": "ratio",
+            "value": null,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 44,
+            "unit": "daily_return",
+            "value": -0.0194093075,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.104366,
+          "max": 1.104366,
+          "min": 0.986416
+        },
+        "observed_market_risk_band": {
+          "band": null,
+          "basis": "annual_volatility thresholds; not an official rating",
+          "na_reason": "insufficient_history"
+        },
+        "official_risk_level": "R4",
+        "product_id": "WM-NEW-701",
+        "product_name": "新发红利精选",
+        "product_type": "股票型",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "9ff5dde13158385c45230f572c846e5c1fe08f53dad0fe1fb782fd7b4084e0c1",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "c88262e3c9e491cc188c4b7b5294b2d9721e6af9480c14792b50c4c878103176"
+        },
+        "usable_for_ranking": false,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "disclaimers": [
+          "历史样本统计，不代表未来收益，也不构成收益承诺。",
+          "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+          "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+          "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。"
+        ],
+        "issuer": "示例银行理财子公司",
+        "metrics": {
+          "annual_volatility": {
+            "method": "pstdev(daily_returns)*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0328171057,
+            "window": "observed_until:2026-10-23"
+          },
+          "autocorrelation_factor": {
+            "method": "Bartlett-kernel variance inflation factor",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 1.1231063775,
+            "window": "observed_until:2026-10-23"
+          },
+          "best_day": {
+            "method": "max(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": 0.0112494657,
+            "window": "observed_until:2026-10-23"
+          },
+          "cagr": {
+            "method": "(nav_last/nav_first)^(252/n_returns)-1",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0025459829,
+            "window": "observed_until:2026-10-23"
+          },
+          "calmar": {
+            "method": "cagr/abs(max_drawdown)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.0348273932,
+            "window": "observed_until:2026-10-23"
+          },
+          "cumulative_return": {
+            "method": "nav_last/nav_first-1",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": 0.01007,
+            "window": "observed_until:2026-10-23"
+          },
+          "downside_deviation": {
+            "method": "sqrt(mean(min(0,r)^2))*sqrt(252)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.0240238018,
+            "window": "observed_until:2026-10-23"
+          },
+          "historical_cvar_95": {
+            "method": "mean(worst ceil(5%*n) daily returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0045896911,
+            "window": "observed_until:2026-10-23"
+          },
+          "hit_rate": {
+            "method": "count(r>0)/n",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio",
+            "value": 0.5186304129,
+            "window": "observed_until:2026-10-23"
+          },
+          "max_drawdown": {
+            "method": "min(nav/peak-1) over whole window",
+            "na_reason": null,
+            "sample_count": 994,
+            "unit": "ratio",
+            "value": -0.0731028845,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe": {
+            "method": "mean(r-rf)/pstdev(r)*sqrt(252) with Lo-2002 SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": -0.3631742979,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_se_annual": {
+            "method": "Lo-2002 autocorrelation-adjusted SE",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "ratio_per_year",
+            "value": 0.5338753781,
+            "window": "observed_until:2026-10-23"
+          },
+          "sharpe_t_stat": {
+            "method": "Lo-2002 autocorrelation-adjusted t-stat",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "t_stat",
+            "value": 0.1758919881,
+            "window": "observed_until:2026-10-23"
+          },
+          "worst_day": {
+            "method": "min(daily_returns)",
+            "na_reason": null,
+            "sample_count": 993,
+            "unit": "daily_return",
+            "value": -0.0141507953,
+            "window": "observed_until:2026-10-23"
+          }
+        },
+        "nav": {
+          "first": 1.0,
+          "last": 1.01007,
+          "max": 1.02706,
+          "min": 0.934316
+        },
+        "observed_market_risk_band": {
+          "band": "R3",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R3",
+        "product_id": "WM-FIX-202",
+        "product_name": "固收定开六个月",
+        "product_type": "定开固收",
+        "provenance": {
+          "adapter": "stockquant_bank.wealth_risk/1",
+          "computed_at": "2026-10-28T17:42:28+08:00",
+          "input_hash": "734f3e59fae85a88a7757be45ab45d6b7cd6387eac58e8149a87af9e1f7ce9ce",
+          "method_version": "sq-wealth-risk/1.0.0",
+          "source": "synthetic_bank_catalog_v2",
+          "source_hash": "5c8bcc1fa7e6089c56310ec9af35120a01574ee34f87f7de00d35d570333e340"
+        },
+        "usable_for_ranking": true,
+        "warnings": []
+      }
+    ],
+    "risk_free_rate": 0.015,
+    "schema_version": "1.0",
+    "summary": {
+      "computed": 12,
+      "failed": 0,
+      "requested": 12,
+      "usable_for_ranking": 11
+    }
+  },
+  "error": null,
+  "operation_id": null,
+  "provenance": {
+    "adapter": "stockquant_bank.wealth_risk/1",
+    "engine": {
+      "commit": "5559e3f",
+      "kernel_functions": [
+        "daily_returns",
+        "max_drawdown",
+        "sharpe_statistics"
+      ],
+      "method_version": "sq-wealth-risk/1.0.0",
+      "module": "stockquant.backtest.metrics",
+      "name": "stockquant",
+      "trading_days_per_year": 252,
+      "version": "0.1.0"
+    },
+    "method_version": "sq-wealth-risk/1.0.0",
+    "observed_at": "2026-10-28T17:42:28+08:00"
+  },
+  "request_id": "fp_1793180548451",
+  "schema_version": "1.0",
+  "status": "ok",
+  "task_id": null
+}

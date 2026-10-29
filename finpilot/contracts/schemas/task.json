@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/task.json",
+  "title": "TaskCreateRequest",
+  "description": "POST /v1/tasks 的请求体（输入面）。权威任务实体与进度视图见 `task_view.json`；本 Schema 只描述客户端可以提交的部分（message、channel、reference_time）。 本 Schema 为对外输入面：`additionalProperties: false`，并显式禁止 `user_id`、`owner_user_id`、`task_id`、`status`、`revision`、`plan_id`、`grant_id`、`required_level`、`roles`、`is_operator`、`mode`、`posted_balance_minor`、`goal_spec`、`result_summary` 等由服务端持有的字段。 出现这些字段时契约层直接拒绝并返回 `EXTRA_DANGEROUS_FIELD`（V5 API-01、第 4.2 节、第 6.4 节），拒绝原因是身份、归属、授权、状态与余额事实只能由可信服务端产生，客户端或模型覆盖它们等于伪造授权或账本事实。",
+  "type": "object",
+  "additionalProperties": false,
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "user_id"
+        ]
+      },
+      {
+        "required": [
+          "owner_user_id"
+        ]
+      },
+      {
+        "required": [
+          "task_id"
+        ]
+      },
+      {
+        "required": [
+          "status"
+        ]
+      },
+      {
+        "required": [
+          "revision"
+        ]
+      },
+      {
+        "required": [
+          "plan_id"
+        ]
+      },
+      {
+        "required": [
+          "grant_id"
+        ]
+      },
+      {
+        "required": [
+          "required_level"
+        ]
+      },
+      {
+        "required": [
+          "roles"
+        ]
+      },
+      {
+        "required": [
+          "is_operator"
+        ]
+      },
+      {
+        "required": [
+          "mode"
+        ]
+      },
+      {
+        "required": [
+          "posted_balance_minor"
+        ]
+      },
+      {
+        "required": [
+          "goal_spec"
+        ]
+      },
+      {
+        "required": [
+          "result_summary"
+        ]
+      }
+    ]
+  },
+  "x-client-writable": true,
+  "x-forbidden-client-fields": [
+    "user_id",
+    "owner_user_id",
+    "task_id",
+    "status",
+    "revision",
+    "plan_id",
+    "grant_id",
+    "required_level",
+    "roles",
+    "is_operator",
+    "mode",
+    "posted_balance_minor",
+    "goal_spec",
+    "result_summary"
+  ],
+  "required": [
+    "message",
+    "channel"
+  ],
+  "properties": {
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "channel": {
+      "enum": [
+        "app",
+        "im"
+      ],
+      "description": "渠道来自会话；与客户端声明不一致时以会话为准。"
+    },
+    "reference_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "expected_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "可选的并发基线；创建任务时通常缺省。"
+    },
+    "client_message_id": {
+      "type": "string",
+      "maxLength": 96,
+      "description": "客户端幂等键，服务端映射到同一逻辑任务。"
+    }
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "plan_id": "plan_birthday_1",
+  "task_id": "task_demo_birthday",
+  "revision": 1,
+  "status": "awaiting_authorization",
+  "goal_snapshot": {
+    "schema_version": "1.0",
+    "task_id": "task_demo_birthday",
+    "revision": 1,
+    "reference_time": "2026-10-22T10:00:00+08:00",
+    "goals": [
+      "book_flowers",
+      "book_cake",
+      "create_aa_request"
+    ],
+    "hard_constraints": {
+      "currency": "CNY",
+      "total_budget_minor": 80000,
+      "budget_includes_fees": true,
+      "protected_floor_minor": 800000,
+      "protected_floor_scope": [
+        "account_salary"
+      ],
+      "delivery_deadline": "2026-10-24T18:00:00+08:00",
+      "max_confirmations": 3
+    },
+    "preferences": [
+      {
+        "higher": "book_flowers",
+        "lower": "book_cake"
+      }
+    ],
+    "partial_completion_policy": "keep_successful_flowers_if_cake_fails",
+    "funding_sources": [
+      "account_salary"
+    ],
+    "unconfirmed_receivables_are_spendable": false,
+    "unresolved": [],
+    "authorization_status": "not_requested",
+    "inferred_fields": [
+      "delivery_deadline"
+    ]
+  },
+  "snapshot_ref": {
+    "observed_at": "2026-10-22T10:00:00+08:00",
+    "accounts": [
+      "account_salary"
+    ],
+    "policy_version": "policy-2026.10"
+  },
+  "scope": {
+    "tool": "transfer.submit",
+    "payee_id": "payee_zhangsan_1",
+    "source_account_id": "account_salary",
+    "amount_minor": 10000,
+    "fee_minor": 0,
+    "currency": "CNY",
+    "terms_version": "2026.10",
+    "window_start": "2026-10-22T10:00:00+08:00",
+    "window_end": "2026-10-22T10:10:00+08:00",
+    "irreversible": false
+  },
+  "scope_hash": "232254ed42d4f3a024202d6689c843c2ffff30fbada68b586249e7e430722dfc",
+  "required_level": "YELLOW",
+  "feasible": false,
+  "infeasible_reasons": [],
+  "alternatives": [],
+  "steps": [
+    {
+      "step_id": "step_flowers",
+      "plan_id": "plan_birthday_1",
+      "seq": 1,
+      "node_id": "node_flowers",
+      "tool": "merchant.quote",
+      "typed_args": {
+        "merchant_id": "merchant_florist_01",
+        "offer_code": "BOUQUET_M",
+        "currency": "CNY"
+      },
+      "dependencies": [],
+      "read_set": [
+        "quote:merchant_florist_01:BOUQUET_M"
+      ],
+      "write_set": [
+        "quote_cache"
+      ],
+      "preconditions": [
+        "delivery_deadline >= 2026-10-24T10:00:00+08:00"
+      ],
+      "expected_effects": {
+        "funds_moved_minor": 0,
+        "irreversible": false
+      },
+      "compensation_policy": {
+        "mode": "none",
+        "reason": "只读报价，无资金效果"
+      },
+      "required_level": "GREEN",
+      "status": "pending",
+      "operation_id": null,
+      "attempt": 0,
+      "last_error": null
+    },
+    {
+      "step_id": "step_transfer",
+      "plan_id": "plan_birthday_1",
+      "seq": 2,
+      "node_id": "node_transfer",
+      "tool": "transfer.submit",
+      "typed_args": {
+        "payee_id": "payee_zhangsan_1",
+        "source_account_id": "account_salary",
+        "amount_minor": 10000,
+        "currency": "CNY"
+      },
+      "dependencies": [
+        "node_flowers"
+      ],
+      "read_set": [
+        "account:account_salary:v7",
+        "payee:payee_zhangsan_1",
+        "grant:plan_birthday_1:1"
+      ],
+      "write_set": [
+        "ledger_entries",
+        "reservations",
+        "operations"
+      ],
+      "preconditions": [
+        "available_minor >= 10000",
+        "spendable_minor >= 10000",
+        "grant.status == active"
+      ],
+      "expected_effects": {
+        "funds_moved_minor": 10000,
+        "irreversible": true
+      },
+      "compensation_policy": {
+        "mode": "manual",
+        "reason": "即时到账转账不可自动撤回",
+        "requires_reauthorization": true
+      },
+      "required_level": "YELLOW",
+      "status": "pending",
+      "operation_id": null,
+      "attempt": 0,
+      "last_error": null
+    }
+  ],
+  "total_estimated_minor": 10000,
+  "total_fee_minor": 0,
+  "solver": {
+    "name": "bounded_dfs",
+    "version": "1.0.0",
+    "candidates": 7,
+    "nodes": 2,
+    "elapsed_ms": 34,
+    "optimal_claim": false
+  },
+  "confirmed_at": null,
+  "created_at": "2026-10-22T10:00:05+08:00"
+}

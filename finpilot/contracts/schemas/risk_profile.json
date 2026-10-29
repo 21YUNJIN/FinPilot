@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/risk_profile.json",
+  "title": "RiskProfile",
+  "description": "可解释且有版本与有效期的风险测评（S3-01、T09）。过期或缺失测评不得申购；评分规则按问卷版本可复算。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_id",
+    "owner_user_id",
+    "questionnaire_version",
+    "answers",
+    "score",
+    "risk_level",
+    "max_loss_tolerance",
+    "assessed_at",
+    "expires_at",
+    "is_active"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "owner_user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "questionnaire_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "answers": {
+      "type": "object",
+      "description": "答案项；不包含身份证件或联系方式等敏感信息。"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "评分：整数，按问卷版本规则计算。"
+    },
+    "risk_level": {
+      "enum": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5"
+      ]
+    },
+    "max_loss_tolerance": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "assessed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "乐观并发版本号。"
+    },
+    "is_active": {
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "risk_level": {
+            "enum": [
+              "R4",
+              "R5"
+            ]
+          }
+        },
+        "required": [
+          "risk_level"
+        ]
+      },
+      "then": {
+        "properties": {
+          "max_loss_tolerance": {
+            "const": "high"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "risk_level": {
+            "enum": [
+              "R1",
+              "R2"
+            ]
+          }
+        },
+        "required": [
+          "risk_level"
+        ]
+      },
+      "then": {
+        "properties": {
+          "max_loss_tolerance": {
+            "enum": [
+              "low",
+              "medium"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

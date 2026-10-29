@@ -1,0 +1,17 @@
+{
+  "name": "finpilot-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "融策智能体（FinPilot）前端工作区：apps/web（APP 式）、apps/im（IM 风格）、apps/shared-ui（共享组件）",
+  "packageManager": "pnpm@11.28.5",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "dev:web": "pnpm --filter @finpilot/web dev",
+    "dev:im": "pnpm --filter @finpilot/im dev"
+  }
+}

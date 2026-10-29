@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/auth_challenge.json",
+  "title": "AuthChallenge",
+  "description": "强验证挑战：120 秒有效、最多 5 次尝试、失败锁定 15 分钟；不含明文验证码，TOTP 计数器不可重复使用，验证码不进入日志与模型上下文（V5 第 6.2 节，AUTH-05）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "challenge_id",
+    "user_id",
+    "operation_scope_hash",
+    "factor_type",
+    "status",
+    "expires_at",
+    "attempts",
+    "max_attempts"
+  ],
+  "properties": {
+    "challenge_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "operation_scope_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 十六进制摘要（ids.canonical_json + sha256）。"
+    },
+    "scope": {
+      "type": "object"
+    },
+    "plan_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "plan_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "factor_type": {
+      "enum": [
+        "totp"
+      ],
+      "description": "独立持有因子；固定验证码、模型判断、按钮点击或“已刷脸”动画无效。"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "verified",
+        "failed",
+        "locked",
+        "expired"
+      ]
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "attempts": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "max_attempts": {
+      "const": 5
+    },
+    "locked_until": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "verified_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "consumed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "last_counter": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "已消费的 TOTP 时间计数器；同一计数器不得在另一挑战重复使用。"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "verified"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "verified_at"
+        ],
+        "properties": {
+          "verified_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "locked"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "locked_until"
+        ],
+        "properties": {
+          "locked_until": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  ],
+  "not": {
+    "anyOf": [
+      {
+        "required": [
+          "factor_response"
+        ]
+      },
+      {
+        "required": [
+          "totp_code"
+        ]
+      },
+      {
+        "required": [
+          "otp"
+        ]
+      },
+      {
+        "required": [
+          "secret"
+        ]
+      }
+    ]
+  },
+  "$comment": "验证码、TOTP 秘钥与 factor_response 永不进入本对象、日志或模型上下文。"
+}

@@ -1,0 +1,12 @@
+{
+  "scope_hash": "232254ed42d4f3a024202d6689c843c2ffff30fbada68b586249e7e430722dfc",
+  "expected_revision": 1,
+  "idempotency_key": "idem_confirm_plan_birthday_1",
+  "task_id": "task_demo_birthday",
+  "plan_revision": 1,
+  "acknowledged_diff": [
+    "确认收款人：张三（尾号 0001）",
+    "确认金额：100.00 元",
+    "确认手续费：0.00 元"
+  ]
+}

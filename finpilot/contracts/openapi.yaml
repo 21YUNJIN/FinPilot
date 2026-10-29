@@ -1,0 +1,1002 @@
+# 融策智能体（FinPilot）HTTP 契约（OpenAPI 3.1）
+# 路径集合与 docs/INTERFACES.md 第 4 节逐条一致；由 tests/contracts/test_schemas.py 校验。
+# 契约包（contracts）由 D 汇总维护；端点行为由提供者确认（A 发布）。
+openapi: 3.1.0
+info:
+  title: 融策智能体（FinPilot）HTTP 契约
+  version: 1.0.0
+  summary: V5 第 16 节与 docs/INTERFACES.md 第 4 节的路径集合；写操作要求 operation_id 与 expected_revision。
+  description: '所有路径返回统一信封 error_envelope：HTTP 200 不等于业务成功。
+
+    `x-agent-exposed: false` 表示人类专用或运营专用端点，模型工具目录不得暴露；
+
+    `x-required-level` 表示服务端策略等级（GREEN/YELLOW/RED/OPERATOR，NONE 仅用于认证入口）；
+
+    `x-requires-operation-id: true` 表示该写操作必须携带 operation_id 与 expected_revision；
+
+    其余写操作以 `x-idempotency-exempt` 说明其幂等边界。'
+  x-policy-version: policy-2026.10
+  x-contract-version: '1.0'
+  x-publisher: A（端点行为由提供者确认）；contracts 包由 D 汇总维护
+servers:
+- url: http://127.0.0.1:8000
+  description: 本地开发（mock 模式）
+tags:
+- name: auth
+- name: tasks
+- name: authorization
+- name: operations
+- name: cards
+- name: subscriptions
+- name: wealth
+- name: billing
+- name: privacy
+- name: internal
+- name: operator
+- name: meta
+security:
+- sessionBearer: []
+paths:
+  /v1/auth/sessions:
+    post:
+      tags:
+      - auth
+      summary: 创建登录会话
+      operationId: create_auth_session
+      x-agent-exposed: false
+      x-required-level: NONE
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/auth_context.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - user_id
+              - password
+              - channel
+              properties:
+                user_id:
+                  type: string
+                  maxLength: 48
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                channel:
+                  enum:
+                  - app
+                  - im
+                  - operator
+      x-idempotency-exempt: 认证入口：以会话唯一约束与密码校验实现幂等，不使用 operation_id；失败重试不产生业务效果。
+      description: 人类登录入口，模型无权调用。返回 token 与 AuthContext；用户身份只来自服务端会话。
+  /v1/auth/totp/enroll:
+    post:
+      tags:
+      - auth
+      summary: 注册 TOTP 强验证因子
+      operationId: enroll_totp
+      x-agent-exposed: false
+      x-required-level: NONE
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/auth_challenge.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: []
+              properties:
+                factor_type:
+                  const: totp
+      x-idempotency-exempt: 安全因子注册：以当前会话身份与唯一约束保证幂等；密钥只在验证器与服务端之间流转，不进入模型。
+      description: 仅认证用户；密钥与验证码永不返回给模型或不写入日志（AUTH-05）。
+  /v1/auth/totp/confirm:
+    post:
+      tags:
+      - auth
+      summary: 确认 TOTP 因子
+      operationId: confirm_totp
+      x-agent-exposed: false
+      x-required-level: NONE
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - code
+              properties:
+                code:
+                  type: string
+                  pattern: ^[0-9]{6}$
+                  description: 一次性验证码；不写日志、不回显。
+      x-idempotency-exempt: 一次性验证码校验：重复提交同一验证码必须失败，天然不支持幂等键。
+      description: 人类验证界面专用；验证码不进入 LLM 上下文。
+  /v1/tasks:
+    post:
+      tags:
+      - tasks
+      summary: 创建自然语言任务
+      operationId: create_task
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/task_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: schemas/task.json
+      x-idempotency-exempt: 创建聚合根：以 (owner_user_id, client_message_id) 唯一约束保证幂等，不产生资金效果。
+    get:
+      tags:
+      - tasks
+      summary: 任务列表（场景只读接口）
+      operationId: list_tasks
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/task_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+  /v1/tasks/{task_id}:
+    get:
+      tags:
+      - tasks
+      summary: 查询任务视图
+      operationId: get_task
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/task_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: task_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+  /v1/tasks/{task_id}/messages:
+    post:
+      tags:
+      - tasks
+      summary: 追加指令（带并发基线）
+      operationId: append_task_message
+      x-agent-exposed: true
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/task_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: task_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - operation_id
+              - expected_revision
+              - message
+              properties:
+                operation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: 逻辑操作 ID：重试／恢复／跨渠道沿用同一 ID。
+                expected_revision:
+                  type: integer
+                  minimum: 1
+                  description: 并发基线：旧修订返回 VERSION_CONFLICT。
+                idempotency_key:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                message:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                channel:
+                  enum:
+                  - app
+                  - im
+      x-requires-operation-id: true
+      description: 旧修订返回 VERSION_CONFLICT；追加指令不得直接触发资金写入。
+  /v1/tasks/{task_id}/plan:
+    post:
+      tags:
+      - tasks
+      summary: 显式触发规划
+      operationId: build_task_plan
+      x-agent-exposed: true
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/plan.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: task_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - operation_id
+              - expected_revision
+              properties:
+                operation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: 逻辑操作 ID：重试／恢复／跨渠道沿用同一 ID。
+                expected_revision:
+                  type: integer
+                  minimum: 1
+                  description: 并发基线：旧修订返回 VERSION_CONFLICT。
+                idempotency_key:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                reason:
+                  type: string
+                  maxLength: 255
+      x-requires-operation-id: true
+      description: 默认自动规划；超限返回 PLANNING_LIMIT，不得声称数学无解。
+  /v1/plans/{plan_id}/confirm:
+    post:
+      tags:
+      - authorization
+      summary: 人类确认计划范围
+      operationId: confirm_plan
+      x-agent-exposed: false
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/grant.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: plan_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: schemas/grant_request.json
+      x-idempotency-exempt: 以 (plan_id, scope_hash, expected_revision) 唯一约束保证重复确认不产生第二个 grant；红色范围改为返回 challenge。
+      description: 人类专用：模型无权调用。接受与屏幕相同的 scope_hash；RED 范围返回 challenge_id 而不是 grant。
+  /v1/auth/challenges/{challenge_id}/verify:
+    post:
+      tags:
+      - authorization
+      summary: 强验证挑战校验
+      operationId: verify_challenge
+      x-agent-exposed: false
+      x-required-level: RED
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/grant.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: challenge_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: challenge_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - factor_response
+              properties:
+                factor_response:
+                  type: string
+                  minLength: 6
+                  maxLength: 8
+                  description: 独立因子响应；不写日志、不回显、不进入模型上下文。
+      x-idempotency-exempt: 一次性挑战：成功证明绑定 user_id + scope_hash + challenge_id + expires_at，重放必须失败，因此不接受幂等键。
+      description: 人类验证界面专用：120 秒有效、最多 5 次、失败锁定 15 分钟；通过后签发受限授权。
+  /v1/tasks/{task_id}/cancel:
+    post:
+      tags:
+      - tasks
+      summary: 请求取消任务
+      operationId: cancel_task
+      x-agent-exposed: true
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/task_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: task_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - operation_id
+              - expected_revision
+              properties:
+                operation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: 逻辑操作 ID：重试／恢复／跨渠道沿用同一 ID。
+                expected_revision:
+                  type: integer
+                  minimum: 1
+                  description: 并发基线：旧修订返回 VERSION_CONFLICT。
+                idempotency_key:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                reason:
+                  type: string
+                  maxLength: 255
+      x-requires-operation-id: true
+      description: 返回实际取消边界与在途操作；已提交或未知结果的动作继续核验，不承诺撤回成功。
+  /v1/grants/{grant_id}/revoke:
+    post:
+      tags:
+      - authorization
+      summary: 撤销授权
+      operationId: revoke_grant
+      x-agent-exposed: true
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/grant.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: grant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: grant_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - operation_id
+              - expected_revision
+              properties:
+                operation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: 逻辑操作 ID：重试／恢复／跨渠道沿用同一 ID。
+                expected_revision:
+                  type: integer
+                  minimum: 1
+                  description: 并发基线：旧修订返回 VERSION_CONFLICT。
+                idempotency_key:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                reason:
+                  type: string
+                  maxLength: 255
+      x-requires-operation-id: true
+      description: 只停止尚未提交的动作；已发生效果如实保留。
+  /v1/operations/{operation_id}:
+    get:
+      tags:
+      - operations
+      summary: 权威操作查询
+      operationId: get_operation
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/operation_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: operation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: operation_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      description: 按归属隔离；超时结果用原 operation_id 查询，不重复扣款。
+  /v1/receipts/{receipt_id}:
+    get:
+      tags:
+      - operations
+      summary: 回执查询
+      operationId: get_receipt
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/receipt.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: receipt_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: receipt_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+  /v1/tasks/{task_id}/resume:
+    post:
+      tags:
+      - tasks
+      summary: 恢复执行任务
+      operationId: resume_task
+      x-agent-exposed: true
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/task_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: task_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - operation_id
+              - expected_revision
+              properties:
+                operation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: 逻辑操作 ID：重试／恢复／跨渠道沿用同一 ID。
+                expected_revision:
+                  type: integer
+                  minimum: 1
+                  description: 并发基线：旧修订返回 VERSION_CONFLICT。
+                idempotency_key:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+      x-requires-operation-id: true
+      description: 从持久化状态重建；每次恢复必须产生任务事件。
+  /v1/operations:
+    get:
+      tags:
+      - operations
+      summary: 操作列表（场景只读接口）
+      operationId: list_operations
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/operation_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+  /v1/cards:
+    get:
+      tags:
+      - cards
+      summary: 卡片列表（场景只读接口）
+      operationId: list_cards
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/card.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+  /v1/subscriptions:
+    get:
+      tags:
+      - subscriptions
+      summary: 订阅列表（官方黄色例外）
+      operationId: list_subscriptions
+      x-agent-exposed: true
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/subscription.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      description: 官方把订阅查询列为黄色：不能用“一切只读均绿色”覆盖该例外，查询也要明确确认并展示证据来源。
+  /v1/wealth/products:
+    get:
+      tags:
+      - wealth
+      summary: 理财产品列表（场景只读接口）
+      operationId: list_wealth_products
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/wealth_product.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+  /v1/bills/report:
+    get:
+      tags:
+      - billing
+      summary: 账单报表（场景只读接口）
+      operationId: get_bill_report
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/bill_report.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+  /internal/provider-events/{provider}:
+    post:
+      tags:
+      - internal
+      summary: 业务回调入口
+      operationId: ingest_provider_event
+      x-agent-exposed: false
+      x-required-level: OPERATOR
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: provider：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: schemas/provider_event.json
+      x-idempotency-exempt: 回调以独立共享密钥签名、时间戳、nonce 与 (provider_id, provider_event_id) 去重实现幂等；回调载荷不得覆盖本地归属。
+      description: 指定适配器专用：验签、去重、版本核验后入队；时间窗外回调进入查询核验，不静默丢失真实成功。
+  /operator/cases:
+    get:
+      tags:
+      - operator
+      summary: 运营接管案例列表
+      operationId: list_operator_cases
+      x-agent-exposed: false
+      x-required-level: OPERATOR
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/result_view.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      description: 独立运营角色；最小必要数据，审计必记。
+  /operator/cases/{case_id}/actions:
+    post:
+      tags:
+      - operator
+      summary: 运营处置动作
+      operationId: apply_operator_action
+      x-agent-exposed: false
+      x-required-level: OPERATOR
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      parameters:
+      - name: case_id
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 96
+        description: case_id：稳定对外 ID；按 owner_user_id 做归属隔离，不存在与无权访问返回同一错误。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - operation_id
+              - expected_revision
+              - action
+              properties:
+                operation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: 逻辑操作 ID：重试／恢复／跨渠道沿用同一 ID。
+                expected_revision:
+                  type: integer
+                  minimum: 1
+                  description: 并发基线：旧修订返回 VERSION_CONFLICT。
+                idempotency_key:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                action:
+                  enum:
+                  - query_operation
+                  - requeue_reconciliation
+                  - unfreeze_risk_control
+                  - close_case
+                  - hand_back
+                payload:
+                  type: object
+      x-requires-operation-id: true
+      description: 不能伪造客户同意或绕过强验证；改变申请金额或条款须客户重新授权。
+  /v1/privacy/export:
+    get:
+      tags:
+      - privacy
+      summary: 导出个人数据
+      operationId: export_privacy_data
+      x-agent-exposed: false
+      x-required-level: YELLOW
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/audit_event.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      description: 按用户／角色授权；导出内容脱敏，不含活跃凭证。
+  /v1/privacy/delete:
+    post:
+      tags:
+      - privacy
+      summary: 删除个人数据
+      operationId: delete_privacy_data
+      x-agent-exposed: false
+      x-required-level: RED
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - operation_id
+              - expected_revision
+              - scope
+              - confirm
+              properties:
+                operation_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: 逻辑操作 ID：重试／恢复／跨渠道沿用同一 ID。
+                expected_revision:
+                  type: integer
+                  minimum: 1
+                  description: 并发基线：旧修订返回 VERSION_CONFLICT。
+                idempotency_key:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                scope:
+                  enum:
+                  - chat
+                  - task
+                  - all
+                confirm:
+                  const: true
+      x-requires-operation-id: true
+      description: 不能用删审计掩盖已发生业务；审计保留最小必要去标识摘要。
+  /v1/meta/tools:
+    get:
+      tags:
+      - meta
+      summary: 工具目录（模型可见部分）
+      operationId: list_tool_catalog
+      x-agent-exposed: true
+      x-required-level: GREEN
+      responses:
+        '200':
+          description: 统一信封：data 字段为下述结构；status=ok 才表示业务成功。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/tool_catalog_entry.json
+        default:
+          description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+          content:
+            application/json:
+              schema:
+                $ref: schemas/error_envelope.json
+      description: 只暴露 agent_exposed=true 的工具；OPERATOR 与人类专用端点不出现在模型工具目录中。
+components:
+  securitySchemes:
+    sessionBearer:
+      type: http
+      scheme: bearer
+      description: 服务端会话令牌；身份只来自 sessions 表。
+  responses:
+    ErrorEnvelope:
+      description: 统一错误信封：HTTP 状态码只做参考，业务状态必须读 status 与 error（V1 error_envelope）。
+      content:
+        application/json:
+          schema:
+            $ref: schemas/error_envelope.json
+x-contract-artifacts:
+  schemas: contracts/schemas/
+  tool_catalog: contracts/tool-catalog.yaml
+  module_manifest: contracts/module-manifest.yaml
+  examples: contracts/examples/
+  requirement_trace: docs/requirement-trace.md

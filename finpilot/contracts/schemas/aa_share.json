@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/aa_share.json",
+  "title": "AAShare",
+  "description": "AA 分摊份额：发起人不能代扣其他参与人（auto_debit_allowed 恒为 false）；付款必须各自独立授权。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "share_id",
+    "aa_id",
+    "participant_ref",
+    "display_name",
+    "share_minor",
+    "adjusted_minor",
+    "status",
+    "is_initiator",
+    "auto_debit_allowed",
+    "created_at"
+  ],
+  "properties": {
+    "share_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "aa_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "participant_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "participant_user_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 48
+    },
+    "display_name": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "share_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "分摊金额：整数分；分差 ≤1 分且合计严格等于总额。"
+    },
+    "adjusted_minor": {
+      "type": "integer",
+      "description": "调整额：整数分，可为负。"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "paid",
+        "declined",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "is_initiator": {
+      "type": "boolean"
+    },
+    "auto_debit_allowed": {
+      "type": "boolean",
+      "description": "AA 只发请求；不得对任何参与人自动扣款。"
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64,
+      "description": "参与人自己的付款操作；发起人不能代填。"
+    },
+    "paid_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "is_initiator": {
+            "const": true
+          }
+        },
+        "required": [
+          "is_initiator"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auto_debit_allowed": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auto_debit_allowed": {
+            "const": true
+          }
+        },
+        "required": [
+          "auto_debit_allowed"
+        ]
+      },
+      "then": false
+    }
+  ]
+}

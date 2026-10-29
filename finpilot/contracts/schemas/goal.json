@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finpilot.local/schemas/goal.json",
+  "title": "GoalSpec",
+  "description": "目标中间表示（V5 第 5.1 节）：事实、硬约束、软偏好、待澄清项与授权状态分开保存；禁止把待到账 AA 款、未确认退款或预测收入转换为当前可用资金。由 A 的 intent 编译器产出，D 消费。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "revision",
+    "reference_time",
+    "goals",
+    "hard_constraints",
+    "preferences",
+    "unresolved",
+    "authorization_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "计划／任务修订号，变更关键字段必须生成新修订。"
+    },
+    "reference_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+    },
+    "goals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "description": "结构化目标标识（不是自由文本），超范围目标必须由 PLAN-07 兜底拒绝。"
+    },
+    "hard_constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "total_budget_minor",
+        "protected_floor_minor"
+      ],
+      "properties": {
+        "currency": {
+          "const": "CNY",
+          "description": "币种固定 CNY。"
+        },
+        "total_budget_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+        },
+        "budget_includes_fees": {
+          "type": "boolean",
+          "default": true
+        },
+        "protected_floor_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "金额：整数人民币分（amount_minor）。禁止 number/浮点。"
+        },
+        "protected_floor_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "delivery_deadline": {
+          "type": "string",
+          "format": "date-time",
+          "description": "带时区 ISO 8601 时间戳；持久化 UTC，展示 Asia/Shanghai。"
+        },
+        "max_confirmations": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "preferences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "higher",
+          "lower"
+        ],
+        "properties": {
+          "higher": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "lower": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      },
+      "description": "用户明确表达的软偏好；无用户明确优先级时先澄清，不自行设权重。"
+    },
+    "partial_completion_policy": {
+      "type": "string",
+      "maxLength": 96
+    },
+    "funding_sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 48
+      }
+    },
+    "unconfirmed_receivables_are_spendable": {
+      "const": false,
+      "description": "硬约束：待收／待退资金不得作为可用资金（V5 第 5.1、8.1 节）。"
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 64
+      },
+      "description": "待澄清字段；非空时不得执行任何写操作（PLAN-01）。"
+    },
+    "authorization_status": {
+      "enum": [
+        "not_requested",
+        "pending",
+        "granted",
+        "revoked",
+        "expired"
+      ]
+    },
+    "inferred_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "推断项必须显式标记为推断。"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 255
+      },
+      "description": "来源证据引用。"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "unresolved": {
+            "minItems": 1
+          }
+        },
+        "required": [
+          "unresolved"
+        ]
+      },
+      "then": {
+        "properties": {
+          "authorization_status": {
+            "const": "not_requested"
+          }
+        }
+      }
+    }
+  ]
+}

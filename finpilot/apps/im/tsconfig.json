@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "node"],
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@finpilot/shared-ui": ["../shared-ui/src/index.ts"],
+      "@finpilot/shared-ui/*": ["../shared-ui/src/*"]
+    }
+  },
+  "include": ["src", "tests", "vite.config.ts"]
+}

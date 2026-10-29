@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0",
+  "dataset_version": "seed-2026.10",
+  "generated_at": "2026-10-22T10:00:00+08:00",
+  "seed": 20261022,
+  "declaration": {
+    "all_financial_data_is_synthetic": true,
+    "no_real_personal_data": true,
+    "no_real_bank_authorization": true,
+    "stockquant_license_verified": false,
+    "stockquant_license_status": "待核验（未核验，禁止声称已核验）",
+    "notes": "本项目全部金融数据（用户、账户、流水、持仓、卡片、订阅、商户、报价、AA）均为合成数据，由 data/synthetic/generate.py 以固定种子 20261022 确定性生成；不含任何真实个人金融信息，也不代表任何真实银行的授权或认证。"
+  },
+  "entries": [
+    {
+      "name": "finpilot_seed_app",
+      "type": "synthetic",
+      "license": "CC0-1.0（团队自建合成数据，可随仓库分发）",
+      "synthetic_ratio": 1,
+      "available_at": "2026-10-22T10:00:00+08:00",
+      "sha256": "aa815fc1c1abd7de412100aa313fd5739a7d5336949a99249c5e160d48af4443",
+      "notes": "应用种子：3 用户 / 4 账户 / 同名联系人 / 24 个月流水 1257 条 / 7 只理财产品 / 10 条商户报价；全部为合成数据，无真实个人信息。",
+      "retention": "随仓库版本冻结；seed-2026.10 冻结至 2026-12-31，之后变更需升版本号。"
+    },
+    {
+      "name": "finpilot_tasks_600",
+      "type": "synthetic",
+      "license": "CC0-1.0（团队自建合成评测集）",
+      "synthetic_ratio": 1,
+      "available_at": "2026-10-22T10:00:00+08:00",
+      "sha256": "12b6ac5bcd688e2606837a81a5a1248d81e42cb3f3e6b4c538dd3a9bf8304213",
+      "notes": "600 基础任务（每场景 100，可执行 60 / 需澄清 20 / 应拒绝 20），按 template_family 分组拆分 300/120/180。",
+      "retention": "开发与验证集公开于仓库；隐藏集仅由保管人维护（团队内部评测）。"
+    },
+    {
+      "name": "finpilot_attack_catalog_200",
+      "type": "synthetic",
+      "license": "CC0-1.0（团队自建合成攻击语料）",
+      "synthetic_ratio": 1,
+      "available_at": "2026-10-22T10:00:00+08:00",
+      "sha256": "f2d3f85a2e0b51306258cbb95ab25d66fd30a5b8c518f1eda982628a55644e72",
+      "notes": "200 条攻击基础案例，覆盖 V5 第 19.1 节 12 类攻击；载荷为本项目自撰合成文本，不含真实凭证、真实账号或真实个人数据。",
+      "retention": "开发 100 条随仓库公开；隐藏 100 条在 eval/data/hidden/ 内受控。"
+    },
+    {
+      "name": "finpilot_fault_catalog",
+      "type": "synthetic",
+      "license": "CC0-1.0（团队自建合成故障清单）",
+      "synthetic_ratio": 1,
+      "available_at": "2026-10-22T10:00:00+08:00",
+      "sha256": "8854742e44ef709295686fd958967712555ce6d145319c4f422bff33fcd25ced",
+      "notes": "56 条故障变体，覆盖 V5 第 19.1 节 12 类故障；每条绑定一个互不重复的隐藏可执行任务。",
+      "retention": "随仓库冻结；重放需与初始快照配对。"
+    },
+    {
+      "name": "finpilot_billing_ledger_synthetic",
+      "type": "synthetic",
+      "license": "CC0-1.0（团队自建合成流水）",
+      "synthetic_ratio": 1,
+      "available_at": "2026-10-22T10:00:00+08:00",
+      "sha256": "aa815fc1c1abd7de412100aa313fd5739a7d5336949a99249c5e160d48af4443",
+      "notes": "24 个月合成账单流水 1257 条（seed_app.json 内），含内部互转、理财调拨、手续费、跨期退款与异常标签；与账本余额不联动。",
+      "retention": "随 seed_app.json 冻结；异常标签仅用于合成评测，真实数据无标签时不得复用。"
+    },
+    {
+      "name": "finpilot_product_nav_synthetic",
+      "type": "synthetic",
+      "license": "CC0-1.0（团队自建合成净值序列）",
+      "synthetic_ratio": 1,
+      "available_at": "2026-10-22T10:00:00+08:00",
+      "sha256": "aa815fc1c1abd7de412100aa313fd5739a7d5336949a99249c5e160d48af4443",
+      "notes": "合成净值序列 1420 行（整数定点 nav_e6 与整数基点收益），一只产品历史数据不足（0 行）用于 NA 判定；非真实行情。",
+      "retention": "随 seed_app.json 冻结。"
+    },
+    {
+      "name": "finpilot_merchant_offer_catalog",
+      "type": "synthetic",
+      "license": "CC0-1.0（团队自建合成商户）",
+      "synthetic_ratio": 1,
+      "available_at": "2026-10-22T10:00:00+08:00",
+      "sha256": "aa815fc1c1abd7de412100aa313fd5739a7d5336949a99249c5e160d48af4443",
+      "notes": "虚构商户与报价（鲜花/蛋糕/餐饮），含缺货、不可退与取消费；商户描述字段为不可信输入，用于注入类攻击评测。",
+      "retention": "随 seed_app.json 冻结。"
+    },
+    {
+      "name": "bankagent_srs_v5_competition",
+      "type": "original",
+      "license": "团队自撰内部文档（比赛提交材料）",
+      "synthetic_ratio": 0,
+      "available_at": "2026-10-20",
+      "sha256": "e663629f3e7a8996451732a8fb4947878deed829de5acc5467ef8f98b539c888",
+      "notes": "本工作包的规格来源（V5 第 4.2/9—15/19.1 节与附录 A/B）；文档中的示例为设计数据，未获得任何真实银行授权。",
+      "retention": "随比赛提交归档。"
+    },
+    {
+      "name": "finpilot_interfaces_frozen",
+      "type": "original",
+      "license": "团队自撰内部文档",
+      "synthetic_ratio": 0,
+      "available_at": "2026-10-22",
+      "sha256": "24f13146d8a4220eb61138ea78bea9fd9bd369b07b57eaf3f85c0eb8846a5867",
+      "notes": "全局口径来源：金额整数分、份额 1e-8、UTC 持久化、Asia/Shanghai 业务日。哈希相对本生成器所在仓库固定，与 --repo-root 无关。",
+      "retention": "随仓库版本保留。"
+    },
+    {
+      "name": "stockquant_third_party_code",
+      "type": "public",
+      "license": "待核验（尚未取得许可证文件，禁止声称已核验）",
+      "synthetic_ratio": 0,
+      "available_at": null,
+      "sha256": null,
+      "notes": "第三方量化研究代码，仅登记为只读适配目标。接入前必须完成许可证、依赖与版本核验（GOV-02）；本工作包未复制其代码，也未核验其许可证。",
+      "retention": "仅登记来源，不随本仓库分发代码副本。"
+    },
+    {
+      "name": "llm_provider_api",
+      "type": "public",
+      "license": "供应商服务条款（待核验具体模型版本与数据使用条款）",
+      "synthetic_ratio": 0,
+      "available_at": null,
+      "sha256": null,
+      "notes": "评测主模型与复核模型经由外部 API 调用；模型标识、参数、温度、Prompt 哈希与费用按附录 B 证据格式记录。数据出境与留存条款待核验，不得声称已合规。",
+      "retention": "调用日志保留最小摘要（不含验证码、口令与完整个人信息）。"
+    },
+    {
+      "name": "python_runtime",
+      "type": "public",
+      "license": "PSF-2.0（随 Python 发行版分发）",
+      "synthetic_ratio": 0,
+      "available_at": "2026-10-01",
+      "sha256": null,
+      "notes": "生成器运行环境 Python 3.12（仅标准库）；未单独归档许可证副本。",
+      "retention": "随开发环境保留。"
+    },
+    {
+      "name": "postgresql_server",
+      "type": "public",
+      "license": "PostgreSQL License（待归档）",
+      "synthetic_ratio": 0,
+      "available_at": "2026-10-01",
+      "sha256": null,
+      "notes": "集成与并发测试使用真实 PostgreSQL；本工作包的来源测试不需要数据库。",
+      "retention": "随开发环境保留。"
+    }
+  ]
+}

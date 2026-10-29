@@ -1,0 +1,11 @@
+{
+  "allow": true,
+  "required_level": "RED",
+  "challenge_required": false,
+  "reason_codes": [
+    "daily_cumulative_exceeds_yellow_limit"
+  ],
+  "policy_version": "policy-2026.10",
+  "tool": "transfer.submit",
+  "evaluated_at": "2026-10-22T10:02:00+08:00"
+}

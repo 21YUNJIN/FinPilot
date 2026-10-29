@@ -1,0 +1,24 @@
+{
+  "name": "transfer.submit",
+  "category": "transfer",
+  "read_write": "write",
+  "default_level": "UNGRADED",
+  "agent_exposed": true,
+  "idempotent": true,
+  "timeout_seconds": 15,
+  "input_schema": "https://finpilot.local/schemas/operation_draft.json",
+  "output_schema": "https://finpilot.local/schemas/operation_view.json",
+  "preconditions": [],
+  "effects": [
+    "产生外部支付"
+  ],
+  "compensation": {
+    "mode": "none",
+    "description": "无"
+  },
+  "sensitive_fields": [],
+  "error_codes": [
+    "GRANT_REQUIRED"
+  ],
+  "implemented_by": "services/api/src/finpilot/kernel/transfers.py"
+}

@@ -1,0 +1,546 @@
+{
+  "data": {
+    "as_of": "2026-10-23",
+    "baseline_ranked": [
+      {
+        "product_id": "WM-CASH-001",
+        "rank": 1,
+        "score": 100.0,
+        "score_contributions": {
+          "fee": 50.0,
+          "liquidity": 30.0,
+          "term": 20.0
+        }
+      },
+      {
+        "product_id": "WM-BOND-101",
+        "rank": 2,
+        "score": 93.5137,
+        "score_contributions": {
+          "fee": 47.5,
+          "liquidity": 27.0,
+          "term": 19.0137
+        }
+      },
+      {
+        "product_id": "WM-FIX-202",
+        "rank": 3,
+        "score": 87.0274,
+        "score_contributions": {
+          "fee": 45.0,
+          "liquidity": 24.0,
+          "term": 18.0274
+        }
+      },
+      {
+        "product_id": "WM-BOND-102",
+        "rank": 4,
+        "score": 86.5,
+        "score_contributions": {
+          "fee": 42.5,
+          "liquidity": 24.0,
+          "term": 20.0
+        }
+      },
+      {
+        "product_id": "WM-FIX-201",
+        "rank": 5,
+        "score": 79.0,
+        "score_contributions": {
+          "fee": 35.0,
+          "liquidity": 24.0,
+          "term": 20.0
+        }
+      },
+      {
+        "product_id": "WM-MIX-301",
+        "rank": 6,
+        "score": 63.5,
+        "score_contributions": {
+          "fee": 22.5,
+          "liquidity": 21.0,
+          "term": 20.0
+        }
+      }
+    ],
+    "disclaimers": [
+      "历史样本统计，不代表未来收益，也不构成收益承诺。",
+      "最大回撤是整个观察窗口的样本结果，不是损失上限。",
+      "observed_market_risk_band 仅由净值统计推导，产品官方风险等级仍以产品条款为准。",
+      "本服务只读：不申购、不赎回、不修改策略、不读取交易凭证。",
+      "排序变化只说明指标影响了相对顺序，不代表未来业绩。",
+      "模型不能创建新阈值：用户未表达偏好时使用 balanced 默认权重，界面须披露。",
+      "量化排序不覆盖未通过硬约束的产品，硬约束结果不可由分数推翻。"
+    ],
+    "eligible": 6,
+    "excluded": [
+      {
+        "product_id": "WM-MIX-302",
+        "reasons": [
+          {
+            "code": "RISK_LEVEL_EXCEEDS_USER",
+            "message": "产品风险 R4 高于用户承受等级 R3"
+          }
+        ]
+      },
+      {
+        "product_id": "WM-EQ-401",
+        "reasons": [
+          {
+            "code": "RISK_LEVEL_EXCEEDS_USER",
+            "message": "产品风险 R4 高于用户承受等级 R3"
+          }
+        ]
+      },
+      {
+        "product_id": "WM-EQ-402",
+        "reasons": [
+          {
+            "code": "RISK_LEVEL_EXCEEDS_USER",
+            "message": "产品风险 R5 高于用户承受等级 R3"
+          }
+        ]
+      },
+      {
+        "product_id": "WM-QDII-501",
+        "reasons": [
+          {
+            "code": "RISK_LEVEL_EXCEEDS_USER",
+            "message": "产品风险 R4 高于用户承受等级 R3"
+          }
+        ]
+      },
+      {
+        "product_id": "WM-PEN-601",
+        "reasons": [
+          {
+            "code": "TERM_EXCEEDS_HORIZON",
+            "message": "产品期限 1825 天超过用款时间 365 天"
+          }
+        ]
+      },
+      {
+        "product_id": "WM-NEW-701",
+        "reasons": [
+          {
+            "code": "RISK_LEVEL_EXCEEDS_USER",
+            "message": "产品风险 R4 高于用户承受等级 R3"
+          }
+        ]
+      }
+    ],
+    "include_quant": true,
+    "method_version": "sq-wealth-risk/1.0.0",
+    "not_ranked": [],
+    "product_errors": [],
+    "rank_basis": "先按产品官方风险等级、期限、赎回到账、起购金额做硬过滤；再以用户明确偏好对风险指标、费用和流动性加权排序。分数是相对比较值，不是收益预测。",
+    "rank_changes": [
+      {
+        "baseline_rank": 4,
+        "delta": 3,
+        "product_id": "WM-BOND-102",
+        "quant_rank": 1
+      },
+      {
+        "baseline_rank": 2,
+        "delta": -2,
+        "product_id": "WM-BOND-101",
+        "quant_rank": 4
+      },
+      {
+        "baseline_rank": 5,
+        "delta": 2,
+        "product_id": "WM-FIX-201",
+        "quant_rank": 3
+      },
+      {
+        "baseline_rank": 3,
+        "delta": -2,
+        "product_id": "WM-FIX-202",
+        "quant_rank": 5
+      },
+      {
+        "baseline_rank": 1,
+        "delta": -1,
+        "product_id": "WM-CASH-001",
+        "quant_rank": 2
+      },
+      {
+        "baseline_rank": 6,
+        "delta": 0,
+        "product_id": "WM-MIX-301",
+        "quant_rank": 6
+      }
+    ],
+    "ranked": [
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "metrics_brief": {
+          "annual_volatility": 0.0192865446,
+          "cagr": 0.0292012685,
+          "historical_cvar_95": -0.0023907749,
+          "max_drawdown": -0.0506601619,
+          "sample_count": 993
+        },
+        "observed_market_risk_band": {
+          "band": "R2",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R2",
+        "product_id": "WM-BOND-102",
+        "product_name": "纯债增强",
+        "rank": 1,
+        "score": 61.9194,
+        "score_contributions": {
+          "cagr": 14.682,
+          "fee": 12.75,
+          "sharpe": 34.4874
+        },
+        "score_factors": {
+          "cagr": 0.587278,
+          "cvar": 0.952042,
+          "drawdown": 0.919315,
+          "fee": 0.85,
+          "liquidity": 0.8,
+          "sharpe": 0.57479,
+          "term": 1.0,
+          "vol": 0.984959
+        },
+        "settlement_days": 2,
+        "term_days": 0,
+        "total_fee_bps": 30,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "metrics_brief": {
+          "annual_volatility": 0.0019337241,
+          "cagr": 0.0162858887,
+          "historical_cvar_95": -0.0001988628,
+          "max_drawdown": -0.0014889812,
+          "sample_count": 993
+        },
+        "observed_market_risk_band": {
+          "band": "R1",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R1",
+        "product_id": "WM-CASH-001",
+        "product_name": "日日盈现金管理",
+        "rank": 2,
+        "score": 60.1817,
+        "score_contributions": {
+          "cagr": 13.2143,
+          "fee": 15.0,
+          "sharpe": 31.9674
+        },
+        "score_factors": {
+          "cagr": 0.528572,
+          "cvar": 1.0,
+          "drawdown": 1.0,
+          "fee": 1.0,
+          "liquidity": 1.0,
+          "sharpe": 0.53279,
+          "term": 1.0,
+          "vol": 1.0
+        },
+        "settlement_days": 0,
+        "term_days": 0,
+        "total_fee_bps": 0,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "metrics_brief": {
+          "annual_volatility": 0.0473627654,
+          "cagr": 0.0432085826,
+          "historical_cvar_95": -0.0062941508,
+          "max_drawdown": -0.0753303489,
+          "sample_count": 993
+        },
+        "observed_market_risk_band": {
+          "band": "R3",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R3",
+        "product_id": "WM-FIX-201",
+        "product_name": "固收+增强",
+        "rank": 3,
+        "score": 58.7771,
+        "score_contributions": {
+          "cagr": 16.2737,
+          "fee": 10.5,
+          "sharpe": 32.0034
+        },
+        "score_factors": {
+          "cagr": 0.650948,
+          "cvar": 0.817443,
+          "drawdown": 0.854394,
+          "fee": 0.7,
+          "liquidity": 0.8,
+          "sharpe": 0.53339,
+          "term": 1.0,
+          "vol": 0.886446
+        },
+        "settlement_days": 2,
+        "term_days": 0,
+        "total_fee_bps": 60,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "metrics_brief": {
+          "annual_volatility": 0.0113288525,
+          "cagr": 0.0114454285,
+          "historical_cvar_95": -0.0014388084,
+          "max_drawdown": -0.0355991883,
+          "sample_count": 993
+        },
+        "observed_market_risk_band": {
+          "band": "R1",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R2",
+        "product_id": "WM-BOND-101",
+        "product_name": "稳健短债90天",
+        "rank": 4,
+        "score": 40.638,
+        "score_contributions": {
+          "cagr": 12.6643,
+          "fee": 14.25,
+          "sharpe": 13.7237
+        },
+        "score_factors": {
+          "cagr": 0.50657,
+          "cvar": 0.984869,
+          "drawdown": 0.95895,
+          "fee": 0.95,
+          "liquidity": 0.9,
+          "sharpe": 0.228728,
+          "term": 0.950685,
+          "vol": 1.0
+        },
+        "settlement_days": 1,
+        "term_days": 90,
+        "total_fee_bps": 10,
+        "warnings": [
+          "净值统计风险档 R1 与产品官方等级 R2 不一致，需核对产品映射或数据"
+        ]
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "metrics_brief": {
+          "annual_volatility": 0.0328171057,
+          "cagr": 0.0025459829,
+          "historical_cvar_95": -0.0045896911,
+          "max_drawdown": -0.0731028845,
+          "sample_count": 993
+        },
+        "observed_market_risk_band": {
+          "band": "R3",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R3",
+        "product_id": "WM-FIX-202",
+        "product_name": "固收定开六个月",
+        "rank": 5,
+        "score": 37.8895,
+        "score_contributions": {
+          "cagr": 11.653,
+          "fee": 13.5,
+          "sharpe": 12.7365
+        },
+        "score_factors": {
+          "cagr": 0.466118,
+          "cvar": 0.876218,
+          "drawdown": 0.860256,
+          "fee": 0.9,
+          "liquidity": 0.8,
+          "sharpe": 0.212275,
+          "term": 0.90137,
+          "vol": 0.937484
+        },
+        "settlement_days": 2,
+        "term_days": 180,
+        "total_fee_bps": 20,
+        "warnings": []
+      },
+      {
+        "data_window": {
+          "as_of": "2026-10-23",
+          "end": "2026-10-23",
+          "points": 994,
+          "returns": 993,
+          "stale_lag_days": 0,
+          "start": "2023-01-03"
+        },
+        "metrics_brief": {
+          "annual_volatility": 0.0885166913,
+          "cagr": -0.0219837046,
+          "historical_cvar_95": -0.0111604076,
+          "max_drawdown": -0.1658132401,
+          "sample_count": 993
+        },
+        "observed_market_risk_band": {
+          "band": "R5",
+          "basis": "annual_volatility thresholds + drawdown bump; not an official rating",
+          "thresholds": {
+            "R1": "<1.5%",
+            "R2": "<3%",
+            "R3": "<6%",
+            "R4": "<12%",
+            "R5": ">=12%"
+          }
+        },
+        "official_risk_level": "R3",
+        "product_id": "WM-MIX-301",
+        "product_name": "平衡配置混合",
+        "rank": 6,
+        "score": 28.0877,
+        "score_contributions": {
+          "cagr": 8.8655,
+          "fee": 6.75,
+          "sharpe": 12.4722
+        },
+        "score_factors": {
+          "cagr": 0.35462,
+          "cvar": 0.649641,
+          "drawdown": 0.616281,
+          "fee": 0.45,
+          "liquidity": 0.7,
+          "sharpe": 0.207871,
+          "term": 1.0,
+          "vol": 0.742047
+        },
+        "settlement_days": 3,
+        "term_days": 0,
+        "total_fee_bps": 110,
+        "warnings": [
+          "净值统计风险档 R5 与产品官方等级 R3 不一致，需核对产品映射或数据"
+        ]
+      }
+    ],
+    "schema_version": "1.0",
+    "scoring_scales": {
+      "cagr_full_credit_at": 0.12,
+      "cagr_zero_credit_at": -0.1,
+      "cvar_full_credit_below": 0.001,
+      "cvar_zero_credit_above": 0.03,
+      "drawdown_full_credit_below": 0.02,
+      "drawdown_zero_credit_above": 0.4,
+      "fee_bps_zero_credit_at": 200.0,
+      "settlement_days_zero_credit_at": 10.0,
+      "sharpe_full_credit_at": 2.0,
+      "sharpe_zero_credit_at": -1.0,
+      "term_days_zero_credit_at": 1825.0,
+      "vol_full_credit_below": 0.015,
+      "vol_zero_credit_above": 0.3
+    },
+    "user": {
+      "budget_minor": 1000000,
+      "horizon_days": 365,
+      "liquidity_need_days": 10,
+      "preference_mode": "return",
+      "risk_level": "R3"
+    },
+    "weights_used": {
+      "cagr": 0.25,
+      "fee": 0.15,
+      "sharpe": 0.6
+    }
+  },
+  "error": null,
+  "operation_id": null,
+  "provenance": {
+    "adapter": "stockquant_bank.wealth_risk/1",
+    "engine": {
+      "commit": "5559e3f",
+      "kernel_functions": [
+        "daily_returns",
+        "max_drawdown",
+        "sharpe_statistics"
+      ],
+      "method_version": "sq-wealth-risk/1.0.0",
+      "module": "stockquant.backtest.metrics",
+      "name": "stockquant",
+      "trading_days_per_year": 252,
+      "version": "0.1.0"
+    },
+    "method_version": "sq-wealth-risk/1.0.0",
+    "observed_at": "2026-10-28T17:42:29+08:00"
+  },
+  "request_id": "fp_1793180548928",
+  "schema_version": "1.0",
+  "status": "ok",
+  "task_id": null
+}
