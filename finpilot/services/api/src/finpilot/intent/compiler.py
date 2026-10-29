@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from ..errors import FinPilotError
 from ..ids import new_id
-from ..models import Payee
+from ..models import Payee, WealthProduct
 from ..money import parse_amount_minor
 from ..timeutil import SHANGHAI, business_day, format_iso, utcnow
 from ..kernel.identity import AuthContext
@@ -334,6 +334,35 @@ def resolve_payees(session: Session, user_id: str, text: str, history: list[dict
     return {"status": "missing", "payee": None, "candidates": []}
 
 
+def resolve_product(session: Session, text: str) -> dict:
+    """把用户口中的产品名解析成 product_id。
+
+    只做**完整产品名**匹配：不按"理财""基金"这类泛词猜产品，也不做相似度猜测；
+    命中多个时要求澄清，命中零个时如实返回 not_found（由规划器判不可行）。
+    """
+    products = session.execute(select(WealthProduct).where(WealthProduct.is_active.is_(True))).scalars().all()
+    matches = [product for product in products if product.name and product.name in text]
+    if len(matches) == 1:
+        product = matches[0]
+        return {
+            "status": "resolved",
+            "product": {
+                "product_id": product.product_id,
+                "name": product.name,
+                "issuer_risk_level": product.issuer_risk_level,
+                "min_minor": product.min_minor,
+            },
+        }
+    if len(matches) > 1:
+        return {
+            "status": "ambiguous",
+            "candidates": [
+                {"value": product.product_id, "label": f"{product.name}（{product.issuer_risk_level}）"}
+                for product in matches
+            ],
+        }
+    return {"status": "not_found"}
+
 def _clarification(field_name: str, question: str, options: list[dict] | None = None, *, blocking: bool = True) -> dict:
     return {
         "clarification_id": new_id("clar"),
@@ -555,6 +584,14 @@ def compile_goal(context: IntentContext, message: str, history: list[dict] | Non
                                  "span": budget_span or amount_span, "source": "user_message"})
         else:
             goals.append("purchase_wealth")
+            resolved_product = resolve_product(session, text)
+            if resolved_product["status"] == "resolved":
+                product = resolved_product["product"]
+                facts["product_id"] = product["product_id"]
+                evidence.append({"field": "facts.product_id", "value": product["product_id"],
+                                 "span": product["name"], "source": "user_message"})
+            elif resolved_product["status"] == "ambiguous":
+                unresolved.append(_clarification("product_id", "要申购哪一只产品？", resolved_product["candidates"]))
             if amount_minor is None and budget_minor is None:
                 unresolved.append(_clarification("amount_minor", "请给出申购金额。"))
             else:

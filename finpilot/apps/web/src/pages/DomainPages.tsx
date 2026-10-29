@@ -4,6 +4,7 @@ import {
   CardPanel,
   ErrorBanner,
   PrivacyPanel,
+  RiskQuestionnaire,
   SubscriptionList,
   WealthCompare,
   cacheKeys,
@@ -19,6 +20,7 @@ import {
   type Mandate,
   type PrivacyDeleteView,
   type RetentionRule,
+  type RiskQuestionnaireData,
   type Subscription,
   type WealthProduct,
 } from "@finpilot/shared-ui";
@@ -134,6 +136,50 @@ export function WealthPage(): ReactElement {
     loader: () => experimentalApi.riskProfile(),
   });
 
+  const [questionnaire, setQuestionnaire] = useState<RiskQuestionnaireData | null>(null);
+  const [assessmentBusy, setAssessmentBusy] = useState(false);
+  const [assessmentError, setAssessmentError] = useState<string | null>(null);
+
+  const openQuestionnaire = useCallback(async () => {
+    setAssessmentError(null);
+    const result = await experimentalApi.riskQuestionnaire();
+    if (result.ok) {
+      setQuestionnaire(result.data);
+    } else {
+      setAssessmentError(result.error.message);
+    }
+  }, []);
+
+  const submitAssessment = useCallback(
+    async (answers: Record<string, string>) => {
+      setAssessmentBusy(true);
+      setAssessmentError(null);
+      const result = await experimentalApi.submitRiskAssessment(answers, questionnaire?.questionnaire_version);
+      setAssessmentBusy(false);
+      if (result.ok) {
+        setQuestionnaire(null);
+        await profile.refresh();
+      } else {
+        setAssessmentError(result.error.message);
+      }
+    },
+    [questionnaire, profile],
+  );
+
+  if (questionnaire) {
+    return (
+      <div className="web-wealth">
+        <RiskQuestionnaire
+          questionnaire={questionnaire}
+          onSubmit={submitAssessment}
+          busy={assessmentBusy}
+          error={assessmentError}
+          onCancel={() => setQuestionnaire(null)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="web-wealth">
       <section className="fp-card" aria-label="理财比较条件">
@@ -156,9 +202,12 @@ export function WealthPage(): ReactElement {
           window.location.hash = "/chat";
         }}
         onStartAssessment={() => {
-          window.location.hash = "/chat";
+          void openQuestionnaire();
         }}
       />
+      {assessmentError && !questionnaire ? (
+        <p className="web-hint" role="alert">{assessmentError}</p>
+      ) : null}
       <p className="web-hint">
         购买与赎回属于红色等级：必须完成强验证；风险等级、费率与净值缺失时显示"不适用"，界面不提供收益保证。
       </p>

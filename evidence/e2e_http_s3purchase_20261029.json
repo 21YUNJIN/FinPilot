@@ -1,0 +1,811 @@
+{
+  "schema_version": "1.0",
+  "kind": "finpilot.e2e_http_smoke",
+  "generated_at": "2026-10-29T09:27:52Z",
+  "started_at": "2026-10-29T09:27:51Z",
+  "base_url": "http://127.0.0.1:58000",
+  "scene_filter": [
+    "S3"
+  ],
+  "owner_user": "user_demo_01",
+  "other_user": "user_demo_02",
+  "preflight": {
+    "http": 200,
+    "status": "ok",
+    "mode": "mock",
+    "database_ok": true,
+    "adapters": [
+      "bank_sandbox_local",
+      "bank_sandbox_v1",
+      "merchant_sandbox_local",
+      "merchant_sandbox_v1"
+    ]
+  },
+  "preflight_error": null,
+  "summary": {
+    "total_cases": 7,
+    "passed": 6,
+    "failed": 1,
+    "passed_cases": [
+      "S3-normal",
+      "S3-assessment",
+      "S3-missing",
+      "S3-conflict",
+      "S3-duplicate",
+      "S3-cross-user"
+    ],
+    "failed_cases": [
+      "S3-purchase"
+    ],
+    "assertions_total": 46,
+    "assertions_passed": 43,
+    "assertions_failed": 1,
+    "assertions_skipped": 2
+  },
+  "cases": [
+    {
+      "scene": "S3",
+      "case": "S3-normal",
+      "title": "正常路径：产品比较（只读，含预算）",
+      "message": "比较理财产品，预算1000元",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_ddcf9eea061841a9904b",
+        "plan_id": "plan_835c402580f44d9b93cd",
+        "scope_hash": "153ca071debd42b3a32c8b7488c7532bfff4e08523ce678040a8f386a3f60c67",
+        "required_level": "GREEN",
+        "task_status": "succeeded",
+        "operation_count": 1,
+        "domain_result_type": "wealth_compare",
+        "domain_result_shape": "wrapped",
+        "domain_result_keys": [
+          "data",
+          "source",
+          "type",
+          "version",
+          "warnings"
+        ],
+        "compared_products": 5,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "计划可行",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 wealth.compare operation",
+          "ok": true,
+          "detail": "tools=['wealth.compare']"
+        },
+        {
+          "name": "只读结果可核验（operation.domain_result 非空）",
+          "ok": true,
+          "detail": "shape=wrapped, type=wealth_compare, keys=['data', 'source', 'type', 'version', 'warnings']"
+        },
+        {
+          "name": "提供方资金回执（receipt）",
+          "ok": null,
+          "detail": "只读计划不产生 provider 回执，按实现以 domain_result 作为可核验结果"
+        },
+        {
+          "name": "返回产品比较明细",
+          "ok": true,
+          "detail": "products=5"
+        },
+        {
+          "name": "可投/不可投计数与明细一致",
+          "ok": true,
+          "detail": "eligible=4, excluded=1, products=5"
+        },
+        {
+          "name": "只读比较没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "提供方资金回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 33.6,
+          "note": "比较前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 179.9,
+          "note": "比较理财产品，预算1000元",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_ddcf9eea061841a9904b",
+          "http": 200,
+          "elapsed_ms": 8.1,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_ddcf9eea061841a9904b_wealth_compare",
+          "http": 200,
+          "elapsed_ms": 9.1,
+          "note": "operation op_task_ddcf9eea061841a9904b_wealth_compare",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.8,
+          "note": "比较后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 249.7,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-assessment",
+      "title": "风险测评：问卷提交出具测评，对话请求给出问卷指引",
+      "message": "我要为子女教育金做风险测评，问卷至少覆盖投资经验、损失承受能力、风险态度、期限、流动性和资金用途。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": null,
+      "error_code": null,
+      "key_fields": {
+        "questionnaire_version": "2026.10",
+        "question_count": 6,
+        "risk_level": "R3",
+        "score": 12,
+        "expires_at": "2027-10-29T09:19:38.627852+00:00",
+        "profile_id": "cb0a57a007a149269471d30f20cc4bd5",
+        "chat_task_id": "task_0da7b12a9e8743dbb98b",
+        "chat_task_status": "blocked",
+        "chat_infeasible_reasons": [
+          "ASSESSMENT_REQUIRES_QUESTIONNAIRE"
+        ],
+        "chat_operation_count": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "问卷可获取且含 6 道题",
+          "ok": true,
+          "detail": "http=200, questions=6, code=None"
+        },
+        {
+          "name": "提交问卷后出具有效测评（等级 + 有效期）",
+          "ok": true,
+          "detail": "http=200, level=R3, expires_at=2027-10-29T09:19:38.627852+00:00, code=None"
+        },
+        {
+          "name": "同一份答案重复提交幂等（同一条测评）",
+          "ok": true,
+          "detail": "http=200, first=cb0a57a007a149269471d30f20cc4bd5, second=cb0a57a007a149269471d30f20cc4bd5"
+        },
+        {
+          "name": "测评档案可读回且等级一致",
+          "ok": true,
+          "detail": "http=200, level=R3"
+        },
+        {
+          "name": "对话请求停在 blocked 并给出问卷指引",
+          "ok": true,
+          "detail": "http=200, status=blocked, reasons=['ASSESSMENT_REQUIRES_QUESTIONNAIRE']"
+        },
+        {
+          "name": "指引包含提交问卷的动作",
+          "ok": true,
+          "detail": "alternatives=['submit_risk_questionnaire']"
+        },
+        {
+          "name": "没有产生任何 operation（更不得留下 dispatching 的孤儿操作）",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "风险测评没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        },
+        {
+          "name": "风险测评没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 6.3,
+          "note": "测评前余额",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/wealth/questionnaire",
+          "http": 200,
+          "elapsed_ms": 1.4,
+          "note": "取风险测评问卷",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 4.6,
+          "note": "提交问卷答案",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 4.2,
+          "note": "重复提交同一份答案",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 3.2,
+          "note": "读回测评档案",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 16.3,
+          "note": "我要为子女教育金做风险测评，问卷至少覆盖投资经验、损失承受能力、风险态度、期限、流动性和资金用途。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_0da7b12a9e8743dbb98b",
+          "http": 200,
+          "elapsed_ms": 8.0,
+          "note": "task task_0da7b12a9e8743dbb98b",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.5,
+          "note": "测评后余额",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.3,
+          "note": "测评后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 55.1,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-purchase",
+      "title": "申购：储蓄卡申购活期宝 100 元（RED 强验证）",
+      "message": "用储蓄卡申购活期宝100元",
+      "result": "FAIL",
+      "http_status": 200,
+      "task_status": "succeeded",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_0a6c6261ceed4b388988",
+        "plan_id": "plan_971e44ca7e6249d09c69",
+        "scope_hash": "7ea628b3201570e251faab545e3d6c7776c41e26718b0545e270b9f396b3185c",
+        "required_level": "RED",
+        "plan_feasible": true,
+        "infeasible_reasons": [],
+        "task_status": "succeeded",
+        "challenge_required": true,
+        "operation_count": 1,
+        "operation_status": "succeeded",
+        "operation_error_code": null,
+        "provider_order_ref": null,
+        "receipt_id": null,
+        "expected_delta_minor": -10000,
+        "savings_delta_minor": -10000
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "申购计划可行（产品可解析、适当性可判定）",
+          "ok": true,
+          "detail": "infeasible=[]"
+        },
+        {
+          "name": "申购任务终态 succeeded",
+          "ok": true,
+          "detail": "status=succeeded"
+        },
+        {
+          "name": "恰好一个 wealth.purchase operation",
+          "ok": true,
+          "detail": "tools=['wealth.purchase']"
+        },
+        {
+          "name": "资金/业务效果有回执（receipt 或 provider_ref）",
+          "ok": false,
+          "detail": "receipt=False, provider_ref=None, op_status=succeeded, error_code=None"
+        },
+        {
+          "name": "储蓄卡按申购金额+费用只扣一次",
+          "ok": true,
+          "detail": "delta=-10000, expected=-10000"
+        }
+      ],
+      "failed_assertions": [
+        "资金/业务效果有回执（receipt 或 provider_ref）"
+      ],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.1,
+          "note": "申购前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 18.2,
+          "note": "用储蓄卡申购活期宝100元",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_971e44ca7e6249d09c69/confirm",
+          "http": 200,
+          "elapsed_ms": 15.4,
+          "note": "确认计划",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/challenges/chal_cf5135daab994096862f/verify",
+          "http": 200,
+          "elapsed_ms": 59.6,
+          "note": "TOTP 强验证（第 1 次）",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_0a6c6261ceed4b388988",
+          "http": 200,
+          "elapsed_ms": 7.5,
+          "note": "轮询 1 次后读取任务",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_0a6c6261ceed4b388988_wealth_purchase",
+          "http": 200,
+          "elapsed_ms": 4.1,
+          "note": "operation op_task_0a6c6261ceed4b388988_wealth_purchase",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.0,
+          "note": "申购后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 123.8,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-missing",
+      "title": "缺信息：不给产品与金额",
+      "message": "我想买点理财，产品你随便挑。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "clarifying",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_e53ca3e1175348c1a6ec",
+        "task_status": "clarifying",
+        "clarification_fields": [
+          "amount_minor"
+        ],
+        "operation_count": 0,
+        "global_operation_delta": 0,
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务状态 clarifying",
+          "ok": true,
+          "detail": "status=clarifying"
+        },
+        {
+          "name": "clarifications 非空",
+          "ok": true,
+          "detail": "fields=['amount_minor']"
+        },
+        {
+          "name": "任务上没有产生任何 operation",
+          "ok": true,
+          "detail": "operations=[]"
+        },
+        {
+          "name": "全局 operation 计数未增长",
+          "ok": true,
+          "detail": "before=3, after=3"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.1,
+          "note": "缺信息前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 8.7,
+          "note": "我想买点理财，产品你随便挑。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_e53ca3e1175348c1a6ec",
+          "http": 200,
+          "elapsed_ms": 6.3,
+          "note": "task task_e53ca3e1175348c1a6ec",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.4,
+          "note": "余额快照（缺信息用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 34.4,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-conflict",
+      "title": "冲突：自述 R2 却要直接买 R4 产品",
+      "message": "我的等级是R2，但我要买成长精选权益4号（R4），直接买。",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": "blocked",
+      "error_code": null,
+      "key_fields": {
+        "task_id": "task_38c0ed3609b9424f97ef",
+        "task_status": "blocked",
+        "plan_feasible": true,
+        "infeasible_reasons": [],
+        "operation_count": 0,
+        "operation_tools": [],
+        "effect_operations": [],
+        "balance_delta_minor": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "创建任务 HTTP 200 且信封 ok",
+          "ok": true,
+          "detail": "http=200, code=None"
+        },
+        {
+          "name": "任务停在 clarifying/blocked（未进入可执行或已执行状态）",
+          "ok": true,
+          "detail": "实际 status=blocked, blocked_reason=None"
+        },
+        {
+          "name": "没有资金类 operation",
+          "ok": true,
+          "detail": "effects=[]"
+        },
+        {
+          "name": "账户余额零变化（无资金效果）",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 4.7,
+          "note": "冲突用例前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 13.3,
+          "note": "我的等级是R2，但我要买成长精选权益4号（R4），直接买。",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_38c0ed3609b9424f97ef",
+          "http": 200,
+          "elapsed_ms": 7.3,
+          "note": "task task_38c0ed3609b9424f97ef",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 4.8,
+          "note": "余额快照（否定/冲突用例）",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 30.3,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-duplicate",
+      "title": "重复提交：同一份问卷答案提交两次",
+      "message": "风险测评确认重复提交",
+      "result": "PASS",
+      "http_status": 200,
+      "task_status": null,
+      "error_code": null,
+      "key_fields": {
+        "second_profile_id": "cb0a57a007a149269471d30f20cc4bd5",
+        "http": 200,
+        "operations_total_before": 3,
+        "operations_total_after": 3,
+        "balance_delta_after_duplicate": {
+          "account_salary": 0,
+          "account_savings": 0
+        }
+      },
+      "assertions": [
+        {
+          "name": "重复提交返回同一条测评（幂等）",
+          "ok": true,
+          "detail": "http=200, first=cb0a57a007a149269471d30f20cc4bd5, second=cb0a57a007a149269471d30f20cc4bd5, code=None"
+        },
+        {
+          "name": "重复提交没有新增 operation",
+          "ok": true,
+          "detail": "before=3, after=3"
+        },
+        {
+          "name": "重复提交没有资金效果",
+          "ok": true,
+          "detail": "delta={'account_salary': 0, 'account_savings': 0}"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.2,
+          "note": "重复提交前余额",
+          "error": null
+        },
+        {
+          "method": "POST",
+          "path": "/v1/wealth/assessment",
+          "http": 200,
+          "elapsed_ms": 4.4,
+          "note": "再次提交同一份问卷答案",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.6,
+          "note": "重复提交后余额",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 23.2,
+      "notes": []
+    },
+    {
+      "scene": "S3",
+      "case": "S3-cross-user",
+      "title": "越权：user_demo_02 访问 user_demo_01 的理财任务/operation",
+      "message": "比较理财产品，预算1000元",
+      "result": "PASS",
+      "http_status": 403,
+      "task_status": null,
+      "error_code": "OBJECT_NOT_ACCESSIBLE",
+      "key_fields": {
+        "owner_task_id": "task_ddcf9eea061841a9904b",
+        "other_user_task_count": 0,
+        "other_user_account_ids": [
+          "account_demo2"
+        ]
+      },
+      "assertions": [
+        {
+          "name": "跨用户读取任务被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务拒绝原因属于归属校验",
+          "ok": true,
+          "detail": "code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "任务错误响应不泄露归属与内容",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取 operation 被拒绝（403/404）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "operation 错误响应不泄露归属",
+          "ok": true,
+          "detail": "len=347"
+        },
+        {
+          "name": "跨用户读取回执（receipt）",
+          "ok": null,
+          "detail": "本次运行未产生任何 receipt（提供方写入未完成），无法验证回执级隔离"
+        },
+        {
+          "name": "跨用户确认计划被拒绝（403/404/409）",
+          "ok": true,
+          "detail": "http=403, code=OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "name": "user_demo_02 的任务列表不含 user_demo_01 的任务",
+          "ok": true,
+          "detail": "leaked=False"
+        },
+        {
+          "name": "user_demo_02 看不到 user_demo_01 的账户",
+          "ok": true,
+          "detail": "accounts=['account_demo2']"
+        }
+      ],
+      "failed_assertions": [],
+      "skipped_assertions": [
+        "跨用户读取回执（receipt）"
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/v1/tasks/task_ddcf9eea061841a9904b",
+          "http": 403,
+          "elapsed_ms": 3.7,
+          "note": "user_demo_02 读取 user_demo_01 的任务",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/operations/op_task_ddcf9eea061841a9904b_wealth_compare",
+          "http": 403,
+          "elapsed_ms": 4.3,
+          "note": "user_demo_02 读取 user_demo_01 的 operation",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/plans/plan_835c402580f44d9b93cd/confirm",
+          "http": 403,
+          "elapsed_ms": 4.0,
+          "note": "user_demo_02 确认 user_demo_01 的计划",
+          "error": "OBJECT_NOT_ACCESSIBLE"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/tasks",
+          "http": 200,
+          "elapsed_ms": 3.9,
+          "note": "user_demo_02 的任务列表",
+          "error": null
+        },
+        {
+          "method": "GET",
+          "path": "/v1/accounts",
+          "http": 200,
+          "elapsed_ms": 5.1,
+          "note": "user_demo_02 的账户",
+          "error": null
+        }
+      ],
+      "elapsed_ms": 21.1,
+      "notes": []
+    }
+  ],
+  "notes": [
+    "断言全部使用前后差值与相对关系，不依赖演示库中的绝对余额。",
+    "只读场景以 operation.domain_result 作为可核验结果；资金/业务效果场景要求 receipt 或 provider_ref。",
+    "GREEN 计划 confirm 为文档化空操作，S2 重复提交用例断言零新增 operation + 零余额变化。",
+    "RED 计划重复确认可能返回新的 TOTP 挑战而非冲突码，硬断言仍是“不得新增 operation/不得二次扣款”。"
+  ]
+}

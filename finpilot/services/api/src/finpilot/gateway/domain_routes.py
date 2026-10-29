@@ -276,6 +276,54 @@ def wealth_assessment(ctx: AuthContext = Depends(current_auth), session: Session
                "questionnaire_version": profile["questionnaire_version"]})
 
 
+@router.get("/v1/wealth/questionnaire")
+def wealth_questionnaire():
+    """风险测评问卷（版本化题目与选项）。
+
+    测评必须按六个维度逐题作答，不能由一句自然语言对话直接给出风险等级；
+    对话里的"做风险测评"只负责提示用户来填这张表。
+    """
+    from ..domains.wealth_rules.assessment import questionnaire
+
+    return ok(questionnaire())
+
+
+class AssessmentAnswerRequest(BaseModel):
+    answers: dict[str, str] = Field(min_length=1)
+    questionnaire_version: str | None = None
+
+
+@router.post("/v1/wealth/assessment")
+def submit_wealth_assessment(
+    body: AssessmentAnswerRequest,
+    ctx: AuthContext = Depends(current_auth),
+    session: Session = Depends(get_db),
+):
+    """提交问卷答案并生成测评结果。
+
+    这是低风险的结构化写入（不产生资金效果），仍由服务端评分、落库并写审计；
+    幂等键是"问卷版本 + 答案哈希"，重复提交同一份答案不会产生多条有效测评。
+    """
+    from ..domains.wealth_rules.assessment_ops import submit_answers
+    from ..security.audit import append_event
+
+    result = submit_answers(session, ctx, dict(body.answers), body.questionnaire_version)
+    data = result.get("data", {})
+    append_event(
+        session,
+        event_type="wealth.assessment_submitted",
+        actor=ctx.user_id,
+        actor_role="customer",
+        payload={
+            "profile_id": data.get("profile_id"),
+            "risk_level": data.get("risk_level"),
+            "questionnaire_version": data.get("questionnaire_version"),
+            "answers_hash": data.get("answers_hash"),
+        },
+    )
+    return ok(result)
+
+
 @router.get("/v1/wealth/orders")
 def list_wealth_orders(ctx: AuthContext = Depends(current_auth), session: Session = Depends(get_db)):
     rows = session.execute(

@@ -657,6 +657,29 @@ def solve(
     return solution, trace
 
 
+def _preflight_blocker(goal_spec: dict) -> dict | None:
+    """规划前的硬前置条件：不满足时直接判不可行，不让计划带着空参数去执行。
+
+    典型例子是风险测评：它需要六个维度逐题作答，规则编译器无法从一句"帮我做测评"
+    推断出答案。此前 planner 仍会生成 ``risk.assess`` 并携带 ``answers={}``，
+    执行时抛 ``PARAM_INVALID``，用户看到的是"失败"而不是"请去填问卷"。
+    """
+    goals = goal_spec.get("goals") or []
+    facts = goal_spec.get("facts") or {}
+    if "risk_assess" in goals and not facts.get("answers"):
+        return {
+            "reason": "ASSESSMENT_REQUIRES_QUESTIONNAIRE",
+            "alternative": {
+                "action": "submit_risk_questionnaire",
+                "message": (
+                    "风险测评需按投资经验、损失承受能力、风险态度、投资期限、流动性、资金用途六个维度逐题作答："
+                    "请打开理财页的问卷提交答案（GET /v1/wealth/questionnaire 取题，POST /v1/wealth/assessment 提交）。"
+                ),
+            },
+        }
+    return None
+
+
 def build_plan(
     session: Session,
     ctx: AuthContext,
@@ -667,6 +690,27 @@ def build_plan(
 ) -> tuple[Plan, list[PlanStep]]:
     """生成可执行计划；不可行时保存原因，绝不擅自放宽硬约束。"""
     snapshot = snapshot or get_snapshot(session, ctx)
+    blocker = _preflight_blocker(goal_spec)
+    if blocker is not None:
+        plan = Plan(
+            plan_id=new_id("plan"),
+            task_id=task.task_id,
+            revision=task.revision,
+            status="infeasible",
+            goal_snapshot=goal_spec,
+            snapshot_ref={"observed_at": snapshot.get("observed_at"), "policy_version": snapshot.get("policy_version")},
+            scope={},
+            scope_hash="",
+            required_level="YELLOW",
+            feasible=False,
+            infeasible_reasons=[blocker["reason"]],
+            alternatives=[blocker["alternative"]],
+            total_estimated_minor=0,
+            total_fee_minor=0,
+            created_at=utcnow(),
+        )
+        return plan, []
+
     solution, trace = solve(session, ctx, task=task, goal_spec=goal_spec, snapshot=snapshot)
     now = utcnow()
 

@@ -259,6 +259,7 @@ def run_task(session: Session, ctx: AuthContext, task: Task, *, max_steps: int |
         except FinPilotError as exc:
             step.status = "failed"
             step.last_error = exc.code
+            _settle_failed_operation(session, step.operation_id, exc.code)
             session.flush()
             if exc.code in ("GRANT_REQUIRED", "GRANT_INVALID", "GRANT_SCOPE_VIOLATION"):
                 repo.transition_task(
@@ -318,6 +319,23 @@ def run_task(session: Session, ctx: AuthContext, task: Task, *, max_steps: int |
         }
 
     return _finalize(session, ctx, task, plan, steps)
+
+
+def _settle_failed_operation(session: Session, operation_id: str | None, code: str) -> None:
+    """领域处理器抛错时把已创建的 operation 收敛为 failed。
+
+    只标记 step 而不处理 operation，会让 operation 永久停在 ``dispatching``：
+    任务显示失败、operation 却像"在途"，既无法重试也无法对账。
+    """
+    if not operation_id:
+        return
+    operation = session.get(Operation, operation_id)
+    if operation is None or operation.status in ("succeeded", "failed", "cancelled"):
+        return
+    operation.error_code = operation.error_code or code
+    from ..kernel.submission import transition
+
+    transition(session, operation, "failed", reason="handler_error", detail={"code": code})
 
 
 def _execute_step(

@@ -1015,3 +1015,39 @@ export interface LocalConfirmedAction {
  * 4. HandoffCase / PrivacyExportView / RetentionRule：契约暂无 schema（A05 交付物）。
  * 5. Card.application_status / user_limit_minor：申请与额度在契约中另有对象（card_application.json）。
  */
+// ---------------------------------------------------------------------------
+// 风险测评问卷（S3）：逐题作答，不允许由对话直接给出等级
+// ---------------------------------------------------------------------------
+
+export interface QuestionnaireOption {
+  option_id: string;
+  label: string;
+  score: number;
+}
+
+export interface QuestionnaireQuestion {
+  question_id: string;
+  dimension: string;
+  dimension_label: string;
+  text: string;
+  options: QuestionnaireOption[];
+}
+
+export interface RiskQuestionnaireData {
+  questionnaire_version: string;
+  validity_days: number;
+  max_score: number;
+  dimensions: Array<{ dimension: string; label: string }>;
+  questions: QuestionnaireQuestion[];
+  disclaimer?: string;
+}
+
+export interface RiskAssessmentResult {
+  profile_id: string;
+  questionnaire_version: string;
+  risk_level: string;
+  score: number;
+  assessed_at: string;
+  expires_at: string;
+  answers_hash: string;
+}

@@ -68,7 +68,11 @@ export type {
   ResultEffect,
   RetentionRule,
   RetryMode,
+  RiskAssessmentResult,
   RiskProfile,
+  RiskQuestionnaireData,
+  QuestionnaireOption,
+  QuestionnaireQuestion,
   ScopeCounterparty,
   ScopeSummary,
   ScopeTimeWindow,
@@ -123,6 +127,7 @@ export * from "./components/OperationReceipt";
 export * from "./components/CardPanel";
 export * from "./components/BillReport";
 export * from "./components/WealthCompare";
+export * from "./components/RiskQuestionnaire";
 export * from "./components/SubscriptionList";
 export * from "./components/HandoffPanel";
 export * from "./components/PrivacyPanel";

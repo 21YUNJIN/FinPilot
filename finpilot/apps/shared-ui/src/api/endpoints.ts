@@ -22,7 +22,9 @@ import type {
   PrivacyDeleteView,
   PrivacyExportView,
   Receipt,
+  RiskAssessmentResult,
   RiskProfile,
+  RiskQuestionnaireData,
   SessionView,
   Snapshot,
   Subscription,
@@ -366,6 +368,23 @@ export const experimentalApi = {
 
   riskProfile(): Promise<ApiResult<RiskProfile>> {
     return get<RiskProfile>(`${V1}/wealth/assessment`);
+  },
+
+  /** 风险测评问卷（版本化题目与选项）。 */
+  riskQuestionnaire(): Promise<ApiResult<RiskQuestionnaireData>> {
+    return get<RiskQuestionnaireData>(`${V1}/wealth/questionnaire`);
+  },
+
+  /** 提交问卷答案：服务端评分、落库、写审计；同一份答案重复提交是幂等的。 */
+  async submitRiskAssessment(
+    answers: Record<string, string>,
+    questionnaireVersion?: string,
+  ): Promise<ApiResult<RiskAssessmentResult>> {
+    const result = await post<{ data: RiskAssessmentResult }>(`${V1}/wealth/assessment`, {
+      answers,
+      questionnaire_version: questionnaireVersion ?? null,
+    });
+    return mapResult(result, (data) => data?.data ?? (data as unknown as RiskAssessmentResult));
   },
 };
 

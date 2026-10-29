@@ -896,7 +896,7 @@ class Runner:
         case = self.new_case("S3", "S3-normal", "正常路径：产品比较（只读，含预算）", "比较理财产品，预算1000元")
         self._run_case(self._s3_normal, case)
 
-        case = self.new_case("S3", "S3-assessment", "风险测评：确认后应出具有效测评",
+        case = self.new_case("S3", "S3-assessment", "风险测评：问卷提交出具测评，对话请求给出问卷指引",
                              "我要为子女教育金做风险测评，问卷至少覆盖投资经验、损失承受能力、风险态度、期限、流动性和资金用途。")
         self._run_case(self._s3_assessment, case)
 
@@ -909,7 +909,7 @@ class Runner:
         case = self.new_case("S3", "S3-conflict", "冲突：自述 R2 却要直接买 R4 产品", "我的等级是R2，但我要买成长精选权益4号（R4），直接买。")
         self._run_case(self._s3_conflict, case)
 
-        case = self.new_case("S3", "S3-duplicate", "重复提交：风险测评确认发两次", "风险测评确认重复提交")
+        case = self.new_case("S3", "S3-duplicate", "重复提交：同一份问卷答案提交两次", "风险测评确认重复提交")
         self._run_case(self._s3_duplicate, case)
 
         case = self.new_case("S3", "S3-cross-user", "越权：user_demo_02 访问 user_demo_01 的理财任务/operation", "比较理财产品，预算1000元")
@@ -955,43 +955,102 @@ class Runner:
         case.check("只读比较没有资金效果", all(value == 0 for value in deltas.values()), f"delta={deltas}")
 
     def _s3_assessment(self, case: Case) -> None:
+        """风险测评是问卷式写入：逐题作答 → 服务端评分；对话请求只能给出问卷指引。
+
+        2026-10-29 起后端把"测评"从可执行工具改为问卷入口：
+        GET /v1/wealth/questionnaire 取题，POST /v1/wealth/assessment 提交；
+        对话里说"帮我做测评"会得到 ASSESSMENT_REQUIRES_QUESTIONNAIRE 的阻断与指引，
+        不再生成 answers={} 的注定失败计划。
+        """
         before = self._ledger(case=case, note="测评前余额")
+
+        code, payload, _ = self.http.call(
+            "GET", "/v1/wealth/questionnaire", headers=self.h1, timeout=30, case=case, note="取风险测评问卷"
+        )
+        questionnaire = data_of(payload)
+        questions = questionnaire.get("questions") or []
+        case.field("questionnaire_version", questionnaire.get("questionnaire_version"))
+        case.field("question_count", len(questions))
+        case.check(
+            "问卷可获取且含 6 道题",
+            code == 200 and envelope_ok(payload) and len(questions) == 6,
+            f"http={code}, questions={len(questions)}, code={error_code(payload)}",
+        )
+        if len(questions) != 6:
+            return
+
+        answers = {item["question_id"]: item["options"][2]["option_id"] for item in questions}
+        code, payload, _ = self.http.call(
+            "POST", "/v1/wealth/assessment", body={"answers": answers}, headers=self.h1, timeout=30,
+            case=case, note="提交问卷答案",
+        )
+        submitted = data_of(payload).get("data") or {}
+        level = submitted.get("risk_level")
+        case.field("risk_level", level)
+        case.field("score", submitted.get("score"))
+        case.field("expires_at", submitted.get("expires_at"))
+        case.check(
+            "提交问卷后出具有效测评（等级 + 有效期）",
+            code == 200 and envelope_ok(payload) and level in {"R1", "R2", "R3", "R4", "R5"} and bool(submitted.get("expires_at")),
+            f"http={code}, level={level}, expires_at={submitted.get('expires_at')}, code={error_code(payload)}",
+        )
+        profile_id = submitted.get("profile_id")
+        case.field("profile_id", profile_id)
+
+        code2, payload2, _ = self.http.call(
+            "POST", "/v1/wealth/assessment", body={"answers": answers}, headers=self.h1, timeout=30,
+            case=case, note="重复提交同一份答案",
+        )
+        again = data_of(payload2).get("data") or {}
+        case.check(
+            "同一份答案重复提交幂等（同一条测评）",
+            code2 == 200 and again.get("profile_id") == profile_id,
+            f"http={code2}, first={profile_id}, second={again.get('profile_id')}",
+        )
+
+        code3, payload3, _ = self.http.call(
+            "GET", "/v1/wealth/assessment", headers=self.h1, timeout=30, case=case, note="读回测评档案"
+        )
+        view = data_of(payload3)
+        case.check(
+            "测评档案可读回且等级一致",
+            code3 == 200 and bool(view) and view.get("level") == level,
+            f"http={code3}, level={view.get('level') if isinstance(view, dict) else view}",
+        )
+
+        # 对话请求：必须被明确阻断并指向问卷，而不是生成空答案计划
         code, payload, created = self._create(case, case.message)
         plan = created.get("plan") or {}
-        case.field("task_id", created.get("task_id"))
-        case.field("plan_id", plan.get("plan_id"))
-        case.field("scope_hash", plan.get("scope_hash"))
-        case.field("required_level", plan.get("required_level"))
-        case.field("plan_steps", [step.get("tool") for step in plan.get("steps") or []])
-        case.check("创建任务 HTTP 200 且信封 ok", code == 200 and envelope_ok(payload), f"http={code}, code={error_code(payload)}")
-        case.check("计划可行", bool(plan.get("feasible")), f"infeasible={plan.get('infeasible_reasons')}")
-        if created.get("status") != "awaiting_authorization":
-            case.field("task_status", created.get("status"))
-            case.check("任务进入待确认状态", False, f"status={created.get('status')}")
-            self.artifacts["S3-assessment"] = {"task_id": created.get("task_id"), "plan": plan, "revision": created.get("revision")}
-            return
-        trace = self._authorize(case, created, timeout=8.0)
-        task = trace.get("task") or {}
-        case.field("challenge_required", trace.get("challenge_required"))
-        case.field("task_status", task.get("status"))
+        case.field("chat_task_id", created.get("task_id"))
+        case.field("chat_task_status", created.get("status"))
+        case.field("chat_infeasible_reasons", plan.get("infeasible_reasons"))
+        reasons = plan.get("infeasible_reasons") or []
+        case.check(
+            "对话请求停在 blocked 并给出问卷指引",
+            code == 200 and created.get("status") == "blocked" and "ASSESSMENT_REQUIRES_QUESTIONNAIRE" in reasons,
+            f"http={code}, status={created.get('status')}, reasons={reasons}",
+        )
+        alternatives = [item.get("action") for item in (plan.get("alternatives") or []) if isinstance(item, dict)]
+        case.check(
+            "指引包含提交问卷的动作",
+            "submit_risk_questionnaire" in alternatives,
+            f"alternatives={alternatives}",
+        )
+        task = self._task(case, created.get("task_id") or "")
         ops = task.get("operations") or []
-        case.field("operation_count", len(ops))
-        case.check("测评任务终态 succeeded", task.get("status") == "succeeded",
-                   f"status={task.get('status')}, result={_short(task.get('result') or {})}")
-        case.check("恰好一个 risk.assess operation", len(ops) == 1 and ops[0].get("tool") == "risk.assess",
-                   f"tools={[op.get('tool') for op in ops]}")
-        if ops:
-            op_view = self._op_view(case, ops[0]["operation_id"])
-            case.field("operation_status", op_view.get("status"))
-            case.field("operation_error_code", op_view.get("error_code"))
-            domain = (op_view.get("domain_result") or {}).get("data") or {}
-            case.check("出具有效风险测评（等级 + 有效期）", bool(domain.get("risk_level")) and bool(domain.get("expires_at")),
-                       f"risk_level={domain.get('risk_level')}, expires_at={domain.get('expires_at')}, "
-                       f"op_status={op_view.get('status')}, error_code={op_view.get('error_code')}")
-        self.artifacts["S3-assessment"] = {
-            "task_id": created.get("task_id"), "plan": plan, "revision": created.get("revision"),
-            "operation_id": ops[0].get("operation_id") if ops else None,
-        }
+        case.field("chat_operation_count", len(ops))
+        case.check(
+            "没有产生任何 operation（更不得留下 dispatching 的孤儿操作）",
+            not ops,
+            f"operations={[(op.get('tool'), op.get('status')) for op in ops]}",
+        )
+
+        after = self._ledger(case=case, note="测评后余额")
+        deltas = {k: (after.get(k, {}).get("posted") or 0) - (before.get(k, {}).get("posted") or 0) for k in before}
+        case.field("balance_delta_minor", deltas)
+        case.check("风险测评没有资金效果", all(value == 0 for value in deltas.values()), f"delta={deltas}")
+
+        self.artifacts["S3-assessment"] = {"profile_id": profile_id, "answers": answers, "level": level}
         after = self._ledger(case=case, note="测评后余额")
         deltas = {k: (after.get(k, {}).get("posted") or 0) - (before.get(k, {}).get("posted") or 0) for k in before}
         case.field("balance_delta_minor", deltas)
@@ -1033,7 +1092,19 @@ class Runner:
         case.check("恰好一个 wealth.purchase operation", len(purchases) == 1, f"tools={[op.get('tool') for op in ops]}")
         if purchases:
             op_view = self._op_view(case, purchases[0]["operation_id"])
-            self._evidence_of_effect(case, op_view)
+            # 理财申购是内部记账（wealth_order），不是外部提供方效果，因此不要求 provider 回执；
+            # 但仍必须有可核验的订单与资金变化。
+            order_code, order_payload, _ = self.http.call(
+                "GET", "/v1/wealth/orders", headers=self.h1, timeout=30, case=case, note="申购后理财订单"
+            )
+            orders = data_of(order_payload).get("orders") or []
+            matched = [o for o in orders if o.get("operation_id") == purchases[0]["operation_id"]]
+            case.field("matched_order", matched[0] if matched else None)
+            case.check(
+                "产生可核验的理财订单（内部记账，无提供方回执）",
+                order_code == 200 and bool(matched) and matched[0].get("product_id") == "product_huoli",
+                f"http={order_code}, matched={matched[:1] if matched else []}",
+            )
             expected = (op_view.get("amount_minor") or 0) + (op_view.get("fee_minor") or 0)
             after = self._ledger(case=case, note="申购后余额")
             delta = (after.get("account_savings", {}).get("posted") or 0) - (before.get("account_savings", {}).get("posted") or 0)
@@ -1069,37 +1140,33 @@ class Runner:
         self._assert_conflict_no_effect(case, task, before)
 
     def _s3_duplicate(self, case: Case) -> None:
+        """重复提交同一份问卷答案：同一条测评、不新增 operation、无资金效果。"""
         artifact = self.artifacts.get("S3-assessment") or {}
-        if not artifact.get("task_id") or not artifact.get("plan", {}).get("plan_id"):
-            case.skip("重复提交依赖 S3-assessment 的任务", "S3-assessment 未产出可确认的计划")
+        if not artifact.get("answers"):
+            case.skip("重复提交依赖 S3-assessment 的问卷答案", "S3-assessment 未完成问卷提交")
             return
-        case.field("task_id", artifact["task_id"])
-        before_task = self._task(case, artifact["task_id"])
-        ops_before = {op.get("operation_id") for op in (before_task.get("operations") or [])}
-        balances_before = self._ledger(case=case, note="重复确认前余额")
-        created = {"task_id": artifact["task_id"], "plan": artifact["plan"], "revision": artifact.get("revision")}
-        code, payload, _ = self._confirm(case, created, note="第二次确认（重复提交）")
-        second_error = error_code(payload)
-        second_data = data_of(payload)
-        re_challenge = envelope_ok(payload) and second_data.get("status") == "challenge_required"
-        rejected = (not envelope_ok(payload)) and second_error in CONFLICT_CODES
-        case.field("second_confirm_http", code)
-        case.field("second_confirm_error", second_error)
-        case.check("第二次确认被拒绝或重新要求强验证", bool(rejected or re_challenge),
-                   f"http={code}, code={second_error}, data_status={second_data.get('status')}")
-        task_after = self._settle(case, artifact["task_id"], timeout=3.0)
-        ops_after = {op.get("operation_id") for op in (task_after.get("operations") or [])}
-        case.field("operation_count_after", len(ops_after))
-        case.check("重复确认没有新增 operation", ops_after == ops_before, f"before={sorted(ops_before)}, after={sorted(ops_after)}")
-        assesses = [op for op in (task_after.get("operations") or []) if op.get("tool") == "risk.assess"]
-        assesses_before = [op for op in (before_task.get("operations") or []) if op.get("tool") == "risk.assess"]
-        case.field("assess_count_before", len(assesses_before))
-        case.check("测评 operation 数量与重复提交前一致", len(assesses) == len(assesses_before),
-                   f"before={len(assesses_before)}, after={len(assesses)}")
-        balances_after = self._ledger(case=case, note="重复确认后余额")
+        ops_before = self._operations_total()
+        balances_before = self._ledger(case=case, note="重复提交前余额")
+        code, payload, _ = self.http.call(
+            "POST", "/v1/wealth/assessment", body={"answers": artifact["answers"]}, headers=self.h1, timeout=30,
+            case=case, note="再次提交同一份问卷答案",
+        )
+        again = data_of(payload).get("data") or {}
+        case.field("second_profile_id", again.get("profile_id"))
+        case.field("http", code)
+        case.check(
+            "重复提交返回同一条测评（幂等）",
+            code == 200 and envelope_ok(payload) and again.get("profile_id") == artifact.get("profile_id"),
+            f"http={code}, first={artifact.get('profile_id')}, second={again.get('profile_id')}, code={error_code(payload)}",
+        )
+        ops_after = self._operations_total()
+        case.field("operations_total_before", ops_before)
+        case.field("operations_total_after", ops_after)
+        case.check("重复提交没有新增 operation", ops_after == ops_before, f"before={ops_before}, after={ops_after}")
+        balances_after = self._ledger(case=case, note="重复提交后余额")
         deltas = {k: (balances_after.get(k, {}).get("posted") or 0) - (balances_before.get(k, {}).get("posted") or 0) for k in balances_before}
         case.field("balance_delta_after_duplicate", deltas)
-        case.check("重复确认没有资金效果", all(value == 0 for value in deltas.values()), f"delta={deltas}")
+        case.check("重复提交没有资金效果", all(value == 0 for value in deltas.values()), f"delta={deltas}")
 
     def _s3_cross_user(self, case: Case) -> None:
         artifact = self.artifacts.get("S3") or {}

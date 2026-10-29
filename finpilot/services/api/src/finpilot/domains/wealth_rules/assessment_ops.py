@@ -17,14 +17,16 @@ from ...timeutil import utcnow
 from . import assessment
 
 
-def submit_risk_assessment(session: Session, ctx: AuthContext, operation: Operation) -> dict:
+def submit_answers(session: Session, ctx: AuthContext, answers: dict, version: str | None = None) -> dict:
+    """按答案提交测评（工具处理器与 HTTP 问卷入口共用）。
+
+    幂等键用"问卷版本 + 答案规范化哈希"表达：同一份答案重复提交只保留一条有效测评。
+    """
     ctx.require_customer()
-    args = operation.typed_args or {}
-    answers = args.get("answers") or {}
     if not isinstance(answers, dict) or not answers:
         raise FinPilotError("PARAM_INVALID", "缺少问卷答案（answers）。")
 
-    version = str(args.get("questionnaire_version") or assessment.QUESTIONNAIRE_VERSION)
+    version = str(version or assessment.QUESTIONNAIRE_VERSION)
     answers_hash = canonical_hash({"version": version, "answers": answers})
 
     existing = session.execute(
@@ -46,6 +48,11 @@ def submit_risk_assessment(session: Session, ctx: AuthContext, operation: Operat
     if profile is None:
         raise FinPilotError("SYSTEM_ERROR", "风险测评结果未落库。")
     return _result(profile, note=result.get("note", "测评已完成") if isinstance(result, dict) else "测评已完成")
+
+
+def submit_risk_assessment(session: Session, ctx: AuthContext, operation: Operation) -> dict:
+    args = operation.typed_args or {}
+    return submit_answers(session, ctx, args.get("answers") or {}, args.get("questionnaire_version"))
 
 
 def _result(profile: RiskProfile, *, note: str) -> dict:
